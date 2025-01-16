@@ -45,8 +45,8 @@ const Login = () => {
 
     return (
         <div className="d-flex justify-content-center align-items-center vh-100">
-            <div className="card p-4" style={{ width: '100%', maxWidth: '400px' }}>
-                <h2 className="text-center mb-4">Iniciar sesión</h2>
+            <div className="login-card">
+                <h2>Iniciar sesión</h2>
                 <form onSubmit={handleSubmit}>
                     <div className="mb-3">
                         <label className="form-label">Username:</label>

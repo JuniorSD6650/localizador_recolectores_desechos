@@ -2,6 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { API_BASE_URL } from '../utils';
+import VehicleCard from '../components/VehicleCard';
+import TituloConRegreso from '../components/TituloConRegreso';
 
 const VehicleList = () => {
     const [vehicles, setVehicles] = useState([]);
@@ -26,13 +28,9 @@ const VehicleList = () => {
         fetchVehicles();
     }, []);
 
-    const getStatusColor = (status) => {
-        return status === 'activo' ? 'bg-success' : 'bg-danger';
-    };
-
     return (
         <div className="container text-center my-5">
-            <h1>Lista de Vehículos Recolectores</h1>
+            <TituloConRegreso titulo="Lista de Vehículos Recolectores" to="/" />
             <p>Aquí podrás ver la lista de los vehículos recolectores registrados.</p>
 
             {message && <p className="text-danger">{message}</p>}
@@ -45,9 +43,13 @@ const VehicleList = () => {
                         <Link
                             key={vehicle.id}
                             to={`/vehicle/${vehicle.id}`}
-                            className={`list-group-item list-group-item-action d-flex justify-content-between align-items-center p-4 ${getStatusColor(vehicle.estado)}`}
                         >
-                            <span>{vehicle.zona_responsable} - {vehicle.nombre_recolector}</span>
+                            <VehicleCard
+                                vehicleName={vehicle.nombre_recolector}
+                                zone={vehicle.zona_responsable}
+                                status={vehicle.estado}
+                            />
+                            <br />
                         </Link>
                     ))
                 )}

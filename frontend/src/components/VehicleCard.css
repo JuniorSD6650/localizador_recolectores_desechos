@@ -1,0 +1,44 @@
+/* src/components/VehicleCard.css */
+.vehicle-card {
+    border-radius: 8px;
+    background-color: white;
+    display: flex;
+    align-items: center;
+    padding: 12.5px;
+    transition: transform 0.3s ease-in-out;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.vehicle-card:hover {
+    transform: scale(1.05);
+}
+
+.vehicle-card .me-3 {
+    font-size: 2rem;
+}
+
+.info-line {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.zone-text {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: #2c3e50;
+}
+
+.collector-name {
+    font-size: 1rem;
+    color: #6c757d;
+}
+
+.text-success {
+    color: #28a745 !important;
+}
+
+.text-danger {
+    color: #dc3545 !important;
+}

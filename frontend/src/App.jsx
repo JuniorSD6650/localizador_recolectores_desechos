@@ -4,8 +4,12 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import './App.css';
 import Home from './Home';
 import Login from './Login';
-import AdminPage from './AdminPage';
-import LocalizadorPage from './LocalizadorPage';
+import AdminPage from './admin/AdminPage';
+import AdminLocalizadorPage from './admin/localizadores/AdminLocalizadorPage';
+import LocalizadorPage from './localizador/LocalizadorPage';
+import AdminReportesPage from './admin/reportes/AdminReportesPage';
+import AdminVehiculosPage from './admin/vehiculos/AdminVehiculosPage';
+import AdminPerfilPage from './admin/perfil/AdminPerfilPage';
 import Report from './report/Report';
 import VehicleList from './vehicle/VehicleList';
 import VehicleDetail from './vehicle/VehicleDetail';
@@ -25,6 +29,42 @@ function App() {
           element={
             <ProtectedRoute requiredRole="admin">
               <AdminPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admin/localizadores"
+          element={
+            <ProtectedRoute requiredRole="admin">
+              <AdminLocalizadorPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admin/reportes"
+          element={
+            <ProtectedRoute requiredRole="admin">
+              <AdminReportesPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admin/vehiculos"
+          element={
+            <ProtectedRoute requiredRole="admin">
+              <AdminVehiculosPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admin/perfil"
+          element={
+            <ProtectedRoute requiredRole="admin">
+              <AdminPerfilPage />
             </ProtectedRoute>
           }
         />

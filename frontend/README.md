@@ -9,7 +9,7 @@ Currently, two official plugins are available:
 
 # COLORES
 
-- #fc640c - rgb(252,100,12)
-- #848484 - rgb(132,132,132)
-- #04548c - rgb(4,84,140)
-- #049434 - rgb(4,148,52)
+- #fc640c - rgb(252,100,12) Bright Orange
+- #848484 - rgb(132,132,132) Medium Gray
+- #04548c - rgb(4,84,140) Deep Blue
+- #049434 - rgb(4,148,52) Bright Green

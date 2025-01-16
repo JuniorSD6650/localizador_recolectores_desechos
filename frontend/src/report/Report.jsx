@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { API_BASE_URL } from '../utils';
+import TituloConRegreso from '../components/TituloConRegreso';
 
 const Report = () => {
     const [nombreReportante, setNombreReportante] = useState('');
@@ -8,9 +9,16 @@ const Report = () => {
     const [foto, setFoto] = useState(null);
     const [isCameraActive, setIsCameraActive] = useState(false);
     const [cameraPhoto, setCameraPhoto] = useState(null);
-
     const videoRef = useRef(null);
     const canvasRef = useRef(null);
+
+    // Función para validar el input del número telefónico
+    const handlePhoneChange = (e) => {
+        const value = e.target.value;
+        // Solo permitir dígitos y limitar a 9 caracteres
+        const onlyNums = value.replace(/[^0-9]/g, '').slice(0, 9);
+        setNumeroContacto(onlyNums);
+    };
 
     const startCamera = () => {
         if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
@@ -38,11 +46,16 @@ const Report = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        // Validar que el número de teléfono tenga exactamente 9 dígitos
+        if (numeroContacto && numeroContacto.length !== 9) {
+            alert('El número de teléfono debe tener 9 dígitos');
+            return;
+        }
+
         const formData = new FormData();
         formData.append('nombre_reportante', nombreReportante);
         formData.append('descripcion', descripcion);
         formData.append('numero_contacto', numeroContacto);
-
         if (cameraPhoto) {
             formData.append('foto', cameraPhoto);
         } else if (foto) {
@@ -54,7 +67,6 @@ const Report = () => {
                 method: 'POST',
                 body: formData,
             });
-
             if (response.ok) {
                 const result = await response.json();
                 alert('Reporte creado con éxito!');
@@ -70,9 +82,8 @@ const Report = () => {
 
     return (
         <div className="container text-center my-5">
-            <h1>Formulario de Reporte</h1>
-            <p>Aquí podrás reportar información relacionada con la aplicación.</p>
-
+            <TituloConRegreso titulo="Formulario de Reporte" to="/" />
+            <p>Aquí podrás reportar información relacionada con distorsiones encontradas en la aplicación.</p>
             <form onSubmit={handleSubmit}>
                 {/* Fila con Nombre y Número de Contacto */}
                 <div className="row mb-3">
@@ -84,6 +95,7 @@ const Report = () => {
                             id="nombreReportante"
                             value={nombreReportante}
                             onChange={(e) => setNombreReportante(e.target.value)}
+                            placeholder="Ingrese su nombre completo"
                             required
                         />
                     </div>
@@ -94,34 +106,39 @@ const Report = () => {
                             className="form-control"
                             id="numeroContacto"
                             value={numeroContacto}
-                            onChange={(e) => setNumeroContacto(e.target.value)}
+                            onChange={handlePhoneChange}
+                            placeholder="Ingrese un número de 9 dígitos"
+                            maxLength={9}
+                            pattern="[0-9]{9}"
+                            title="Debe ingresar exactamente 9 números"
                         />
+                        {numeroContacto && numeroContacto.length !== 9 && (
+                            <small className="text-danger">El número debe tener 9 dígitos</small>
+                        )}
                     </div>
                 </div>
-
                 {/* Descripción con mayor espacio */}
                 <div className="mb-3">
-                    <label htmlFor="descripcion" className="form-label">Descripción</label>
+                    <label htmlFor="descripcion" className="form-label">Descripción del Reporte</label>
                     <textarea
                         className="form-control"
                         id="descripcion"
                         rows="5"
                         value={descripcion}
                         onChange={(e) => setDescripcion(e.target.value)}
+                        placeholder="Describa la distorsión encontrada"
                         required
                     ></textarea>
                 </div>
-
                 {/* Opción para cargar o tomar foto */}
                 <div className="mb-3">
-                    <label className="form-label">Cargar Foto</label><br />
+                    <label className="form-label">Cargar Foto (opcional)</label><br />
                     <input
                         type="file"
                         className="form-control"
                         onChange={(e) => setFoto(e.target.files[0])}
                     />
                 </div>
-
                 {/* Opción para tomar una foto */}
                 <div className="mb-3">
                     <button
@@ -132,7 +149,6 @@ const Report = () => {
                     >
                         {isCameraActive ? 'Cámara Activada' : 'Usar Cámara'}
                     </button>
-
                     {isCameraActive && (
                         <div>
                             <video ref={videoRef} autoPlay width="100%" height="auto"></video>
@@ -142,7 +158,6 @@ const Report = () => {
                             <canvas ref={canvasRef} style={{ display: 'none' }} width="640" height="480"></canvas>
                         </div>
                     )}
-
                     {cameraPhoto && (
                         <div>
                             <h3>Foto tomada:</h3>
@@ -150,7 +165,6 @@ const Report = () => {
                         </div>
                     )}
                 </div>
-
                 <button type="submit" className="btn btn-primary">
                     Enviar Reporte
                 </button>
