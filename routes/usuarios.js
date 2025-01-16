@@ -232,35 +232,36 @@ router.post('/login', async (req, res) => {
   const { username, password } = req.body;
 
   try {
-    // Buscar el usuario en la base de datos
-    const admin = await knex('usuarios').where('username', username).first();
+    const user = await knex('usuarios').where('username', username).first();
 
-    if (!admin) {
-      return res.status(404).json({ message: 'Administrador no encontrado.' });
+    if (!user) {
+      return res.status(404).json({ message: 'Usuario no encontrado.' });
     }
 
-    // Verificar si la contraseña es correcta
-    const isMatch = await bcrypt.compare(password, admin.password);
+    const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(400).json({ message: 'Contraseña incorrecta.' });
     }
 
-    // Generar el token JWT
     const payload = {
-      id: admin.id,
-      username: admin.username,
-      role: admin.role,
-      recolectorId: admin.recolector_id,
+      id: user.id,
+      username: user.username,
+      role: user.role,
+      recolectorId: user.recolector_id || null,
     };
 
     const token = jwt.sign(payload, process.env.JWT_SECRET || "secretkey", {
       expiresIn: "30d",
     });
 
-    res.status(200).json({ message: 'Login exitoso', token });
+    res.status(200).json({
+      message: 'Login exitoso',
+      token,
+      role: user.role,
+    });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Error en el login del administrador.' });
+    res.status(500).json({ message: 'Error en el login del usuario.' });
   }
 });
 

@@ -6,21 +6,12 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, 'public/uploads/reportes');
-  },
-  filename: (req, file, cb) => {
-    const fileExtension = path.extname(file.originalname);
-    const fileName = `${Date.now()}${fileExtension}`;
-    cb(null, fileName);
-  }
+const upload = multer({
+  dest: 'public/uploads/reportes'
 });
 
-const upload = multer({ storage: storage });
-
 router.post('/', upload.single('foto'), async (req, res) => {
-  const { nombre_reportante, descripcion, numero_contacto, cofradia_id, estado } = req.body;
+  const { nombre_reportante, descripcion, numero_contacto, estado } = req.body;
   const ruta_foto = req.file ? `uploads/reportes/${req.file.filename}` : null;
 
   try {
@@ -29,7 +20,6 @@ router.post('/', upload.single('foto'), async (req, res) => {
       descripcion,
       numero_contacto,
       ruta_foto,
-      cofradia_id,
       estado: estado || 'pendiente',
     });
 
@@ -43,11 +33,7 @@ router.post('/', upload.single('foto'), async (req, res) => {
 router.get('/', async (req, res) => {
   try {
     const reportes = await knex('reportes')
-      .select(
-        'reportes.*',
-        'cofradia.nickname_cofradia'
-      )
-      .leftJoin('cofradia', 'reportes.cofradia_id', 'cofradia.id')
+      .select('reportes.*')
       .orderBy('reportes.id', 'desc');
 
     res.json(reportes);
@@ -63,11 +49,7 @@ router.get('/:id', async (req, res) => {
   const { id } = req.params;
   try {
     const reporte = await knex('reportes')
-      .select(
-        'reportes.*',
-        'cofradia.nickname_cofradia'
-      )
-      .leftJoin('cofradia', 'reportes.cofradia_id', 'cofradia.id')
+      .select('reportes.*')
       .where('reportes.id', id)
       .first();
 
@@ -83,17 +65,15 @@ router.get('/:id', async (req, res) => {
 
 router.put('/:id', upload.single('foto'), async (req, res) => {
   const { id } = req.params;
-  const { nombre_reportante, descripcion, numero_contacto, cofradia_id, estado } = req.body;
+  const { nombre_reportante, descripcion, numero_contacto, estado } = req.body;
   const ruta_foto = req.file ? `uploads/reportes/${req.file.filename}` : null;
 
   try {
-    // Verifica si el reporte existe
     const reporte = await knex('reportes').where('id', id).first();
     if (!reporte) {
       return res.status(404).json({ error: 'Reporte no encontrado' });
     }
 
-    // Elimina la foto anterior si se sube una nueva
     if (ruta_foto && reporte.ruta_foto) {
       const oldFilePath = path.join(__dirname, '..', 'public', reporte.ruta_foto);
       if (fs.existsSync(oldFilePath)) {
@@ -105,13 +85,11 @@ router.put('/:id', upload.single('foto'), async (req, res) => {
       }
     }
 
-    // Construye el objeto de actualización dinámicamente
     const updateFields = {};
     if (nombre_reportante) updateFields.nombre_reportante = nombre_reportante;
     if (descripcion) updateFields.descripcion = descripcion;
     if (numero_contacto) updateFields.numero_contacto = numero_contacto;
     if (ruta_foto) updateFields.ruta_foto = ruta_foto;
-    if (cofradia_id) updateFields.cofradia_id = cofradia_id;
     if (estado) updateFields.estado = estado;
 
     const updatedReporte = await knex('reportes').where('id', id).update(updateFields);
@@ -128,7 +106,6 @@ router.put('/:id', upload.single('foto'), async (req, res) => {
     });
   }
 });
-
 
 router.delete('/:id', async (req, res) => {
   const { id } = req.params;

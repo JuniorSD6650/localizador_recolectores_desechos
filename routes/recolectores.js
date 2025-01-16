@@ -9,25 +9,22 @@ const multer = require('multer');
 const ExcelJS = require('exceljs');
 const upload = multer({ dest: 'uploads/' });
 
-const COFRADIA_COLUMNS = [
-  { header: 'Nickname Cofradía', key: 'nickname_cofradia', width: 30 },
-  { header: 'Nombre Cofradía', key: 'nombre_cofradia', width: 50 },
-  { header: 'Fecha Fundación', key: 'fecha_fundacion', width: 20 },
-  { header: 'Sede Local', key: 'sede_local', width: 50 },
-  { header: 'DNI Representante', key: 'dni_representante', width: 20 },
-  { header: 'Nombre Representante', key: 'nombre_representante', width: 50 },
-  { header: 'Cel Representante', key: 'cel_representante', width: 20 },
-  { header: 'Distrito', key: 'distrito', width: 30 },
-  { header: 'Descripción', key: 'descripcion', width: 50 },
+const RECOLECTORES_COLUMNS = [
+  { header: 'Nombre Recolector', key: 'nombre_recolector', width: 50 },
+  { header: 'Teléfono Recolector', key: 'telefono_recolector', width: 20 },
+  { header: 'Zona Responsable', key: 'zona_responsable', width: 50 },
+  { header: 'Ubicación Enlace', key: 'ubicacion_enlace', width: 50 },
+  { header: 'Fecha Ubicación Actualizada', key: 'fecha_ubicacion_actualizada', width: 20 },
+  { header: 'Estado', key: 'estado', width: 15 },
 ];
 
 // Descargar plantilla
 router.get('/template', async (req, res) => {
   try {
     const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet('Plantilla Cofradías');
+    const worksheet = workbook.addWorksheet('Plantilla Recolectores');
 
-    worksheet.columns = COFRADIA_COLUMNS;
+    worksheet.columns = RECOLECTORES_COLUMNS;
     worksheet.getRow(1).font = { bold: true };
 
     res.setHeader(
@@ -36,7 +33,7 @@ router.get('/template', async (req, res) => {
     );
     res.setHeader(
       'Content-Disposition',
-      'attachment; filename=Plantilla_Cofradias.xlsx'
+      'attachment; filename=Plantilla_Recolectores.xlsx'
     );
 
     await workbook.xlsx.write(res);
@@ -48,14 +45,14 @@ router.get('/template', async (req, res) => {
 
 router.get('/list', async (req, res) => {
   try {
-    const cofradias = await knex('cofradia')
-      .select('id', 'nombre_cofradia')
+    const recolectores = await knex('recolectores_desechos')
+      .select('id', 'nombre_recolector')
       .orderBy('id', 'asc');
 
-    res.status(200).json(cofradias);
+    res.status(200).json(recolectores);
   } catch (err) {
     res.status(500).json({
-      error: 'Error obteniendo la lista de cofradías',
+      error: 'Error obteniendo la lista de recolectores',
       details: err.message || err,
     });
   }
@@ -71,34 +68,31 @@ router.get('/', async (req, res) => {
       const parsedDate = parse(fecha, 'dd/MM/yyyy', new Date());
       const formattedDate = format(parsedDate, 'yyyy-MM-dd');
 
-      query = knex('cofradia')
-        .select('cofradia.*')
-        .leftJoin('eventos', 'cofradia.id', 'eventos.cod_cofradia')
+      query = knex('recolectores_desechos')
+        .select('recolectores_desechos.*')
+        .leftJoin('eventos', 'recolectores_desechos.id', 'eventos.recolector_id')
         .where('eventos.fecha', formattedDate)
-        .groupBy('cofradia.id')
-        .orderBy('cofradia.id', 'desc');
+        .groupBy('recolectores_desechos.id')
+        .orderBy('recolectores_desechos.id', 'desc');
     } else {
-      query = knex('cofradia')
+      query = knex('recolectores_desechos')
         .select('*')
         .orderBy('id', 'desc');
     }
 
-    const cofradias = await query;
+    const recolectores = await query;
 
-    const formattedCofradias = cofradias.map(cofradia => ({
-      ...cofradia,
-      fecha_fundacion: cofradia.fecha_fundacion
-        ? format(new Date(cofradia.fecha_fundacion), 'dd/MM/yyyy')
-        : null,
-      ubicacion_link_actualizado: cofradia.ubicacion_link_actualizado
-        ? format(new Date(cofradia.ubicacion_link_actualizado), 'dd/MM/yyyy HH:mm:ss')
+    const formattedRecolectores = recolectores.map(recolector => ({
+      ...recolector,
+      fecha_ubicacion_actualizada: recolector.fecha_ubicacion_actualizada
+        ? format(new Date(recolector.fecha_ubicacion_actualizada), 'dd/MM/yyyy HH:mm:ss')
         : null,
     }));
 
-    res.json(formattedCofradias);
+    res.json(formattedRecolectores);
   } catch (err) {
     res.status(500).json({
-      error: 'Error obteniendo las cofradías',
+      error: 'Error obteniendo los recolectores',
       details: err.message || err
     });
   }
@@ -107,25 +101,22 @@ router.get('/', async (req, res) => {
 router.get('/:id', async (req, res) => {
   const { id } = req.params;
   try {
-    const cofradia = await knex('cofradia').where('id', id).first();
+    const recolector = await knex('recolectores_desechos').where('id', id).first();
 
-    if (!cofradia) {
-      return res.status(404).json({ error: 'Cofradía no encontrada' });
+    if (!recolector) {
+      return res.status(404).json({ error: 'Recolector no encontrado' });
     }
 
-    const formattedCofradia = {
-      ...cofradia,
-      fecha_fundacion: cofradia.fecha_fundacion
-        ? format(new Date(cofradia.fecha_fundacion), 'dd/MM/yyyy')
-        : null,
-      ubicacion_link_actualizado: cofradia.ubicacion_link_actualizado
-        ? format(new Date(cofradia.ubicacion_link_actualizado), 'dd/MM/yyyy HH:mm:ss')
+    const formattedRecolector = {
+      ...recolector,
+      fecha_ubicacion_actualizada: recolector.fecha_ubicacion_actualizada
+        ? format(new Date(recolector.fecha_ubicacion_actualizada), 'dd/MM/yyyy HH:mm:ss')
         : null,
     };
 
-    res.json(formattedCofradia);
+    res.json(formattedRecolector);
   } catch (err) {
-    res.status(500).json({ error: 'Error obteniendo la cofradía', details: err.message || err });
+    res.status(500).json({ error: 'Error obteniendo el recolector', details: err.message || err });
   }
 });
 
@@ -140,25 +131,24 @@ router.post('/bulk-upload', upload.single('file'), async (req, res) => {
     for (let i = 2; i <= worksheet.rowCount; i++) {
       const row = worksheet.getRow(i);
       const record = {
-        nickname_cofradia: row.getCell(1).value?.toString().trim() || null,
-        nombre_cofradia: row.getCell(2).value?.toString().trim() || null,
-        fecha_fundacion: row.getCell(3).value ? row.getCell(3).value.toISOString().split('T')[0] : null,
-        sede_local: row.getCell(4).value?.toString().trim() || null,
-        dni_representante: row.getCell(5).value?.toString().trim() || null,
-        nombre_representante: row.getCell(6).value?.toString().trim() || null,
-        cel_representante: row.getCell(7).value?.toString().trim() || null,
-        distrito: row.getCell(8).value?.toString().trim() || null,
-        descripcion: row.getCell(10).value?.toString().trim() || null,
-        organizacion_id: 1,
+        nombre_recolector: row.getCell(1).value?.toString().trim() || null,
+        telefono_recolector: row.getCell(2).value?.toString().trim() || null,
+        zona_responsable: row.getCell(3).value?.toString().trim() || null,
+        ubicacion_enlace: row.getCell(4).value?.toString().trim() || null,
+        // Si no se proporciona 'fecha_ubicacion_actualizada', asignar la fecha y hora actual
+        fecha_ubicacion_actualizada: row.getCell(5).value
+          ? row.getCell(5).value.toISOString().split('T')[0] + ' ' + new Date().toLocaleTimeString()
+          : new Date().toISOString().split('T')[0] + ' ' + new Date().toLocaleTimeString(),
+        estado: row.getCell(6).value?.toString().trim() || 'activo',
       };
 
-      if (!record.nickname_cofradia || !record.nombre_cofradia || !record.organizacion_id) {
+      if (!record.nombre_recolector || !record.estado) {
         console.warn(`Fila ${i} ignorada: faltan campos obligatorios.`);
         continue;
       }
 
       try {
-        await knex('cofradia').insert(record);
+        await knex('recolectores_desechos').insert(record);
       } catch (error) {
         console.error(`Error en fila ${i}:`, error.message);
         failedRecords.push(record);
@@ -177,7 +167,7 @@ router.post('/bulk-upload', upload.single('file'), async (req, res) => {
       const failedWorkbook = new ExcelJS.Workbook();
       const failedWorksheet = failedWorkbook.addWorksheet('Errores');
 
-      failedWorksheet.columns = COFRADIA_COLUMNS;
+      failedWorksheet.columns = RECOLECTORES_COLUMNS;
       failedWorksheet.getRow(1).font = { bold: true };
 
       failedRecords.forEach((record) => {
@@ -190,7 +180,7 @@ router.post('/bulk-upload', upload.single('file'), async (req, res) => {
       );
       res.setHeader(
         'Content-Disposition',
-        'attachment; filename=Errores_Carga_Cofradias.xlsx'
+        'attachment; filename=Errores_Carga_Recolectores.xlsx'
       );
 
       await failedWorkbook.xlsx.write(res);
@@ -211,51 +201,40 @@ router.post('/bulk-upload', upload.single('file'), async (req, res) => {
   }
 });
 
-
 router.post('/', async (req, res) => {
   const {
-    nickname_cofradia,
-    nombre_cofradia,
-    fecha_fundacion,
-    sede_local,
-    dni_representante,
-    nombre_representante,
-    cel_representante,
-    distrito,
-    color,
-    descripcion,
-    ubicacion_link,
-    ubicacion_link_actualizado,
+    nombre_recolector,
+    telefono_recolector,
+    zona_responsable,
+    ubicacion_enlace,
+    fecha_ubicacion_actualizada,
+    estado,
     organizacion_id
   } = req.body;
 
   try {
-    const result = await knex('cofradia').insert({
-      nickname_cofradia,
-      nombre_cofradia,
-      fecha_fundacion,
-      sede_local,
-      dni_representante,
-      nombre_representante,
-      cel_representante,
-      distrito,
-      color,
-      descripcion,
-      ubicacion_link,
-      ubicacion_link_actualizado,
+    const fechaActualizada = fecha_ubicacion_actualizada || new Date().toISOString().split('T')[0] + ' ' + new Date().toLocaleTimeString();
+
+    const result = await knex('recolectores_desechos').insert({
+      nombre_recolector,
+      telefono_recolector,
+      zona_responsable,
+      ubicacion_enlace,
+      fecha_ubicacion_actualizada: fechaActualizada,
+      estado,
       organizacion_id
     });
 
-    const newCofradiaId = result[0];
+    const newRecolectorId = result[0];
 
     res.status(201).json({
-      message: 'Cofradía creada con éxito',
-      id: newCofradiaId
+      message: 'Recolector creado con éxito',
+      id: newRecolectorId
     });
 
   } catch (err) {
     res.status(500).json({
-      error: 'Error creando la cofradía',
+      error: 'Error creando el recolector',
       details: err.message || err
     });
   }
@@ -264,74 +243,60 @@ router.post('/', async (req, res) => {
 router.put('/:id', async (req, res) => {
   const { id } = req.params;
   const {
-    nickname_cofradia,
-    nombre_cofradia,
-    fecha_fundacion,
-    sede_local,
-    dni_representante,
-    nombre_representante,
-    cel_representante,
-    distrito,
-    color,
-    descripcion,
-    ubicacion_link,
+    nombre_recolector,
+    telefono_recolector,
+    zona_responsable,
+    ubicacion_enlace,
+    fecha_ubicacion_actualizada,
+    estado,
     organizacion_id
   } = req.body;
 
   try {
-    const cofradia = await knex('cofradia').where('id', id).first();
+    const recolector = await knex('recolectores_desechos').where('id', id).first();
 
-    if (!cofradia) {
-      return res.status(404).json({ error: 'Cofradía no encontrada' });
+    if (!recolector) {
+      return res.status(404).json({ error: 'Recolector no encontrado' });
     }
 
     const updates = {
-      nickname_cofradia,
-      nombre_cofradia,
-      fecha_fundacion,
-      sede_local,
-      dni_representante,
-      nombre_representante,
-      cel_representante,
-      distrito,
-      color,
-      descripcion,
-      ubicacion_link,
+      nombre_recolector,
+      telefono_recolector,
+      zona_responsable,
+      ubicacion_enlace,
+      fecha_ubicacion_actualizada,
+      estado,
       organizacion_id
     };
-
-    if (ubicacion_link && ubicacion_link !== cofradia.ubicacion_link) {
-      updates.ubicacion_link_actualizado = knex.fn.now();
-    }
 
     const filteredUpdates = Object.fromEntries(
       Object.entries(updates).filter(([_, value]) => value !== undefined)
     );
 
-    const updatedCofradia = await knex('cofradia')
+    const updatedRecolector = await knex('recolectores_desechos')
       .where('id', id)
       .update(filteredUpdates);
 
-    if (updatedCofradia === 0) {
-      return res.status(404).json({ error: 'Cofradía no encontrada' });
+    if (updatedRecolector === 0) {
+      return res.status(404).json({ error: 'Recolector no encontrado' });
     }
 
-    res.json({ message: 'Cofradía actualizada con éxito' });
+    res.json({ message: 'Recolector actualizado con éxito' });
   } catch (err) {
-    res.status(500).json({ error: 'Error actualizando la cofradía', details: err.message || err });
+    res.status(500).json({ error: 'Error actualizando el recolector', details: err.message || err });
   }
 });
 
 router.delete('/:id', async (req, res) => {
   const { id } = req.params;
   try {
-    const deletedCofradia = await knex('cofradia').where('id', id).del();
-    if (deletedCofradia === 0) {
-      return res.status(404).json({ error: 'Cofradía no encontrada' });
+    const deletedRecolector = await knex('recolectores_desechos').where('id', id).del();
+    if (deletedRecolector === 0) {
+      return res.status(404).json({ error: 'Recolector no encontrado' });
     }
-    res.json({ message: 'Cofradía eliminada con éxito' });
+    res.json({ message: 'Recolector eliminado con éxito' });
   } catch (err) {
-    res.status(500).json({ error: 'Error eliminando la cofradía', details: err.message || err });
+    res.status(500).json({ error: 'Error eliminando el recolector', details: err.message || err });
   }
 });
 
