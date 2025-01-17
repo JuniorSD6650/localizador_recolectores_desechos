@@ -272,8 +272,8 @@ router.put('/:id', async (req, res) => {
       estado,
       organizacion_id,
       fecha_ubicacion_actualizada: enlaceExtraido
-        ? new Date().toISOString().split('T')[0] + ' ' + new Date().toLocaleTimeString()
-        : recolector.fecha_ubicacion_actualizada,
+      ? new Date().toISOString().slice(0, 19).replace('T', ' ') // 'YYYY-MM-DD HH:MM:SS'
+      : recolector.fecha_ubicacion_actualizada,
     };
 
     // Filtrar solo las claves con valores definidos
