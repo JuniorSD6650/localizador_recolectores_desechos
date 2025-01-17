@@ -50,7 +50,7 @@ const VehicleDetail = () => {
     }
 
     return (
-        <div className="vehicle-detail-container">
+        <div className="container vehicle-detail-container text-center py-3">
             <TituloConRegreso titulo="Detalles" to="/vehicles" />
             <div className="vehicle-header">
                 <div className="status-indicator">

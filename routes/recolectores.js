@@ -207,13 +207,14 @@ router.post('/', async (req, res) => {
     telefono_recolector,
     zona_responsable,
     ubicacion_enlace,
-    fecha_ubicacion_actualizada,
     estado,
     organizacion_id
   } = req.body;
 
   try {
-    const fechaActualizada = fecha_ubicacion_actualizada || new Date().toISOString().split('T')[0] + ' ' + new Date().toLocaleTimeString();
+    const fechaActualizada = ubicacion_enlace
+      ? new Date().toISOString().split('T')[0] + ' ' + new Date().toLocaleTimeString()
+      : null;
 
     const result = await knex('recolectores_desechos').insert({
       nombre_recolector,
@@ -247,43 +248,60 @@ router.put('/:id', async (req, res) => {
     telefono_recolector,
     zona_responsable,
     ubicacion_enlace,
-    fecha_ubicacion_actualizada,
     estado,
     organizacion_id
   } = req.body;
 
   try {
+    // Buscar al recolector por su ID
     const recolector = await knex('recolectores_desechos').where('id', id).first();
 
     if (!recolector) {
       return res.status(404).json({ error: 'Recolector no encontrado' });
     }
 
+    // Extraer el enlace usando una expresión regular
+    const linkRegex = /(https?:\/\/[^\s]+)/g;
+    const enlaceExtraido = ubicacion_enlace?.match(linkRegex)?.[0] || null;
+
     const updates = {
       nombre_recolector,
       telefono_recolector,
       zona_responsable,
-      ubicacion_enlace,
-      fecha_ubicacion_actualizada,
+      ubicacion_enlace: enlaceExtraido,
       estado,
-      organizacion_id
+      organizacion_id,
+      fecha_ubicacion_actualizada: enlaceExtraido
+        ? new Date().toISOString().split('T')[0] + ' ' + new Date().toLocaleTimeString()
+        : recolector.fecha_ubicacion_actualizada,
     };
 
+    // Filtrar solo las claves con valores definidos
     const filteredUpdates = Object.fromEntries(
       Object.entries(updates).filter(([_, value]) => value !== undefined)
     );
 
+    // Actualizar el recolector
     const updatedRecolector = await knex('recolectores_desechos')
       .where('id', id)
       .update(filteredUpdates);
 
     if (updatedRecolector === 0) {
-      return res.status(404).json({ error: 'Recolector no encontrado' });
+      return res.status(404).json({ error: 'Recolector no encontrado al intentar actualizar' });
     }
 
-    res.json({ message: 'Recolector actualizado con éxito' });
+    // Obtener el recolector actualizado
+    const updatedRecolectorData = await knex('recolectores_desechos').where('id', id).first();
+
+    res.json({
+      message: 'Recolector actualizado con éxito',
+      recolector: updatedRecolectorData,
+    });
   } catch (err) {
-    res.status(500).json({ error: 'Error actualizando el recolector', details: err.message || err });
+    res.status(500).json({
+      error: 'Error actualizando el recolector',
+      details: err.message || err,
+    });
   }
 });
 

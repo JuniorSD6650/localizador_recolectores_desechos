@@ -4,11 +4,17 @@ import TituloConRegreso from '../components/TituloConRegreso';
 
 const AdminPage = () => {
     return (
-        <div className="container text-center my-5">
+        <div className="container text-center py-3 px-5">
             <TituloConRegreso titulo="Vista de Administrador" />
-            <p>Selecciona una opción para gestionar los recursos.</p>
 
-            <div className="row row-cols-1 row-cols-md-2 row-cols-lg-2 g-4 my-3 justify-content-center">
+            <div className="row row-cols-1 row-cols-md-4 g-4 justify-content-center px-5 pt-5">
+                <div className="col d-flex justify-content-center">
+                    <CardAnimation
+                        title="Perfil"
+                        description="Accede y edita tu perfil."
+                        to="perfil"
+                    />
+                </div>
                 <div className="col d-flex justify-content-center">
                     <CardAnimation
                         title="Localizadores"
@@ -28,13 +34,6 @@ const AdminPage = () => {
                         title="Vehículos Recolectores"
                         description="Consulta y administra los vehículos recolectores."
                         to="vehiculos"
-                    />
-                </div>
-                <div className="col d-flex justify-content-center">
-                    <CardAnimation
-                        title="Perfil"
-                        description="Accede y edita tu perfil."
-                        to="perfil"
                     />
                 </div>
             </div>

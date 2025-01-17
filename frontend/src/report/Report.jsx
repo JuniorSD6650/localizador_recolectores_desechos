@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { API_BASE_URL } from '../utils';
+import { API_BASE_URL, showSuccessAlert, showErrorAlert } from '../utils';
 import TituloConRegreso from '../components/TituloConRegreso';
 
 const Report = () => {
@@ -12,10 +12,8 @@ const Report = () => {
     const videoRef = useRef(null);
     const canvasRef = useRef(null);
 
-    // Función para validar el input del número telefónico
     const handlePhoneChange = (e) => {
         const value = e.target.value;
-        // Solo permitir dígitos y limitar a 9 caracteres
         const onlyNums = value.replace(/[^0-9]/g, '').slice(0, 9);
         setNumeroContacto(onlyNums);
     };
@@ -46,9 +44,9 @@ const Report = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        // Validar que el número de teléfono tenga exactamente 9 dígitos
+
         if (numeroContacto && numeroContacto.length !== 9) {
-            alert('El número de teléfono debe tener 9 dígitos');
+            showErrorAlert('Error', 'El número de teléfono debe tener 9 dígitos');
             return;
         }
 
@@ -67,25 +65,32 @@ const Report = () => {
                 method: 'POST',
                 body: formData,
             });
+
             if (response.ok) {
                 const result = await response.json();
-                alert('Reporte creado con éxito!');
+                showSuccessAlert('¡Reporte creado!', 'Tu reporte ha sido registrado exitosamente.');
                 console.log(result);
+
+                // Limpiar campos del formulario
+                setNombreReportante('');
+                setDescripcion('');
+                setNumeroContacto('');
+                setFoto(null);
+                setCameraPhoto(null);
             } else {
-                alert('Error al crear el reporte');
+                showErrorAlert('Error', 'No se pudo crear el reporte.');
             }
         } catch (error) {
-            alert('Error al conectar con la API');
+            showErrorAlert('Error', 'Hubo un problema al conectar con la API.');
             console.error(error);
         }
     };
 
     return (
-        <div className="container text-center my-5">
+        <div className="container text-center py-3">
             <TituloConRegreso titulo="Formulario de Reporte" to="/" />
-            <p>Aquí podrás reportar información relacionada con distorsiones encontradas en la aplicación.</p>
             <form onSubmit={handleSubmit}>
-                {/* Fila con Nombre y Número de Contacto */}
+                {/* Formulario */}
                 <div className="row mb-3">
                     <div className="col-md-6">
                         <label htmlFor="nombreReportante" className="form-label">Nombre del Reportante</label>
@@ -117,7 +122,6 @@ const Report = () => {
                         )}
                     </div>
                 </div>
-                {/* Descripción con mayor espacio */}
                 <div className="mb-3">
                     <label htmlFor="descripcion" className="form-label">Descripción del Reporte</label>
                     <textarea
@@ -130,7 +134,6 @@ const Report = () => {
                         required
                     ></textarea>
                 </div>
-                {/* Opción para cargar o tomar foto */}
                 <div className="mb-3">
                     <label className="form-label">Cargar Foto (opcional)</label><br />
                     <input
@@ -139,7 +142,6 @@ const Report = () => {
                         onChange={(e) => setFoto(e.target.files[0])}
                     />
                 </div>
-                {/* Opción para tomar una foto */}
                 <div className="mb-3">
                     <button
                         type="button"

@@ -1,28 +1,25 @@
 const jwt = require('jsonwebtoken');
 
-// Middleware para proteger rutas
 const protect = (roles = []) => {
   return (req, res, next) => {
-    const authHeader = req.header('Authorization');
-    const token = authHeader && authHeader.startsWith('Bearer ')
-      ? authHeader.replace('Bearer ', '').trim()
-      : null;
-
-    if (!token) {
-      return res.status(401).json({ message: 'Acceso no autorizado, token no encontrado.' });
-    }
-
     try {
+      const authHeader = req.header('Authorization');
+
+      if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return res.status(401).json({ message: 'Acceso no autorizado, token no encontrado.' });
+      }
+
+      const token = authHeader.replace('Bearer ', '').trim();
+
       const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secretkey');
-      req.user = decoded;
 
       if (roles.length && !roles.includes(req.user.role)) {
-        return res.status(403).json({ message: 'Acceso denegado, no tienes permisos.' });
+        return res.status(403).json({ message: 'Acceso denegado, no tienes permisos suficientes.' });
       }
 
       next();
     } catch (error) {
-      console.error("Error al verificar el token:", error.message);
+      console.error('Error al verificar el token:', error.message);
       return res.status(401).json({ message: 'Token inválido o expirado.' });
     }
   };

@@ -57,6 +57,7 @@ router.get('/', async (req, res) => {
         'recolectores_desechos.nombre_recolector'
       )
       .leftJoin('recolectores_desechos', 'usuarios.recolector_id', 'recolectores_desechos.id')
+      .whereNot('usuarios.role', 'admin') // Excluir usuarios con rol admin
       .orderBy('usuarios.id', 'desc');
 
     usuarios = usuarios.map(usuario => ({
@@ -88,34 +89,39 @@ router.get('/admin', async (req, res) => {
   }
 });
 
-// Ruta protegida para obtener el perfil del usuario
-router.get('/perfil', protect, async (req, res) => {
+router.get('/:id', protect(), async (req, res) => {
   try {
-    const userId = req.user.id;
+    const { id } = req.params;
 
-    if (!userId) {
-      return res.status(400).json({ message: 'ID de usuario no encontrado en el token.' });
-    }
-
+    // Consulta al usuario con los datos adicionales
     const user = await knex('usuarios')
       .select(
         'usuarios.username',
         'usuarios.role',
         'usuarios.recolector_id',
-        'recolectores_desechos.nombre_recolector'
+        'recolectores_desechos.nombre_recolector',
+        'recolectores_desechos.ubicacion_enlace',
+        'recolectores_desechos.fecha_ubicacion_actualizada'
       )
       .leftJoin('recolectores_desechos', 'usuarios.recolector_id', 'recolectores_desechos.id')
-      .where('usuarios.id', userId)
+      .where('usuarios.id', id)
       .first();
 
     if (!user) {
       return res.status(404).json({ message: 'Usuario no encontrado.' });
     }
 
-    res.json(user);
+    res.json({
+      username: user.username,
+      role: user.role,
+      recolector_id: user.recolector_id,
+      nombre_recolector: user.nombre_recolector,
+      ubicacion_enlace: user.ubicacion_enlace,
+      fecha_ubicacion_actualizada: user.fecha_ubicacion_actualizada,
+    });
   } catch (error) {
     console.error("Error al obtener el perfil del usuario:", error);
-    res.status(500).json({ message: 'Error al obtener el perfil del usuario.' });
+    res.status(500).json({ message: 'Error interno al obtener el perfil del usuario.' });
   }
 });
 
@@ -280,7 +286,8 @@ router.post('/', async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const newUser = await knex('usuarios').insert({
+    // Insertar el nuevo usuario y obtener el ID
+    const [newUserId] = await knex('usuarios').insert({
       username,
       password: hashedPassword,
       role: 'localizador',
@@ -288,7 +295,25 @@ router.post('/', async (req, res) => {
       created_at: knex.fn.now()
     });
 
-    res.status(201).json({ message: 'Usuario creado exitosamente', userId: newUser[0] });
+    // Realizar una consulta adicional para recuperar los datos completos del usuario recién creado
+    const newUser = await knex('usuarios')
+      .select(
+        'usuarios.id',
+        'usuarios.username',
+        'usuarios.role',
+        'usuarios.created_at',
+        'usuarios.recolector_id',
+        'recolectores_desechos.nombre_recolector'
+      )
+      .leftJoin('recolectores_desechos', 'usuarios.recolector_id', 'recolectores_desechos.id')
+      .where('usuarios.id', newUserId)
+      .first();
+
+    // Enviar los datos completos como respuesta
+    res.status(201).json({
+      message: 'Usuario creado exitosamente',
+      user: newUser,
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Error creando el usuario.', details: error.message || error });

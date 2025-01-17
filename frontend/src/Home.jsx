@@ -1,16 +1,14 @@
-// src/Home.jsx
 import React from 'react';
-import { Link } from 'react-router-dom';
-import CardAnimation from './components/CardAnimation'; // Importa el componente CardAnimation
+import CardAnimation from './components/CardAnimation';
+import TituloConRegreso from './components/TituloConRegreso';
 
 const Home = () => {
     return (
-        <div className="text-center my-5">
-            <h1>Bienvenido a la Aplicación</h1>
-            <p>Esta es la pantalla de inicio.</p>
+        <div className="text-center text-center py-3">
+            <TituloConRegreso titulo="Bienvenido a la Aplicación" className="mb-4" />
 
-            <div className="container">
-                <div className="row row-cols-1 row-cols-sm-2 row-cols-md-2 row-cols-lg-2 g-4 my-3">
+            <div className="container px-5">
+                <div className="row row-cols-1 row-cols-sm-2 g-2  px-5">
                     <div className="col d-flex justify-content-center">
                         <CardAnimation
                             title="Reportar"

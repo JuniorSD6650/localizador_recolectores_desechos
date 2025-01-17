@@ -1,4 +1,3 @@
-// src/VehicleList.jsx
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { API_BASE_URL } from '../utils';
@@ -29,31 +28,28 @@ const VehicleList = () => {
     }, []);
 
     return (
-        <div className="container text-center my-5">
+        <div className="container text-center py-3">
             <TituloConRegreso titulo="Lista de Vehículos Recolectores" to="/" />
-            <p>Aquí podrás ver la lista de los vehículos recolectores registrados.</p>
 
             {message && <p className="text-danger">{message}</p>}
 
-            <div className="list-group mt-4">
-                {vehicles.length === 0 ? (
-                    <p>No hay vehículos registrados</p>
-                ) : (
-                    vehicles.map((vehicle) => (
-                        <Link
-                            key={vehicle.id}
-                            to={`/vehicle/${vehicle.id}`}
-                        >
-                            <VehicleCard
-                                vehicleName={vehicle.nombre_recolector}
-                                zone={vehicle.zona_responsable}
-                                status={vehicle.estado}
-                            />
-                            <br />
-                        </Link>
-                    ))
-                )}
-            </div>
+            {vehicles.length === 0 ? (
+                <p>No hay vehículos registrados</p>
+            ) : (
+                <div className="row row-cols-1 row-cols-md-2 g-4 mt-4">
+                    {vehicles.map((vehicle) => (
+                        <div className="col" key={vehicle.id}>
+                            <Link to={`/vehicle/${vehicle.id}`} className="text-decoration-none">
+                                <VehicleCard
+                                    vehicleName={vehicle.nombre_recolector}
+                                    zone={vehicle.zona_responsable}
+                                    status={vehicle.estado}
+                                />
+                            </Link>
+                        </div>
+                    ))}
+                </div>
+            )}
         </div>
     );
 };

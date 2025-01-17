@@ -6,10 +6,21 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 
-const upload = multer({
-  dest: 'public/uploads/reportes'
+// Configuración de almacenamiento de Multer
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'public/uploads/reportes'); // Carpeta donde se guardan los archivos
+  },
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname); // Obtén la extensión del archivo
+    const uniqueName = `${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`; // Nombre único
+    cb(null, uniqueName);
+  },
 });
 
+const upload = multer({ storage });
+
+// Crear un nuevo reporte
 router.post('/', upload.single('foto'), async (req, res) => {
   const { nombre_reportante, descripcion, numero_contacto, estado } = req.body;
   const ruta_foto = req.file ? `uploads/reportes/${req.file.filename}` : null;
@@ -30,6 +41,7 @@ router.post('/', upload.single('foto'), async (req, res) => {
   }
 });
 
+// Obtener todos los reportes
 router.get('/', async (req, res) => {
   try {
     const reportes = await knex('reportes')
@@ -40,11 +52,12 @@ router.get('/', async (req, res) => {
   } catch (err) {
     res.status(500).json({
       error: 'Error obteniendo los reportes',
-      details: err.message || err
+      details: err.message || err,
     });
   }
 });
 
+// Obtener un reporte por ID
 router.get('/:id', async (req, res) => {
   const { id } = req.params;
   try {
@@ -63,6 +76,7 @@ router.get('/:id', async (req, res) => {
   }
 });
 
+// Actualizar un reporte
 router.put('/:id', upload.single('foto'), async (req, res) => {
   const { id } = req.params;
   const { nombre_reportante, descripcion, numero_contacto, estado } = req.body;
@@ -85,12 +99,13 @@ router.put('/:id', upload.single('foto'), async (req, res) => {
       }
     }
 
-    const updateFields = {};
-    if (nombre_reportante) updateFields.nombre_reportante = nombre_reportante;
-    if (descripcion) updateFields.descripcion = descripcion;
-    if (numero_contacto) updateFields.numero_contacto = numero_contacto;
-    if (ruta_foto) updateFields.ruta_foto = ruta_foto;
-    if (estado) updateFields.estado = estado;
+    const updateFields = {
+      ...(nombre_reportante && { nombre_reportante }),
+      ...(descripcion && { descripcion }),
+      ...(numero_contacto && { numero_contacto }),
+      ...(ruta_foto && { ruta_foto }),
+      ...(estado && { estado }),
+    };
 
     const updatedReporte = await knex('reportes').where('id', id).update(updateFields);
 
@@ -102,11 +117,12 @@ router.put('/:id', upload.single('foto'), async (req, res) => {
   } catch (err) {
     res.status(500).json({
       error: 'Error actualizando el reporte',
-      details: err.message || err
+      details: err.message || err,
     });
   }
 });
 
+// Eliminar un reporte
 router.delete('/:id', async (req, res) => {
   const { id } = req.params;
   try {
@@ -119,11 +135,10 @@ router.delete('/:id', async (req, res) => {
       try {
         await fs.promises.unlink(filePath);
       } catch (err) {
-        return res.status(500).json({ error: "Error eliminando el archivo", details: err.message || err });
+        return res.status(500).json({ error: 'Error eliminando el archivo', details: err.message || err });
       }
     }
 
-    // Eliminar el reporte de la base de datos
     const deletedReporte = await knex('reportes').where('id', id).del();
 
     if (deletedReporte === 0) {
@@ -134,7 +149,7 @@ router.delete('/:id', async (req, res) => {
   } catch (err) {
     res.status(500).json({
       error: 'Error eliminando el reporte',
-      details: err.message || err
+      details: err.message || err,
     });
   }
 });

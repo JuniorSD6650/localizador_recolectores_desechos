@@ -16,11 +16,9 @@ const Navbar = () => {
     const getHomeRoute = () => {
         if (!token) return '/';
 
-        // Si estamos en la ruta /admin o sus subrutas
         if (location.pathname.startsWith('/admin')) {
             return '/admin';
         }
-        // Si estamos en la ruta /localizador o sus subrutas
         if (location.pathname.startsWith('/localizador')) {
             return '/localizador';
         }

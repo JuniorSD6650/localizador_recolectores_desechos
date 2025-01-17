@@ -14,16 +14,25 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
-// Configurar la ruta para los archivos estáticos
-app.use('/uploads', express.static(path.join(__dirname, 'public', 'uploads')));
-
-// Servir los archivos estáticos de React (frontend) después de hacer build
-app.use(express.static(path.join(__dirname, 'frontend', 'dist'))); // Cambia esta línea
-
+// Middleware para analizar JSON
 app.use(express.json());
+
+// Configurar la ruta para los archivos estáticos (carga de archivos)
+app.use('/uploads', express.static(path.join(__dirname, 'public', 'uploads')));
 
 // Rutas de la API
 app.use('/api', routes);
+
+// Servir los archivos estáticos de React (frontend)
+app.use(express.static(path.join(__dirname, 'frontend', 'dist')));
+
+// Redirigir todas las demás solicitudes al archivo index.html de React, excepto las rutas de la API
+app.get('*', (req, res, next) => {
+  if (req.path.startsWith('/api')) {
+    return next(); // Si la ruta comienza con /api, sigue al siguiente manejador (no sirve index.html)
+  }
+  res.sendFile(path.join(__dirname, 'frontend', 'dist', 'index.html'));
+});
 
 // Conectar a la base de datos MySQL
 const db = mysql.createConnection({
@@ -41,11 +50,7 @@ db.connect((err) => {
   console.log('Conectado a la base de datos MySQL');
 });
 
-// Redirigir todas las demás solicitudes al archivo index.html de React
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'frontend', 'dist', 'index.html')); 
-});
-
+// Iniciar el servidor
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {

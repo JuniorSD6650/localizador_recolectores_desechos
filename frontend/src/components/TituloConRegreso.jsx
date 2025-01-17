@@ -1,23 +1,23 @@
-// src/components/TituloConRegreso.jsx
 import React from 'react';
 import { Link } from 'react-router-dom';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack'; // Importa el icono
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import './TituloConRegreso.css';
 
 const TituloConRegreso = ({ titulo, to }) => {
     return (
-        <div className="d-flex justify-content-between align-items-center mb-4">
-            {/* Botón de regresar alineado a la izquierda (solo si hay 'to') */}
+        <div className="titulo-con-regreso-container">
             {to && (
-                <Link to={to} className="btn btn-secondary">
-                    <ArrowBackIcon sx={{ fontSize: 24, marginRight: '8px' }} />
+                <Link to={to} className="regreso-btn">
+                    <ArrowBackIcon className="regreso-icon" />
                     Regresar
                 </Link>
             )}
 
-            {/* Título centrado verticalmente */}
-            <h1 className="flex-grow-1 text-center d-flex align-items-center justify-content-center mb-0">
-                {titulo}
-            </h1>
+            <div id="titulo-box">
+                <div className="subtitulo">Digital</div>
+                <div className="titulo">{titulo}</div>
+                <div className="extra">Ecológico y emprendedor</div>
+            </div>
         </div>
     );
 };

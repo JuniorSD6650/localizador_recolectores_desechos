@@ -44,9 +44,9 @@ const Login = () => {
     };
 
     return (
-        <div className="d-flex justify-content-center align-items-center vh-100">
-            <div className="login-card">
-                <h2>Iniciar sesión</h2>
+        <div className="d-flex justify-content-center align-items-center vh-100 bg-light">
+            <div className="login-card shadow p-4 rounded bg-white">
+                <h2 className="text-center mb-4">Iniciar sesión</h2>
                 <form onSubmit={handleSubmit}>
                     <div className="mb-3">
                         <label className="form-label">Username:</label>
@@ -70,7 +70,7 @@ const Login = () => {
                     </div>
                     <button type="submit" className="btn btn-success w-100">Iniciar sesión</button>
                 </form>
-                {message && <p className="text-center mt-3">{message}</p>}
+                {message && <p className="text-danger text-center mt-3">{message}</p>}
             </div>
         </div>
     );
