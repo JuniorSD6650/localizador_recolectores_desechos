@@ -117,47 +117,57 @@ const AdminReportesPage = () => {
                     <p>No hay reportes disponibles</p>
                 ) : (
                     reportes.map((reporte) => (
-                        <div key={reporte.id} className="list-group-item d-flex justify-content-between align-items-center">
-                            <div className="d-flex flex-column">
-                                <strong className="fs-5">{reporte.nombre_reportante}</strong>
-                                <p className="mb-2">{reporte.descripcion}</p>
-                                <p>
-                                    <strong>Número de Contacto:</strong>{' '}
-                                    {reporte.numero_contacto ? reporte.numero_contacto : 'Sin número disponible'}
-                                </p>
-                                {reporte.ruta_foto && (
-                                    <button
-                                        className="btn btn-outline-primary btn-sm mt-2"
-                                        onClick={() => handleShowImage(reporte.ruta_foto)}
-                                    >
-                                        <VisibilityIcon /> Ver Imagen
-                                    </button>
-                                )}
-                                <span className={`badge ${reporte.estado === 'pendiente' ? 'bg-warning' : 'bg-success'} mt-2`}>
-                                    {reporte.estado}
-                                </span>
-                            </div>
-                            <div>
-                                <button
-                                    className="btn btn-sm btn-primary me-2"
-                                    onClick={() => handleEstadoChange(reporte.id, 'revisado')}
-                                    disabled={reporte.estado === 'revisado'}
-                                >
-                                    Marcar como Revisado
-                                </button>
-                                <button
-                                    className="btn btn-sm btn-danger"
-                                    onClick={() => handleEliminar(reporte.id)}
-                                >
-                                    Eliminar
-                                </button>
+                        <div key={reporte.id} className="list-group-item">
+                            <div className="row g-3">
+                                {/* Contenido principal */}
+                                <div className="col-12">
+                                    <strong className="fs-5 d-block">{reporte.nombre_reportante}</strong>
+                                    <p className="mb-2">{reporte.descripcion}</p>
+                                    <p className="mb-2">
+                                        <strong>Número de Contacto:</strong>{' '}
+                                        {reporte.numero_contacto ? reporte.numero_contacto : 'Sin número disponible'}
+                                    </p>
+
+                                    <div className="d-flex flex-wrap gap-2 align-items-center">
+                                        {reporte.ruta_foto && (
+                                            <button
+                                                className="btn btn-outline-primary btn-sm"
+                                                onClick={() => handleShowImage(reporte.ruta_foto)}
+                                            >
+                                                <VisibilityIcon /> Ver Imagen
+                                            </button>
+                                        )}
+                                        <span className={`badge ${reporte.estado === 'pendiente' ? 'bg-warning' : 'bg-success'}`}>
+                                            {reporte.estado}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                {/* Botones de acción */}
+                                <div className="col-12">
+                                    <div className="d-flex flex-wrap gap-2">
+                                        <button
+                                            className="btn btn-sm btn-primary"
+                                            onClick={() => handleEstadoChange(reporte.id, 'revisado')}
+                                            disabled={reporte.estado === 'revisado'}
+                                        >
+                                            Marcar como Revisado
+                                        </button>
+                                        <button
+                                            className="btn btn-sm btn-danger"
+                                            onClick={() => handleEliminar(reporte.id)}
+                                        >
+                                            Eliminar
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     ))
                 )}
             </div>
 
-            {/* Modal simple */}
+            {/* Modal (permanece igual) */}
             {showModal && (
                 <div
                     style={{
