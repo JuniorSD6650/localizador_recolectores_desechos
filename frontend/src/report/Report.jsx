@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { API_BASE_URL, showSuccessAlert, showErrorAlert } from '../utils';
 import TituloConRegreso from '../components/TituloConRegreso';
 
@@ -11,6 +11,15 @@ const Report = () => {
     const [cameraPhoto, setCameraPhoto] = useState(null);
     const videoRef = useRef(null);
     const canvasRef = useRef(null);
+    const streamRef = useRef(null);
+
+    useEffect(() => {
+        return () => {
+            if (streamRef.current) {
+                streamRef.current.getTracks().forEach(track => track.stop());
+            }
+        };
+    }, []);
 
     const handlePhoneChange = (e) => {
         const value = e.target.value;
@@ -18,19 +27,25 @@ const Report = () => {
         setNumeroContacto(onlyNums);
     };
 
-    const startCamera = () => {
-        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-            navigator.mediaDevices.getUserMedia({ video: true })
-                .then((stream) => {
-                    if (videoRef.current) {
-                        videoRef.current.srcObject = stream;
-                        setIsCameraActive(true);
-                    }
-                })
-                .catch((err) => {
-                    console.error('Error al acceder a la cámara', err);
-                });
+    const startCamera = async () => {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            if (videoRef.current) {
+                videoRef.current.srcObject = stream;
+                streamRef.current = stream;
+                setIsCameraActive(true);
+            }
+        } catch (err) {
+            console.error('Error al acceder a la cámara', err);
         }
+    };
+
+    const stopCamera = () => {
+        if (streamRef.current) {
+            streamRef.current.getTracks().forEach(track => track.stop());
+            streamRef.current = null;
+        }
+        setIsCameraActive(false);
     };
 
     const takePhoto = () => {
@@ -39,7 +54,7 @@ const Report = () => {
         context.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
         const imageData = canvas.toDataURL('image/png');
         setCameraPhoto(imageData);
-        setIsCameraActive(false);
+        stopCamera();
     };
 
     const handleSubmit = async (e) => {
