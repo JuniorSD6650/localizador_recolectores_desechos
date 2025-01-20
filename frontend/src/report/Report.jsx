@@ -22,18 +22,15 @@ const Report = () => {
             const cameras = devices.filter(device => device.kind === 'videoinput');
             setAvailableCameras(cameras);
 
-            // Intenta encontrar la cámara trasera
             const rearCamera = cameras.find(camera =>
                 camera.label.toLowerCase().includes('back') ||
                 camera.label.toLowerCase().includes('trasera') ||
                 camera.label.toLowerCase().includes('rear')
             );
 
-            // Si hay una cámara trasera, úsala por defecto
             if (rearCamera) {
                 setSelectedCamera(rearCamera.deviceId);
             } else if (cameras.length > 0) {
-                // Si no hay cámara trasera, usa la primera disponible
                 setSelectedCamera(cameras[0].deviceId);
             }
         } catch (error) {
@@ -48,7 +45,6 @@ const Report = () => {
         }
 
         try {
-            // Detener cualquier stream existente
             if (streamRef.current) {
                 streamRef.current.getTracks().forEach(track => track.stop());
             }
@@ -73,7 +69,6 @@ const Report = () => {
         }
     };
 
-    // Efecto para enumerar cámaras cuando se monta el componente
     useEffect(() => {
         getAvailableCameras();
         return () => {
@@ -81,7 +76,6 @@ const Report = () => {
         };
     }, []);
 
-    // Efecto para reiniciar la cámara cuando se cambia la selección
     useEffect(() => {
         if (selectedCamera && selectedOption === 'camera') {
             startCamera();
@@ -197,7 +191,49 @@ const Report = () => {
             <TituloConRegreso titulo="Formulario de Reporte" to="/" />
 
             <form onSubmit={handleSubmit}>
-                {/* ... (el resto de los campos del formulario permanecen igual) ... */}
+                <div className="row mb-3">
+                    <div className="col-md-6">
+                        <label htmlFor="nombreReportante" className="form-label">Nombre del Reportante</label>
+                        <input
+                            type="text"
+                            className="form-control"
+                            id="nombreReportante"
+                            value={nombreReportante}
+                            onChange={(e) => setNombreReportante(e.target.value)}
+                            placeholder="Ingrese su nombre completo"
+                            required
+                        />
+                    </div>
+                    <div className="col-md-6">
+                        <label htmlFor="numeroContacto" className="form-label">Número de Contacto</label>
+                        <input
+                            type="text"
+                            className="form-control"
+                            id="numeroContacto"
+                            value={numeroContacto}
+                            onChange={handlePhoneChange}
+                            placeholder="Ingrese un número de 9 dígitos"
+                            maxLength={9}
+                            pattern="[0-9]{9}"
+                            title="Debe ingresar exactamente 9 números"
+                        />
+                        {numeroContacto && numeroContacto.length !== 9 && (
+                            <small className="text-danger">El número debe tener 9 dígitos</small>
+                        )}
+                    </div>
+                </div>
+                <div className="mb-3">
+                    <label htmlFor="descripcion" className="form-label">Descripción del Reporte</label>
+                    <textarea
+                        className="form-control"
+                        id="descripcion"
+                        rows="5"
+                        value={descripcion}
+                        onChange={(e) => setDescripcion(e.target.value)}
+                        placeholder="Describa la distorsión encontrada"
+                        required
+                    ></textarea>
+                </div>
 
                 <div className="mb-3">
                     <label className="form-label d-block">Foto (opcional)</label>
