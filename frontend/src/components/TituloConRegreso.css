@@ -55,18 +55,8 @@
     font-size: 10px;
     position: relative;
     color: #848484;
-    /* Medium Gray */
 }
 
-#titulo-box .subtitulo:before,
-#titulo-box .subtitulo:after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    width: 80px;
-    height: 2px;
-    background: #848484;
-}
 
 #titulo-box .subtitulo:before {
     left: -100px;

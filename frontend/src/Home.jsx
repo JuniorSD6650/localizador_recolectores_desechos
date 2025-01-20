@@ -4,7 +4,7 @@ import TituloConRegreso from './components/TituloConRegreso';
 
 const Home = () => {
     return (
-        <div className="text-center text-center py-3">
+        <div className="text-center py-3">
             <TituloConRegreso titulo="Bienvenido a la Aplicación" className="mb-4" />
 
             <div className="container px-5">
@@ -12,7 +12,7 @@ const Home = () => {
                     <div className="col d-flex justify-content-center">
                         <CardAnimation
                             title="Reportar"
-                            description="Haz un reporte relacionado con alguna distorsión encontrada."
+                            description="Reporta cualquier acumulación de basura y ayuda a mantener limpia tu comunidad."
                             to="/report"
                         />
                     </div>
