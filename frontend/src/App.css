@@ -29,7 +29,7 @@ body {
   display: none;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 992px) {
   .navbar-toggler {
     margin-left: auto;
     width: auto;
