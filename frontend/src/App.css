@@ -11,12 +11,29 @@ body {
   min-height: 100vh;
 }
 
+.navbar-toggler {
+  border: none;
+  padding: 0.25rem 0.5rem;
+}
+
+.navbar-toggler-icon {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
 .navbar-nav .dropdown-menu {
   max-width: 100vw;
 }
 
 .navbar-nav .dropdown-toggle::after {
   display: none;
+}
+
+@media (max-width: 768px) {
+  .navbar-toggler {
+    margin-left: auto;
+    width: auto;
+  }
 }
 
 .btn-register {
