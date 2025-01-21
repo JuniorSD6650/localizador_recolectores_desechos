@@ -76,7 +76,7 @@ const AdminVehiculosPage = () => {
 
             {message && <p className="text-danger">{message}</p>}
 
-            <div className="mb-3 text-end">
+            <div className="mb-3 d-flex justify-content-end">
                 <button className="btn-register" onClick={() => setShowRegisterModal(true)}>
                     Nuevo Vehículo
                 </button>

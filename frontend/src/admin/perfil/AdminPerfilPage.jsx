@@ -9,24 +9,20 @@ const AdminPerfilPage = () => {
     useEffect(() => {
         const fetchPerfil = async () => {
             try {
-                // Obtener el token del localStorage
                 const token = localStorage.getItem('token');
                 if (!token) {
                     setMessage('Token no encontrado. Por favor, inicia sesión.');
                     return;
                 }
 
-                // Decodificar el token para obtener el rol
                 const decoded = JSON.parse(atob(token.split('.')[1]));
                 const role = decoded.role;
 
-                // Verificar si el usuario es administrador
                 if (role !== 'admin') {
                     setMessage('No tienes permisos para acceder a esta sección.');
                     return;
                 }
 
-                // Realizar la solicitud a la API para los datos del administrador
                 const response = await fetch(`${API_BASE_URL}usuarios/admin`);
                 const data = await response.json();
 

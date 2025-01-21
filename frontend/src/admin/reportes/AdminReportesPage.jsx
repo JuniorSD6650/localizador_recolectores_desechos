@@ -39,7 +39,7 @@ const AdminReportesPage = () => {
                 cancelButtonText: 'Cancelar',
             });
 
-            if (confirmed?.isConfirmed) { // Verificar si `isConfirmed` existe y es verdadero
+            if (confirmed?.isConfirmed) { 
                 const response = await fetch(`${API_BASE_URL}reportes/${id}`, {
                     method: 'PUT',
                     headers: {
@@ -77,7 +77,7 @@ const AdminReportesPage = () => {
                 cancelButtonText: 'Cancelar',
             });
 
-            if (confirmed?.isConfirmed) { // Verificar si `isConfirmed` existe y es verdadero
+            if (confirmed?.isConfirmed) { 
                 const response = await fetch(`${API_BASE_URL}reportes/${id}`, {
                     method: 'DELETE',
                 });
@@ -119,7 +119,6 @@ const AdminReportesPage = () => {
                     reportes.map((reporte) => (
                         <div key={reporte.id} className="list-group-item">
                             <div className="row g-3">
-                                {/* Contenido principal */}
                                 <div className="col-12">
                                     <strong className="fs-5 d-block">{reporte.nombre_reportante}</strong>
                                     <p className="mb-2">{reporte.descripcion}</p>
@@ -143,7 +142,6 @@ const AdminReportesPage = () => {
                                     </div>
                                 </div>
 
-                                {/* Botones de acción */}
                                 <div className="col-12">
                                     <div className="d-flex flex-wrap gap-2">
                                         <button
@@ -167,7 +165,6 @@ const AdminReportesPage = () => {
                 )}
             </div>
 
-            {/* Modal (permanece igual) */}
             {showModal && (
                 <div
                     style={{

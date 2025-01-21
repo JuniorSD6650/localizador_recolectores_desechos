@@ -10,7 +10,6 @@ const RegisterVehicleModal = ({ show, onClose, onRegister }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        // Validar que el teléfono sea numérico y tenga 9 dígitos
         if (telefono && (!/^[0-9]{9}$/.test(telefono))) {
             showErrorAlert('Error', 'El número de teléfono debe ser numérico y tener exactamente 9 dígitos.');
             return;
@@ -20,8 +19,8 @@ const RegisterVehicleModal = ({ show, onClose, onRegister }) => {
             nombre_recolector: nombre,
             telefono_recolector: telefono || null,
             zona_responsable: zona || null,
-            estado: 'activo', // Estado por defecto
-            organizacion_id: 1, // Organización fija por defecto
+            estado: 'activo',
+            organizacion_id: 1,
         };
 
         setLoading(true);
@@ -43,11 +42,11 @@ const RegisterVehicleModal = ({ show, onClose, onRegister }) => {
                     estado: result.estado || 'activo',
                     telefono_recolector: result.telefono_recolector || 'No disponible',
                     zona_responsable: result.zona_responsable || 'No asignada',
-                }); // Notificar al componente principal con datos garantizados
-                setNombre(''); // Limpiar campos después de registrar
+                });
+                setNombre('');
                 setTelefono('');
                 setZona('');
-                onClose(); // Cerrar el modal
+                onClose();
             } else {
                 showErrorAlert('Error', 'No se pudo registrar el vehículo.');
             }
@@ -59,8 +58,8 @@ const RegisterVehicleModal = ({ show, onClose, onRegister }) => {
     };
 
     const handleTelefonoChange = (e) => {
-        const value = e.target.value.replace(/\D/g, ''); // Remover caracteres no numéricos
-        setTelefono(value.slice(0, 9)); // Limitar a 9 dígitos
+        const value = e.target.value.replace(/\D/g, '');
+        setTelefono(value.slice(0, 9));
     };
 
     if (!show) return null;

@@ -69,8 +69,8 @@ const AdminLocalizadorPage = () => {
     };
 
     const handleRegister = (newLocalizador) => {
-        const { user } = newLocalizador; // Extrae solo el objeto del usuario
-        setLocalizadores((prev) => [user, ...prev]); // Añade el nuevo usuario al inicio
+        const { user } = newLocalizador;
+        setLocalizadores((prev) => [user, ...prev]);
     };
 
     return (
@@ -79,7 +79,7 @@ const AdminLocalizadorPage = () => {
 
             {message && <p className="text-danger">{message}</p>}
 
-            <div className="mb-3 text-end">
+            <div className="mb-3 d-flex justify-content-end">
                 <button
                     className="btn-register"
                     onClick={() => setShowModal(true)}
