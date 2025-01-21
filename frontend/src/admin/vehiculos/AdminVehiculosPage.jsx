@@ -11,27 +11,28 @@ const AdminVehiculosPage = () => {
     const [showEditModal, setShowEditModal] = useState(false);
     const [selectedVehicle, setSelectedVehicle] = useState(null);
 
-    useEffect(() => {
-        const fetchVehiculos = async () => {
-            try {
-                const response = await fetch(`${API_BASE_URL}recolectores`);
-                const data = await response.json();
+    const obtener = async () => {
+        try {
+            const response = await fetch(`${API_BASE_URL}recolectores`);
+            const data = await response.json();
 
-                if (response.ok) {
-                    setVehiculos(data);
-                } else {
-                    setMessage('No se pudieron cargar los vehículos');
-                }
-            } catch (error) {
-                setMessage('Error al conectar con la API');
+            if (response.ok) {
+                setVehiculos(data);
+            } else {
+                setMessage('No se pudieron cargar los vehículos');
             }
-        };
+        } catch (error) {
+            setMessage('Error al conectar con la API');
+        }
+    };
 
-        fetchVehiculos();
+    useEffect(() => {
+        obtener();
     }, []);
 
     const handleRegister = (newVehicle) => {
         setVehiculos((prevVehiculos) => [...prevVehiculos, newVehicle]);
+        obtener();
     };
 
     const handleUpdate = (updatedVehicle) => {
@@ -40,6 +41,7 @@ const AdminVehiculosPage = () => {
                 vehiculo.id === updatedVehicle.id ? updatedVehicle : vehiculo
             )
         );
+        obtener();
     };
 
     const handleDelete = async (id) => {
@@ -65,7 +67,7 @@ const AdminVehiculosPage = () => {
                     showErrorAlert('Error', 'No se pudo eliminar el vehículo.');
                 }
             } catch (error) {
-                showErrorAlert('Error', 'Hubo un problema al conectar con la API.');
+                showErrorAlert('Error', 'No se pudo eliminar el vehículo.');
             }
         }
     };

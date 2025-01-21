@@ -41,7 +41,7 @@ const RegisterLocalizadorModal = ({ show, onClose, onRegister, recolectores }) =
 
     return (
         <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
-            <div className="modal-dialog">
+            <div className="modal-dialog modal-dialog-centered">
                 <div className="modal-content">
                     <div className="modal-header">
                         <h5 className="modal-title">Registrar Nuevo Localizador</h5>
@@ -104,11 +104,11 @@ const RegisterLocalizadorModal = ({ show, onClose, onRegister, recolectores }) =
                             </div>
                         </div>
                         <div className="modal-footer">
-                            <button type="button" className="btn btn-secondary" onClick={onClose}>
-                                Cancelar
-                            </button>
                             <button type="submit" className="btn btn-primary">
                                 Registrar
+                            </button>
+                            <button type="button" className="btn btn-secondary" onClick={onClose}>
+                                Cancelar
                             </button>
                         </div>
                     </form>

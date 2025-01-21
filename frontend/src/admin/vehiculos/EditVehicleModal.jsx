@@ -118,11 +118,11 @@ const EditVehicleModal = ({ show, onClose, onUpdate, vehicle }) => {
                         />
                     </div>
                     <div className="text-end">
-                        <button type="button" className="btn btn-secondary me-2" onClick={onClose} disabled={loading}>
-                            Cancelar
-                        </button>
-                        <button type="submit" className="btn btn-primary" disabled={loading}>
+                        <button type="submit" className="btn btn-primary mb-2" disabled={loading}>
                             {loading ? 'Guardando...' : 'Guardar Cambios'}
+                        </button>
+                        <button type="button" className="btn btn-secondary " onClick={onClose} disabled={loading}>
+                            Cancelar
                         </button>
                     </div>
                 </form>
