@@ -1,50 +1,13 @@
+// routes/usuarios.js
+
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const knex = require('knex')(require('../knexfile'));
 const router = express.Router();
 const { format } = require('date-fns');
-const protect = require('../middleware/auth');  // Middleware de protección
+const protect = require('../middleware/auth');
 
-const fs = require('fs');
-const multer = require('multer');
-const ExcelJS = require('exceljs');
-
-// Configuración de multer para la carga temporal de archivos
-const upload = multer({ dest: 'public/uploads/' });
-
-const USUARIO_COLUMNS = [
-  { header: 'Username', key: 'username', width: 30 },
-  { header: 'Password', key: 'password', width: 30 },
-  { header: 'Recolector ID', key: 'recolector_id', width: 20 },
-];
-
-// Ruta para descargar la plantilla de usuarios
-router.get('/template', async (req, res) => {
-  try {
-    const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet('Plantilla Usuarios');
-
-    worksheet.columns = USUARIO_COLUMNS;
-    worksheet.getRow(1).font = { bold: true };
-
-    res.setHeader(
-      'Content-Type',
-      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-    );
-    res.setHeader(
-      'Content-Disposition',
-      'attachment; filename=Plantilla_Usuarios.xlsx'
-    );
-
-    await workbook.xlsx.write(res);
-    res.end();
-  } catch (error) {
-    res.status(500).json({ error: 'Error al generar la plantilla', details: error.message });
-  }
-});
-
-// Ruta para obtener todos los usuarios
 router.get('/', async (req, res) => {
   try {
     let usuarios = await knex('usuarios')
@@ -57,7 +20,7 @@ router.get('/', async (req, res) => {
         'recolectores_desechos.nombre_recolector'
       )
       .leftJoin('recolectores_desechos', 'usuarios.recolector_id', 'recolectores_desechos.id')
-      .whereNot('usuarios.role', 'admin') // Excluir usuarios con rol admin
+      .whereNot('usuarios.role', 'admin')
       .orderBy('usuarios.id', 'desc');
 
     usuarios = usuarios.map(usuario => ({
@@ -74,7 +37,6 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Ruta para obtener el administrador
 router.get('/admin', async (req, res) => {
   try {
     const admin = await knex('usuarios').where('role', 'admin').first();
@@ -93,7 +55,6 @@ router.get('/:id', protect(), async (req, res) => {
   try {
     const { id } = req.params;
 
-    // Consulta al usuario con los datos adicionales
     const user = await knex('usuarios')
       .select(
         'usuarios.username',
@@ -125,87 +86,6 @@ router.get('/:id', protect(), async (req, res) => {
   }
 });
 
-// Cargar datos por excel
-router.post('/bulk-upload', upload.single('file'), async (req, res) => {
-  try {
-    const workbook = new ExcelJS.Workbook();
-    await workbook.xlsx.readFile(req.file.path);
-    const worksheet = workbook.getWorksheet(1);
-    const failedRecords = [];
-
-    for (let i = 2; i <= worksheet.rowCount; i++) {
-      const row = worksheet.getRow(i);
-      const record = {
-        username: row.getCell(1).value?.toString().trim() || null,
-        password: row.getCell(2).value?.toString().trim() || null,
-        recolector_id: row.getCell(3).value ? parseInt(row.getCell(3).value) : null,
-        created_at: row.getCell(4).value ? row.getCell(4).value.toISOString() : knex.fn.now(),
-      };
-
-      if (!record.username || !record.password || !record.recolector_id) {
-        console.warn(`Fila ${i} ignorada: faltan campos obligatorios.`);
-        continue;
-      }
-
-      try {
-        // Aquí no insertamos los datos, solo los extraemos
-        console.log(`Usuario temporal procesado: ${record.username}, Recolector ID: ${record.recolector_id}`);
-      } catch (error) {
-        console.error(`Error en fila ${i}:`, error.message);
-        failedRecords.push(record);
-      }
-    }
-
-    // Elimina el archivo temporal después de procesarlo
-    fs.unlink(req.file.path, (err) => {
-      if (err) {
-        console.error('Error eliminando archivo temporal:', err.message);
-      } else {
-        console.log('Archivo temporal eliminado:', req.file.path);
-      }
-    });
-
-    // Si hubo errores, generar un archivo con los errores
-    if (failedRecords.length > 0) {
-      const failedWorkbook = new ExcelJS.Workbook();
-      const failedWorksheet = failedWorkbook.addWorksheet('Errores');
-
-      failedWorksheet.columns = USUARIO_COLUMNS;
-      failedWorksheet.getRow(1).font = { bold: true };
-
-      failedRecords.forEach((record) => {
-        failedWorksheet.addRow(record);
-      });
-
-      res.setHeader(
-        'Content-Type',
-        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-      );
-      res.setHeader(
-        'Content-Disposition',
-        'attachment; filename=Errores_Carga_Usuarios.xlsx'
-      );
-
-      await failedWorkbook.xlsx.write(res);
-      return res.end();
-    }
-
-    res.status(200).json({ message: 'Datos extraídos correctamente, archivo procesado.' });
-  } catch (err) {
-    console.error('Error al procesar el archivo:', err.message);
-
-    // Elimina el archivo si hubo un error
-    fs.unlink(req.file.path, (unlinkErr) => {
-      if (unlinkErr) {
-        console.error('Error eliminando archivo temporal:', unlinkErr.message);
-      }
-    });
-
-    res.status(500).json({ error: 'Error al procesar el archivo', details: err.message });
-  }
-});
-
-// Ruta para crear un administrador
 router.post('/admin', async (req, res) => {
   const { username, password, email, phone } = req.body;
 
@@ -233,7 +113,6 @@ router.post('/admin', async (req, res) => {
   }
 });
 
-// Ruta para el login del administrador
 router.post('/login', async (req, res) => {
   const { username, password } = req.body;
 
@@ -271,12 +150,10 @@ router.post('/login', async (req, res) => {
   }
 });
 
-// Ruta para añadir usuarios
 router.post('/', async (req, res) => {
   const { username, password, recolector_id } = req.body;
 
   try {
-    // Validar si recolector_id existe en la tabla recolectores_desechos
     if (recolector_id) {
       const recolector = await knex('recolectores_desechos').where('id', recolector_id).first();
       if (!recolector) {
@@ -286,7 +163,6 @@ router.post('/', async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Insertar el nuevo usuario y obtener el ID
     const [newUserId] = await knex('usuarios').insert({
       username,
       password: hashedPassword,
@@ -295,7 +171,6 @@ router.post('/', async (req, res) => {
       created_at: knex.fn.now()
     });
 
-    // Realizar una consulta adicional para recuperar los datos completos del usuario recién creado
     const newUser = await knex('usuarios')
       .select(
         'usuarios.id',
@@ -309,7 +184,6 @@ router.post('/', async (req, res) => {
       .where('usuarios.id', newUserId)
       .first();
 
-    // Enviar los datos completos como respuesta
     res.status(201).json({
       message: 'Usuario creado exitosamente',
       user: newUser,
@@ -320,7 +194,6 @@ router.post('/', async (req, res) => {
   }
 });
 
-// Ruta para editar usuarios
 router.put('/:id', async (req, res) => {
   const { id } = req.params;
   const { username, password, role, recolector_id } = req.body;
@@ -350,7 +223,6 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-// Ruta para eliminar un usuario
 router.delete('/:id', async (req, res) => {
   const { id } = req.params;
 

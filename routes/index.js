@@ -1,3 +1,5 @@
+// routes/index.js
+
 const express = require('express');
 const usuariosRoutes = require('./usuarios');
 const organizacionRoutes = require('./organizacion');

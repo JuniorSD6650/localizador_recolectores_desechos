@@ -1,3 +1,5 @@
+// createAdmin.js
+
 require('dotenv').config();
 const bcrypt = require('bcryptjs');
 const knex = require('knex')(require('./knexfile.js'));

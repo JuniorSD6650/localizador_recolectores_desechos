@@ -1,3 +1,5 @@
+// routes/reportes.js
+
 const express = require('express');
 const router = express.Router();
 const knexConfig = require('../knexfile');
@@ -6,21 +8,19 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 
-// Configuración de almacenamiento de Multer
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, 'public/uploads/reportes'); // Carpeta donde se guardan los archivos
+    cb(null, 'public/uploads/reportes');
   },
   filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname); // Obtén la extensión del archivo
-    const uniqueName = `${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`; // Nombre único
+    const ext = path.extname(file.originalname);
+    const uniqueName = `${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`;
     cb(null, uniqueName);
   },
 });
 
 const upload = multer({ storage });
 
-// Crear un nuevo reporte
 router.post('/', upload.single('foto'), async (req, res) => {
   const { nombre_reportante, descripcion, numero_contacto, estado } = req.body;
   const ruta_foto = req.file ? `uploads/reportes/${req.file.filename}` : null;
@@ -41,7 +41,6 @@ router.post('/', upload.single('foto'), async (req, res) => {
   }
 });
 
-// Obtener todos los reportes
 router.get('/', async (req, res) => {
   try {
     const reportes = await knex('reportes')
@@ -57,7 +56,6 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Obtener un reporte por ID
 router.get('/:id', async (req, res) => {
   const { id } = req.params;
   try {
@@ -76,7 +74,6 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// Actualizar un reporte
 router.put('/:id', upload.single('foto'), async (req, res) => {
   const { id } = req.params;
   const { nombre_reportante, descripcion, numero_contacto, estado } = req.body;
@@ -122,7 +119,6 @@ router.put('/:id', upload.single('foto'), async (req, res) => {
   }
 });
 
-// Eliminar un reporte
 router.delete('/:id', async (req, res) => {
   const { id } = req.params;
   try {

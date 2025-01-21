@@ -1,3 +1,5 @@
+// routes/organizacion.js
+
 const express = require('express');
 const router = express.Router();
 const knexConfig = require('../knexfile');
@@ -13,33 +15,6 @@ const ORGANIZACION_COLUMNS = [
   { header: 'Descripción', key: 'descripcion', width: 50 },
   { header: 'Link de Stream', key: 'streaming_link', width: 30 },
 ];
-
-// Descargar plantilla
-router.get('/template', async (req, res) => {
-  try {
-    const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet('Plantilla');
-
-    worksheet.columns = ORGANIZACION_COLUMNS;
-    worksheet.getRow(1).font = { bold: true };
-
-    res.setHeader(
-      'Content-Type',
-      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-    );
-    res.setHeader(
-      'Content-Disposition',
-      'attachment; filename=Plantilla_Organizaciones.xlsx'
-    );
-
-    await workbook.xlsx.write(res);
-    res.end();
-  } catch (error) {
-    res
-      .status(500)
-      .json({ error: 'Error al generar la plantilla', details: error.message });
-  }
-});
 
 router.get('/list', async (req, res) => {
   try {
@@ -57,7 +32,6 @@ router.get('/list', async (req, res) => {
 });
 
 
-// Obtener todas las organizaciones
 router.get('/', async (req, res) => {
   try {
     const organizaciones = await knex('organizacion')
@@ -74,7 +48,6 @@ router.get('/', async (req, res) => {
 });
 
 
-// Obtener una organización por ID
 router.get('/:id', async (req, res) => {
   const { id } = req.params;
   try {
@@ -88,84 +61,6 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// Cargar datos por excel
-router.post('/bulk-upload', upload.single('file'), async (req, res) => {
-  try {
-    const workbook = new ExcelJS.Workbook();
-    await workbook.xlsx.readFile(req.file.path);
-    const worksheet = workbook.getWorksheet(1);
-    const failedRecords = [];
-
-    for (let i = 2; i <= worksheet.rowCount; i++) {
-      const row = worksheet.getRow(i);
-      const record = {
-        nombre: row.getCell(1).value?.toString().trim() || null,
-        descripcion: row.getCell(2).value?.toString().trim() || null,
-        streaming_link: row.getCell(3).value?.toString().trim() || null,
-      };
-
-      if (!record.nombre) {
-        console.warn(`Fila ${i} ignorada: campo "nombre" está vacío.`);
-        continue;
-      }
-
-      try {
-        await knex('organizacion').insert(record);
-      } catch (error) {
-        console.error(`Error en fila ${i}:`, error.message);
-        failedRecords.push(record);
-      }
-    }
-
-    fs.unlink(req.file.path, (err) => {
-      if (err) {
-        console.error('Error eliminando archivo temporal:', err.message);
-      } else {
-        console.log('Archivo temporal eliminado:', req.file.path);
-      }
-    });
-
-    if (failedRecords.length > 0) {
-      const failedWorkbook = new ExcelJS.Workbook();
-      const failedWorksheet = failedWorkbook.addWorksheet('Errores');
-
-      failedWorksheet.columns = ORGANIZACION_COLUMNS;
-      failedWorksheet.getRow(1).font = { bold: true };
-
-      failedRecords.forEach((record) => {
-        failedWorksheet.addRow(record);
-      });
-
-      res.setHeader(
-        'Content-Type',
-        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-      );
-      res.setHeader(
-        'Content-Disposition',
-        'attachment; filename=Errores_Carga.xlsx'
-      );
-
-      await failedWorkbook.xlsx.write(res);
-      return res.end();
-    }
-
-    res.status(200).json({ message: 'Datos cargados correctamente.' });
-  } catch (err) {
-    console.error('Error al procesar el archivo:', err.message);
-
-    fs.unlink(req.file.path, (unlinkErr) => {
-      if (unlinkErr) {
-        console.error('Error eliminando archivo temporal:', unlinkErr.message);
-      }
-    });
-
-    res
-      .status(500)
-      .json({ error: 'Error al procesar el archivo', details: err.message });
-  }
-});
-
-// Crear una nueva organización
 router.post('/', async (req, res) => {
   const { nombre, descripcion, streaming_link } = req.body;
   try {
@@ -181,7 +76,6 @@ router.post('/', async (req, res) => {
   }
 });
 
-// Actualizar una organización por ID
 router.put('/:id', async (req, res) => {
   const { id } = req.params;
   const { nombre, descripcion, streaming_link } = req.body;
@@ -200,7 +94,6 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-// Eliminar una organización por ID
 router.delete('/:id', async (req, res) => {
   const { id } = req.params;
   try {
