@@ -3,39 +3,45 @@ import Swal from 'sweetalert2';
 export const BASE_URL = "http://localhost:5000/";
 export const API_BASE_URL = "http://localhost:5000/api/";
 
+function parseDate(dateString) {
+    const [day, month, yearAndTime] = dateString.split('/');
+    const [year, time] = yearAndTime.split(' ');
+    return new Date(`${year}-${month}-${day}T${time}`);
+}
 
-export const calculateTimeAgo = (date) => {
-    if (!date) return 'Fecha no disponible';
 
-    const updateDate = new Date(date);
-    if (isNaN(updateDate)) return 'Fecha inválida';
+export function calculateTimeAgo(dateString) {
+    const date = parseDate(dateString);
+    if (isNaN(date)) {
+        return 'Fecha inválida';
+    }
 
     const now = new Date();
-    const differenceInSeconds = Math.floor((now - updateDate) / 1000);
+    const seconds = Math.floor((now - date) / 1000);
 
-    if (differenceInSeconds < 60) {
-        return `hace ${differenceInSeconds} segundos`;
+    let interval = Math.floor(seconds / 31536000);
+    if (interval > 1) {
+        return `${interval} años`;
     }
-
-    const differenceInMinutes = Math.floor(differenceInSeconds / 60);
-    if (differenceInMinutes < 60) {
-        return `hace ${differenceInMinutes} minutos`;
+    interval = Math.floor(seconds / 2592000);
+    if (interval > 1) {
+        return `${interval} meses`;
     }
-
-    const differenceInHours = Math.floor(differenceInMinutes / 60);
-    if (differenceInHours < 24) {
-        return `hace ${differenceInHours} horas`;
+    interval = Math.floor(seconds / 86400);
+    if (interval > 1) {
+        return `${interval} días`;
     }
-
-    const differenceInDays = Math.floor(differenceInHours / 24);
-    if (differenceInDays < 30) {
-        return `hace ${differenceInDays} días`;
+    interval = Math.floor(seconds / 3600);
+    if (interval > 1) {
+        return `${interval} horas`;
     }
+    interval = Math.floor(seconds / 60);
+    if (interval > 1) {
+        return `${interval} minutos`;
+    }
+    return `${Math.floor(seconds)} segundos`;
+}
 
-    return updateDate.toLocaleDateString();
-};
-
-// Alerta de éxito
 export const showSuccessAlert = (title, text) => {
     Swal.fire({
         icon: 'success',
@@ -45,7 +51,6 @@ export const showSuccessAlert = (title, text) => {
     });
 };
 
-// Alerta de error
 export const showErrorAlert = (title, text) => {
     Swal.fire({
         icon: 'error',
@@ -55,7 +60,6 @@ export const showErrorAlert = (title, text) => {
     });
 };
 
-// Alerta personalizada
 export const showCustomAlert = async (config) => {
     return Swal.fire({
         ...config,

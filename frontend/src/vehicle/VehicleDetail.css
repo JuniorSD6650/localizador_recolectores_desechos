@@ -7,7 +7,6 @@
     margin-bottom: 2rem;
     padding-bottom: 1rem;
     border-bottom: 1px solid #eee;
-    /* Conservamos la línea divisoria */
 }
 
 .status-indicator {
@@ -29,23 +28,19 @@
     color: #6c757d;
 }
 
-/* Grilla de información */
 .vehicle-info-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 1.5rem;
 }
 
-/* Elementos de la grilla */
 .info-card {
     display: flex;
     align-items: center;
     gap: 1rem;
     padding: 1rem 0;
     background: none;
-    /* Eliminamos el fondo */
     border: none;
-    /* Eliminamos el borde */
 }
 
 .info-card svg {
@@ -67,14 +62,11 @@
     color: #2c3e50;
 }
 
-/* Tarjeta de ubicación */
 .location-card {
     justify-content: center;
     background: none;
-    /* Eliminamos el fondo */
 }
 
-/* Contenedores de error y carga */
 .loading-container,
 .error-container {
     display: flex;

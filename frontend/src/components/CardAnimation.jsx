@@ -7,7 +7,7 @@ import './CardAnimation.css';
 
 const CardAnimation = ({ title, description, to }) => {
     return (
-        <Link to={to} className="card">
+        <Link to={to} className="card-animation">
             <RecyclingIcon sx={{ fontSize: 60, color: 'white' }} />
             <h2>{title}</h2>
             <p>{description}</p>

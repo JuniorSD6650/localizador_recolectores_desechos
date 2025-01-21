@@ -34,7 +34,7 @@ function App() {
         />
 
         <Route
-          path="/admin/localizadores"
+          path="/admin/conductores"
           element={
             <ProtectedRoute requiredRole="admin">
               <AdminLocalizadorPage />
