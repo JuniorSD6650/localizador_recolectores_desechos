@@ -4,42 +4,46 @@ export const BASE_URL = "http://localhost:5000/";
 export const API_BASE_URL = "http://localhost:5000/api/";
 
 function parseDate(dateString) {
-    const [day, month, yearAndTime] = dateString.split('/');
-    const [year, time] = yearAndTime.split(' ');
-    return new Date(`${year}-${month}-${day}T${time}`);
+    if (!dateString) return null;
+    const date = new Date(dateString);
+    return isNaN(date.getTime()) ? null : date;
 }
-
 
 export function calculateTimeAgo(dateString) {
     const date = parseDate(dateString);
-    if (isNaN(date)) {
-        return 'Fecha inválida';
+    if (!date) {
+        return 'Fecha no disponible';
     }
 
     const now = new Date();
     const seconds = Math.floor((now - date) / 1000);
 
     let interval = Math.floor(seconds / 31536000);
-    if (interval > 1) {
-        return `${interval} años`;
+    if (interval >= 1) {
+        return `${interval} año${interval === 1 ? '' : 's'}`;
     }
+
     interval = Math.floor(seconds / 2592000);
-    if (interval > 1) {
-        return `${interval} meses`;
+    if (interval >= 1) {
+        return `${interval} mes${interval === 1 ? '' : 'es'}`;
     }
+
     interval = Math.floor(seconds / 86400);
-    if (interval > 1) {
-        return `${interval} días`;
+    if (interval >= 1) {
+        return `${interval} día${interval === 1 ? '' : 's'}`;
     }
+
     interval = Math.floor(seconds / 3600);
-    if (interval > 1) {
-        return `${interval} horas`;
+    if (interval >= 1) {
+        return `${interval} hora${interval === 1 ? '' : 's'}`;
     }
+
     interval = Math.floor(seconds / 60);
-    if (interval > 1) {
-        return `${interval} minutos`;
+    if (interval >= 1) {
+        return `${interval} minuto${interval === 1 ? '' : 's'}`;
     }
-    return `${Math.floor(seconds)} segundos`;
+
+    return `${Math.floor(seconds)} segundo${seconds === 1 ? '' : 's'}`;
 }
 
 export const showSuccessAlert = (title, text) => {

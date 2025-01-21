@@ -125,7 +125,7 @@ const LocalizadorPage = () => {
     }
 
     return (
-        <div className="container localizador-page">
+        <div className="container">
             <TituloConRegreso titulo="Vista de Localizador" />
             <div className="localizador-content text-center">
                 <h1 className="mb-3">Bienvenido, {localizador.username}</h1>
