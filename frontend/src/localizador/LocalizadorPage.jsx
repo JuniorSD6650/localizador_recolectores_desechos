@@ -10,7 +10,6 @@ const LocalizadorPage = () => {
     const [ubicacionEnlace, setUbicacionEnlace] = useState('');
     const navigate = useNavigate();
 
-    // Fetch data from API
     const fetchLocalizador = useCallback(async () => {
         const token = localStorage.getItem('token');
         if (!token) {
@@ -69,7 +68,7 @@ const LocalizadorPage = () => {
             });
 
             if (response.ok) {
-                await fetchLocalizador(); // Actualiza datos tras la operación
+                await fetchLocalizador();
                 showSuccessAlert('Éxito', 'El enlace de ubicación ha sido actualizado.');
             } else {
                 const errorData = await response.json();
@@ -94,7 +93,7 @@ const LocalizadorPage = () => {
             });
 
             if (response.ok) {
-                await fetchLocalizador(); // Actualiza datos tras la operación
+                await fetchLocalizador();
                 showSuccessAlert('Éxito', `El estado ha sido cambiado a ${newEstado}.`);
             } else {
                 const errorData = await response.json();
@@ -125,7 +124,7 @@ const LocalizadorPage = () => {
     }
 
     return (
-        <div className="container">
+        <div className="container localizador-page">
             <TituloConRegreso titulo="Vista de Localizador" />
             <div className="localizador-content text-center">
                 <h1 className="mb-3">Bienvenido, {localizador.username}</h1>

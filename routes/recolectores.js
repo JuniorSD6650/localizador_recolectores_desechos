@@ -141,20 +141,22 @@ router.put('/:id', async (req, res) => {
       return res.status(404).json({ error: 'Recolector no encontrado' });
     }
 
-    const linkRegex = /(https?:\/\/[^\s]+)/g;
-    const enlaceExtraido = ubicacion_enlace?.match(linkRegex)?.[0] || null;
-
     const updates = {
       nombre_recolector,
       telefono_recolector,
       zona_responsable,
-      ubicacion_enlace: enlaceExtraido,
       estado,
       organizacion_id,
-      fecha_ubicacion_actualizada: enlaceExtraido
-      ? new Date().toISOString().slice(0, 19).replace('T', ' ')
-      : recolector.fecha_ubicacion_actualizada,
     };
+
+    if (ubicacion_enlace !== undefined) {
+      const linkRegex = /(https?:\/\/[^\s]+)/g;
+      const enlaceExtraido = ubicacion_enlace.match(linkRegex)?.[0] || null;
+      updates.ubicacion_enlace = enlaceExtraido;
+      updates.fecha_ubicacion_actualizada = enlaceExtraido
+        ? new Date().toISOString().slice(0, 19).replace('T', ' ')
+        : recolector.fecha_ubicacion_actualizada;
+    }
 
     const filteredUpdates = Object.fromEntries(
       Object.entries(updates).filter(([_, value]) => value !== undefined)

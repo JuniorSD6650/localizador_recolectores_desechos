@@ -51,10 +51,10 @@ router.get('/admin', async (req, res) => {
   }
 });
 
-router.get('/:id', protect(), async (req, res) => {
-  try {
-    const { id } = req.params;
+router.get('/:id', async (req, res) => {
+  const { id } = req.params;
 
+  try {
     const user = await knex('usuarios')
       .select(
         'usuarios.username',
@@ -62,7 +62,8 @@ router.get('/:id', protect(), async (req, res) => {
         'usuarios.recolector_id',
         'recolectores_desechos.nombre_recolector',
         'recolectores_desechos.ubicacion_enlace',
-        'recolectores_desechos.fecha_ubicacion_actualizada'
+        'recolectores_desechos.fecha_ubicacion_actualizada',
+        'recolectores_desechos.estado'
       )
       .leftJoin('recolectores_desechos', 'usuarios.recolector_id', 'recolectores_desechos.id')
       .where('usuarios.id', id)
@@ -79,6 +80,7 @@ router.get('/:id', protect(), async (req, res) => {
       nombre_recolector: user.nombre_recolector,
       ubicacion_enlace: user.ubicacion_enlace,
       fecha_ubicacion_actualizada: user.fecha_ubicacion_actualizada,
+      estado: user.estado
     });
   } catch (error) {
     console.error("Error al obtener el perfil del usuario:", error);
