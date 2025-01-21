@@ -5,17 +5,6 @@ const router = express.Router();
 const knexConfig = require('../knexfile');
 const knex = require('knex')(knexConfig);
 
-const fs = require('fs');
-const multer = require('multer');
-const ExcelJS = require('exceljs');
-const upload = multer({ dest: 'uploads/' });
-
-const ORGANIZACION_COLUMNS = [
-  { header: 'Nombre', key: 'nombre', width: 30 },
-  { header: 'Descripción', key: 'descripcion', width: 50 },
-  { header: 'Link de Stream', key: 'streaming_link', width: 30 },
-];
-
 router.get('/list', async (req, res) => {
   try {
     const organizaciones = await knex('organizacion')

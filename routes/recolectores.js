@@ -4,7 +4,7 @@ const express = require('express');
 const router = express.Router();
 const knexConfig = require('../knexfile');
 const knex = require('knex')(knexConfig);
-const { format, addHours } = require('date-fns');
+const { format, addHours, subHours } = require('date-fns');
 
 router.get('/list', async (req, res) => {
   try {
@@ -96,7 +96,7 @@ router.post('/', async (req, res) => {
 
   try {
     const now = new Date();
-    const peruTime = subHours(now, 5);
+    const peruTime = subHours(now, 0);
     const fechaActualizada = ubicacion_enlace
       ? format(peruTime, 'yyyy-MM-dd HH:mm:ss')
       : null;
@@ -136,24 +136,22 @@ router.put('/:id', async (req, res) => {
       return res.status(404).json({ error: 'Recolector no encontrado' });
     }
 
-    const linkRegex = /(https?:\/\/[^\s]+)/g;
-    const enlaceExtraido = ubicacion_enlace?.match(linkRegex)?.[0] || null;
-
-    const now = new Date();
-    const peruTime = addHours(now, 0);
-    const fechaActualizada = enlaceExtraido
-      ? format(peruTime, 'yyyy-MM-dd HH:mm:ss')
-      : recolector.fecha_ubicacion_actualizada;
-
     const updates = {
       nombre_recolector,
       telefono_recolector,
       zona_responsable,
-      ubicacion_enlace: enlaceExtraido,
       estado,
       organizacion_id,
-      fecha_ubicacion_actualizada: fechaActualizada,
     };
+
+    if (ubicacion_enlace !== undefined) {
+      const linkRegex = /(https?:\/\/[^\s]+)/g;
+      const enlaceExtraido = ubicacion_enlace.match(linkRegex)?.[0] || null;
+      updates.ubicacion_enlace = enlaceExtraido;
+      updates.fecha_ubicacion_actualizada = enlaceExtraido
+        ? format(addHours(new Date(), 0), 'yyyy-MM-dd HH:mm:ss')
+        : recolector.fecha_ubicacion_actualizada;
+    }
 
     const filteredUpdates = Object.fromEntries(
       Object.entries(updates).filter(([_, value]) => value !== undefined)

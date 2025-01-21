@@ -13,6 +13,7 @@ const AdminPage = () => {
                         title="Perfil"
                         description="Accede y edita tu perfil."
                         to="perfil"
+                        icon="account"
                     />
                 </div>
                 <div className="col-12 col-sm-6 col-md-4 col-lg-3 d-flex justify-content-center">
@@ -20,6 +21,7 @@ const AdminPage = () => {
                         title="Conductores"
                         description="Gestiona los Conductores asignados."
                         to="conductores"
+                        icon="switch"
                     />
                 </div>
                 <div className="col-12 col-sm-6 col-md-4 col-lg-3 d-flex justify-content-center">
@@ -27,6 +29,7 @@ const AdminPage = () => {
                         title="Reportes"
                         description="Revisa y administra los reportes realizados."
                         to="reportes"
+                        icon="recycling"
                     />
                 </div>
                 <div className="col-12 col-sm-6 col-md-4 col-lg-3 d-flex justify-content-center">
@@ -34,6 +37,7 @@ const AdminPage = () => {
                         title="Vehículos Recolectores"
                         description="Consulta y administra los vehículos recolectores."
                         to="vehiculos"
+                        icon="shipping"
                     />
                 </div>
             </div>

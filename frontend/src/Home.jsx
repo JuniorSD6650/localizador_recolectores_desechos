@@ -14,6 +14,7 @@ const Home = () => {
                             title="Reportar"
                             description="Reporta cualquier acumulación de basura y ayuda a mantener limpia tu comunidad."
                             to="/report"
+                            icon="recycling"
                         />
                     </div>
                     <div className="col d-flex justify-content-center">
@@ -21,6 +22,7 @@ const Home = () => {
                             title="Lista de Vehículos Recolectores"
                             description="Consulta la lista de vehículos recolectores disponibles."
                             to="/vehicles"
+                            icon="shipping"
                         />
                     </div>
                 </div>
