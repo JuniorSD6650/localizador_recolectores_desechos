@@ -131,7 +131,6 @@ const LocalizadorPage = () => {
                 <h2 className="mb-3">Rol: {localizador.role}</h2>
                 <h3 className="mb-3">Recolector Asignado: {localizador.nombre_recolector || 'No asignado'}</h3>
                 <p className="mb-3">Última ubicación actualizada: {localizador.tiempoUbicacionActualizada}</p>
-
                 <form onSubmit={handleUpdateEnlace}>
                     <div className="form-group">
                         <label htmlFor="ubicacionEnlace">Enlace de Ubicación</label>
@@ -147,7 +146,6 @@ const LocalizadorPage = () => {
                         </button>
                     </div>
                 </form>
-
                 <div className="estado-recolector mt-4">
                     <h4>Estado del Recolector</h4>
                     <span className={`badge ${localizador.estado === 'activo' ? 'bg-success' : 'bg-danger'}`}>
@@ -157,7 +155,7 @@ const LocalizadorPage = () => {
                         className="btn btn-secondary mt-3"
                         onClick={handleToggleEstado}
                     >
-                        Cambiar a {localizador.estado === 'activo' ? 'Inactivo' : 'Activo'}
+                        Cambiar Estado
                     </button>
                 </div>
             </div>

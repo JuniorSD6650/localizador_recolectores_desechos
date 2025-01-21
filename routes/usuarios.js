@@ -6,7 +6,6 @@ const jwt = require('jsonwebtoken');
 const knex = require('knex')(require('../knexfile'));
 const router = express.Router();
 const { format } = require('date-fns');
-const protect = require('../middleware/auth');
 
 router.get('/', async (req, res) => {
   try {
@@ -79,7 +78,9 @@ router.get('/:id', async (req, res) => {
       recolector_id: user.recolector_id,
       nombre_recolector: user.nombre_recolector,
       ubicacion_enlace: user.ubicacion_enlace,
-      fecha_ubicacion_actualizada: user.fecha_ubicacion_actualizada,
+      fecha_ubicacion_actualizada: user.fecha_ubicacion_actualizada
+        ? format(new Date(user.fecha_ubicacion_actualizada), 'dd/MM/yyyy HH:mm:ss')
+        : null,
       estado: user.estado
     });
   } catch (error) {

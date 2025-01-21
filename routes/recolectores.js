@@ -4,7 +4,7 @@ const express = require('express');
 const router = express.Router();
 const knexConfig = require('../knexfile');
 const knex = require('knex')(knexConfig);
-const { parse, format } = require('date-fns');
+const { format, addHours } = require('date-fns');
 
 router.get('/list', async (req, res) => {
   try {
@@ -61,11 +61,11 @@ router.get('/', async (req, res) => {
   }
 });
 
+// Obtener recolector por ID
 router.get('/:id', async (req, res) => {
   const { id } = req.params;
   try {
     const recolector = await knex('recolectores_desechos').where('id', id).first();
-
     if (!recolector) {
       return res.status(404).json({ error: 'Recolector no encontrado' });
     }
@@ -73,7 +73,7 @@ router.get('/:id', async (req, res) => {
     const formattedRecolector = {
       ...recolector,
       fecha_ubicacion_actualizada: recolector.fecha_ubicacion_actualizada
-        ? format(new Date(recolector.fecha_ubicacion_actualizada), 'dd/MM/yyyy HH:mm:ss')
+        ? format(subHours(new Date(recolector.fecha_ubicacion_actualizada), 5), 'dd/MM/yyyy HH:mm:ss')
         : null,
     };
 
@@ -83,6 +83,7 @@ router.get('/:id', async (req, res) => {
   }
 });
 
+// Crear un nuevo recolector
 router.post('/', async (req, res) => {
   const {
     nombre_recolector,
@@ -94,8 +95,10 @@ router.post('/', async (req, res) => {
   } = req.body;
 
   try {
+    const now = new Date();
+    const peruTime = subHours(now, 5);
     const fechaActualizada = ubicacion_enlace
-      ? new Date().toISOString().split('T')[0] + ' ' + new Date().toLocaleTimeString()
+      ? format(peruTime, 'yyyy-MM-dd HH:mm:ss')
       : null;
 
     const result = await knex('recolectores_desechos').insert({
@@ -108,21 +111,13 @@ router.post('/', async (req, res) => {
       organizacion_id
     });
 
-    const newRecolectorId = result[0];
-
-    res.status(201).json({
-      message: 'Recolector creado con éxito',
-      id: newRecolectorId
-    });
-
+    res.status(201).json({ message: 'Recolector creado con éxito', recolector: result });
   } catch (err) {
-    res.status(500).json({
-      error: 'Error creando el recolector',
-      details: err.message || err
-    });
+    res.status(500).json({ error: 'Error creando el recolector', details: err.message || err });
   }
 });
 
+// Actualizar recolector por ID
 router.put('/:id', async (req, res) => {
   const { id } = req.params;
   const {
@@ -141,22 +136,24 @@ router.put('/:id', async (req, res) => {
       return res.status(404).json({ error: 'Recolector no encontrado' });
     }
 
+    const linkRegex = /(https?:\/\/[^\s]+)/g;
+    const enlaceExtraido = ubicacion_enlace?.match(linkRegex)?.[0] || null;
+
+    const now = new Date();
+    const peruTime = addHours(now, 0);
+    const fechaActualizada = enlaceExtraido
+      ? format(peruTime, 'yyyy-MM-dd HH:mm:ss')
+      : recolector.fecha_ubicacion_actualizada;
+
     const updates = {
       nombre_recolector,
       telefono_recolector,
       zona_responsable,
+      ubicacion_enlace: enlaceExtraido,
       estado,
       organizacion_id,
+      fecha_ubicacion_actualizada: fechaActualizada,
     };
-
-    if (ubicacion_enlace !== undefined) {
-      const linkRegex = /(https?:\/\/[^\s]+)/g;
-      const enlaceExtraido = ubicacion_enlace.match(linkRegex)?.[0] || null;
-      updates.ubicacion_enlace = enlaceExtraido;
-      updates.fecha_ubicacion_actualizada = enlaceExtraido
-        ? new Date().toISOString().slice(0, 19).replace('T', ' ')
-        : recolector.fecha_ubicacion_actualizada;
-    }
 
     const filteredUpdates = Object.fromEntries(
       Object.entries(updates).filter(([_, value]) => value !== undefined)

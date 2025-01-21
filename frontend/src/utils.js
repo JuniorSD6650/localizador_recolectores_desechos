@@ -5,14 +5,15 @@ export const API_BASE_URL = "http://localhost:5000/api/";
 
 function parseDate(dateString) {
     if (!dateString) return null;
-    const date = new Date(dateString);
-    return isNaN(date.getTime()) ? null : date;
+    const [day, month, yearAndTime] = dateString.split('/');
+    const [year, time] = yearAndTime.split(' ');
+    return new Date(`${year}-${month}-${day}T${time}`);
 }
 
 export function calculateTimeAgo(dateString) {
     const date = parseDate(dateString);
-    if (!date) {
-        return 'Fecha no disponible';
+    if (!date || isNaN(date)) {
+        return 'Sin fecha de actualización';
     }
 
     const now = new Date();
