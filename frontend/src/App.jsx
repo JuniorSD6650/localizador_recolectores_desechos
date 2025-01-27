@@ -15,6 +15,7 @@ import VehicleList from './user/vehicle/VehicleList';
 import VehicleDetail from './user/vehicle/VehicleDetail';
 import Navbar from './Navbar';
 import ProtectedRoute from './ProtectedRoute';
+import Mapa from './Mapa';
 
 function App() {
   return (
@@ -81,6 +82,7 @@ function App() {
         <Route path="/report" element={<Report />} />
         <Route path="/vehicles" element={<VehicleList />} />
         <Route path="/vehicle/:id" element={<VehicleDetail />} />
+        <Route path="/mapa" element={<Mapa />} />
       </Routes>
     </Router>
   );
