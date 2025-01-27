@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { API_BASE_URL, showSuccessAlert, showErrorAlert } from '../utils';
-import TituloConRegreso from '../components/TituloConRegreso';
+import { API_BASE_URL, showSuccessAlert, showErrorAlert } from '../../utils';
+import TituloConRegreso from '../../components/TituloConRegreso/TituloConRegreso';
 
 const Report = () => {
     const [nombreReportante, setNombreReportante] = useState('');

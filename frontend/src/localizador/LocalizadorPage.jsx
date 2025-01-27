@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { API_BASE_URL, calculateTimeAgo, showSuccessAlert, showErrorAlert } from '../utils';
-import TituloConRegreso from '../components/TituloConRegreso';
+import TituloConRegreso from '../components/TituloConRegreso/TituloConRegreso';
 import './LocalizadorPage.css';
 
 const LocalizadorPage = () => {

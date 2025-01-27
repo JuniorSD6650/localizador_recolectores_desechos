@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { API_BASE_URL, showSuccessAlert, showErrorAlert, showCustomAlert } from '../../utils';
-import TituloConRegreso from '../../components/TituloConRegreso';
+import TituloConRegreso from '../../components/TituloConRegreso/TituloConRegreso';
 import RegisterVehicleModal from './RegisterVehicleModal';
 import EditVehicleModal from './EditVehicleModal';
 

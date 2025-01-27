@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { API_BASE_URL } from '../utils';
-import VehicleCard from '../components/VehicleCard';
-import TituloConRegreso from '../components/TituloConRegreso';
+import { API_BASE_URL } from '../../utils';
+import VehicleCard from '../../components/VehicleCard/VehicleCard';
+import TituloConRegreso from '../../components/TituloConRegreso/TituloConRegreso';
 
 const VehicleList = () => {
     const [vehicles, setVehicles] = useState([]);

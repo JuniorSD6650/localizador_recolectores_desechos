@@ -1,13 +1,13 @@
 // src/VehicleDetail.jsx
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { API_BASE_URL, calculateTimeAgo } from '../utils';
+import { API_BASE_URL, calculateTimeAgo } from '../../utils';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import PhoneIcon from '@mui/icons-material/Phone';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import UpdateIcon from '@mui/icons-material/Update';
 import './VehicleDetail.css';
-import TituloConRegreso from '../components/TituloConRegreso';
+import TituloConRegreso from '../../components/TituloConRegreso/TituloConRegreso';
 
 const VehicleDetail = () => {
     const { id } = useParams();

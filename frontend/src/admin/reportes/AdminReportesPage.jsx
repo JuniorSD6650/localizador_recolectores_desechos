@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { API_BASE_URL, BASE_URL, showSuccessAlert, showErrorAlert, showCustomAlert } from '../../utils';
-import TituloConRegreso from '../../components/TituloConRegreso';
+import TituloConRegreso from '../../components/TituloConRegreso/TituloConRegreso';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 
 const AdminReportesPage = () => {

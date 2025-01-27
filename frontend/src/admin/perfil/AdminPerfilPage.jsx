@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { API_BASE_URL } from '../../utils';
-import TituloConRegreso from '../../components/TituloConRegreso';
+import TituloConRegreso from '../../components/TituloConRegreso/TituloConRegreso';
 
 const AdminPerfilPage = () => {
     const [perfil, setPerfil] = useState(null);

@@ -1,6 +1,6 @@
 import React from 'react';
-import CardAnimation from '../components/CardAnimation';
-import TituloConRegreso from '../components/TituloConRegreso';
+import CardAnimation from '../components/CardAnimation/CardAnimation';
+import TituloConRegreso from '../components/TituloConRegreso/TituloConRegreso';
 
 const AdminPage = () => {
     return (

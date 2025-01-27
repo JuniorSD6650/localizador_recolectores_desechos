@@ -1,5 +1,5 @@
 // src/ProtectedRoute.jsx
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const ProtectedRoute = ({ children, requiredRole }) => {
