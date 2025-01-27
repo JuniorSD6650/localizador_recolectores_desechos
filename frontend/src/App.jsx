@@ -10,9 +10,9 @@ import LocalizadorPage from './localizador/LocalizadorPage';
 import AdminReportesPage from './admin/reportes/AdminReportesPage';
 import AdminVehiculosPage from './admin/vehiculos/AdminVehiculosPage';
 import AdminPerfilPage from './admin/perfil/AdminPerfilPage';
-import Report from './report/Report';
-import VehicleList from './vehicle/VehicleList';
-import VehicleDetail from './vehicle/VehicleDetail';
+import Report from './user/report/Report';
+import VehicleList from './user/vehicle/VehicleList';
+import VehicleDetail from './user/vehicle/VehicleDetail';
 import Navbar from './Navbar';
 import ProtectedRoute from './ProtectedRoute';
 

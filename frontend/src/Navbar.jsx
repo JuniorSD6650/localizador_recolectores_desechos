@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import MenuIcon from '@mui/icons-material/Menu';
+import './Navbar.css';
 
 const Navbar = () => {
     const navigate = useNavigate();

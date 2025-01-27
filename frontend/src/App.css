@@ -8,32 +8,6 @@
 body {
   margin: 0;
   overflow-x: hidden;
-  min-height: 100vh;
-}
-
-.navbar-toggler {
-  border: none;
-  padding: 0.25rem 0.5rem;
-}
-
-.navbar-toggler-icon {
-  width: 1.5rem;
-  height: 1.5rem;
-}
-
-.navbar-nav .dropdown-menu {
-  max-width: 100vw;
-}
-
-.navbar-nav .dropdown-toggle::after {
-  display: none;
-}
-
-@media (max-width: 992px) {
-  .navbar-toggler {
-    margin-left: auto;
-    width: auto;
-  }
 }
 
 .btn-register {
@@ -177,10 +151,6 @@ body {
 
 .bg-medium-gray {
   background-color: #848484 !important;
-}
-
-.bg-deep-blue {
-  background-color: #04548c !important;
 }
 
 .bg-bright-green {
