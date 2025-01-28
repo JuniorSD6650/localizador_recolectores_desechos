@@ -6,9 +6,10 @@ exports.up = function (knex) {
     table.string('zona_responsable', 255).nullable();
     table.string('ubicacion_enlace', 255).nullable();
     table.timestamp('fecha_ubicacion_actualizada').nullable();
-    table.string('estado', 50).defaultTo('activo');
-
-    table.integer('organizacion_id').unsigned().references('id').inTable('organizacion').onDelete('CASCADE');
+    table.string('placa', 50).notNullable().unique();
+    table.string('tipo_vehiculo', 50).notNullable();
+    table.string('estado_operativo', 50).defaultTo('operativo');
+    table.integer('zona_id').unsigned().references('id').inTable('zonas').onDelete('CASCADE');
   });
 };
 

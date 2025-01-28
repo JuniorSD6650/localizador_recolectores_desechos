@@ -5,7 +5,7 @@ exports.up = function (knex) {
     table.text('descripcion').notNullable();
     table.string('numero_contacto', 15).nullable();
     table.string('ruta_foto', 255).nullable();
-    table.string('estado', 50).defaultTo('pendiente');
+    table.string('estado_reporte', 50).defaultTo('pendiente');
   });
 };
 
