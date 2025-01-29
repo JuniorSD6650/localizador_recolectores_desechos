@@ -8,6 +8,8 @@ import LocationOnIcon from '@mui/icons-material/LocationOn';
 import UpdateIcon from '@mui/icons-material/Update';
 import './VehicleDetail.css';
 import TituloConRegreso from '../../components/TituloConRegreso/TituloConRegreso';
+import { GoogleMap, LoadScript } from '@react-google-maps/api';
+
 
 const VehicleDetail = () => {
     const { id } = useParams();
@@ -48,6 +50,16 @@ const VehicleDetail = () => {
             </div>
         );
     }
+
+    const containerStyle = {
+        width: '100%',
+        height: '94vh'
+    };
+
+    const center = {
+        lat: -3.745,
+        lng: -38.523
+    };
 
     return (
         <div className="container vehicle-detail-container text-center py-3">
@@ -103,7 +115,21 @@ const VehicleDetail = () => {
                     </div>
                 )}
             </div>
+            <div>
+                <LoadScript googleMapsApiKey="AIzaSyD2nU5cvLIMyqzC7ZhwfdX1G1IplX1_Gkk">
+                    <GoogleMap
+                        mapContainerStyle={containerStyle}
+                        center={center}
+                        zoom={10}
+                    >
+                        { /* Child components, such as markers, info windows, etc. */}
+                        <></>
+                    </GoogleMap>
+                </LoadScript>
+            </div>
         </div>
+
+
     );
 };
 
