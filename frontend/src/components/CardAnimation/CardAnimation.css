@@ -8,21 +8,18 @@
 .card-animation {
     animation: 2s gradient-angle infinite linear;
     border: 2px solid transparent;
-    background-image: linear-gradient(#2a6b45, #0a4b28),
+    background-image: linear-gradient(#2ecc71, #27ae60),
         conic-gradient(from var(--gradient-angle),
-            #2a6b45 0%,
-            #049434 37%,
-            #76c74d 50%,
-            #049434 77%,
-            #2a6b45 90%);
+            #f1c40f 0%,
+            #f18f0f 37%,
+            #f84f00 50%,
+            #f18f0f 77%,
+            #f1c40f 90%);
     background-clip: padding-box, border-box;
     background-origin: padding-box, border-box;
     width: 100%;
-    /* Asegura que la tarjeta ocupe todo el ancho de la columna */
     max-width: 240px;
-    /* Tamaño máximo para mantener consistencia */
     height: 300px;
-    /* Altura fija para todas las tarjetas */
     padding: 20px;
     text-decoration: none;
     color: currentColor;

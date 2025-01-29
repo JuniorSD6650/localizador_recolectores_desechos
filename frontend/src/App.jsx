@@ -79,9 +79,9 @@ function App() {
           }
         />
 
-        <Route path="/report" element={<Report />} />
-        <Route path="/vehicles" element={<VehicleList />} />
-        <Route path="/vehicle/:id" element={<VehicleDetail />} />
+        <Route path="/reportar" element={<Report />} />
+        <Route path="/recolectores" element={<VehicleList />} />
+        <Route path="/recolectores/:id" element={<VehicleDetail />} />
         <Route path="/mapa" element={<Mapa />} />
       </Routes>
     </Router>

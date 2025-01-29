@@ -1,75 +1,93 @@
-import React from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
-import MenuIcon from '@mui/icons-material/Menu';
+import React, { useState, useEffect, useRef } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import NotificationsIcon from '@mui/icons-material/Notifications';
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 
 const Navbar = () => {
-    const navigate = useNavigate();
     const location = useLocation();
+    const [showNotifications, setShowNotifications] = useState(false);
+    const notificationsRef = useRef(null);
 
-    const handleLogout = () => {
-        localStorage.removeItem('token');
-        navigate('/login');
+    const toggleNotifications = () => {
+        setShowNotifications(!showNotifications);
     };
 
-    const token = localStorage.getItem('token');
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (notificationsRef.current && !notificationsRef.current.contains(event.target)) {
+                setShowNotifications(false);
+            }
+        };
 
-    const getHomeRoute = () => {
-        if (!token) return '/';
-
-        if (location.pathname.startsWith('/admin')) {
-            return '/admin';
-        }
-        if (location.pathname.startsWith('/localizador')) {
-            return '/localizador';
-        }
-        return '/';
-    };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, []);
 
     return (
-        <nav className="bg-blue-800 p-4">
-            <div className="container mx-auto flex justify-between items-center">
-                <Link className="text-white text-xl font-bold" to={getHomeRoute()}>
-                    Inicio
-                </Link>
-
-                <button
-                    className="text-white focus:outline-none lg:hidden"
-                    type="button"
-                    onClick={() => {
-                        const nav = document.getElementById('navbarNav');
-                        nav.classList.toggle('hidden');
-                    }}
-                >
-                    <MenuIcon />
-                </button>
-
-                <div className="hidden lg:flex lg:items-center" id="navbarNav">
-                    <ul className="flex flex-col lg:flex-row lg:space-x-6">
-                        <li>
-                            <Link className="text-white hover:text-gray-300" to={getHomeRoute()}>
-                                Inicio
-                            </Link>
-                        </li>
-                        {token ? (
+        <div>
+            <nav className="bg-white border-gray-200 dark:bg-gray-900">
+                <div className="flex flex-wrap justify-between items-center mx-auto max-w-screen-xl p-4">
+                    <a href="https://flowbite.com" className="flex items-center space-x-3 rtl:space-x-reverse no-underline">
+                        <img src="https://flowbite.com/docs/images/logo.svg" className="h-8" alt="Flowbite Logo" />
+                        <span className="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">Sistema Recolector</span>
+                    </a>
+                    <div className="flex items-center space-x-6 rtl:space-x-reverse">
+                        <div className="relative" ref={notificationsRef}>
+                            <button onClick={toggleNotifications} className="text-gray-500 dark:text-white focus:outline-none">
+                                <NotificationsIcon />
+                            </button>
+                            {showNotifications && (
+                                <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg">
+                                    <ul className="py-1">
+                                        <li className="px-4 py-2 text-sm text-gray-700 dark:text-gray-200">Notificación 1</li>
+                                        <li className="px-4 py-2 text-sm text-gray-700 dark:text-gray-200">Notificación 2</li>
+                                        <li className="px-4 py-2 text-sm text-gray-700 dark:text-gray-200">Notificación 3</li>
+                                    </ul>
+                                </div>
+                            )}
+                        </div>
+                        <Link to="/login" className="text-sm text-blue-600 dark:text-blue-500 no-underline">
+                            <AccountCircleIcon />Login
+                        </Link>
+                    </div>
+                </div>
+            </nav>
+            <nav className="bg-gray-50 dark:bg-gray-700">
+                <div className="max-w-screen-xl px-4 py-3 mx-auto">
+                    <div className="flex items-center">
+                        <ul className="flex flex-row font-medium mt-0 space-x-8 rtl:space-x-reverse text-sm">
                             <li>
-                                <button
-                                    className="text-white hover:text-gray-300"
-                                    onClick={handleLogout}
+                                <Link
+                                    to="/"
+                                    className={`text-gray-900 dark:text-white no-underline ${location.pathname === '/' ? 'font-bold' : ''}`}
+                                    aria-current="page"
                                 >
-                                    Cerrar sesión
-                                </button>
-                            </li>
-                        ) : (
-                            <li>
-                                <Link className="text-white hover:text-gray-300" to="/login">
-                                    Login
+                                    Inicio
                                 </Link>
                             </li>
-                        )}
-                    </ul>
+                            <li>
+                                <Link
+                                    to="/reportar"
+                                    className={`text-gray-900 dark:text-white no-underline ${location.pathname === '/reportar' ? 'font-bold' : ''}`}
+                                >
+                                    Reportar
+                                </Link>
+                            </li>
+                            <li>
+                                <Link
+                                    to="/recolectores"
+                                    className={`text-gray-900 dark:text-white no-underline ${location.pathname === '/recolectores' ? 'font-bold' : ''}`}
+                                >
+                                    Recolectores
+                                </Link>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
-            </div>
-        </nav>
+            </nav>
+        </div>
     );
 };
 
