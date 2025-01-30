@@ -187,11 +187,7 @@ const Report = () => {
     };
 
     return (
-<<<<<<< HEAD
-        <div className="container mx-auto text-center py-3">
-=======
         <div className="container mx-auto text-center py-3 px-4">
->>>>>>> nueva-rama
             <TituloConRegreso titulo="Formulario de Reporte" to="/" />
 
             <form onSubmit={handleSubmit} className="space-y-6">

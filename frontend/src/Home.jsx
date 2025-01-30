@@ -22,25 +22,6 @@ const Home = () => {
                     </div>
                 </Carousel>
 
-<<<<<<< HEAD
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
-                    <div className="flex justify-center">
-                        <CardAnimation
-                            title="Reportar"
-                            description="Reporta cualquier acumulación de basura y ayuda a mantener limpia tu comunidad."
-                            to="/reportar"
-                            icon="recycling"
-                        />
-                    </div>
-                    <div className="flex justify-center">
-                        <CardAnimation
-                            title="Lista de Vehículos Recolectores"
-                            description="Consulta la lista de vehículos recolectores disponibles."
-                            to="/recolectores"
-                            icon="shipping"
-                        />
-                    </div>
-=======
                 <div className="flex justify-center gap-10 mt-4">
                     <CardAnimation
                         title="Reportar"
@@ -54,7 +35,6 @@ const Home = () => {
                         to="/recolectores"
                         icon="shipping"
                     />
->>>>>>> nueva-rama
                 </div>
             </div>
         </div>
