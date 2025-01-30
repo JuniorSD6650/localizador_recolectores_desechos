@@ -18,8 +18,13 @@
     background-clip: padding-box, border-box;
     background-origin: padding-box, border-box;
     width: 100%;
+<<<<<<< HEAD
     max-width: 240px;
     height: 250px; /* Reducir la altura */
+=======
+    max-width: 250px;
+    height: 250px;
+>>>>>>> nueva-rama
     padding: 20px;
     text-decoration: none;
     color: currentColor;

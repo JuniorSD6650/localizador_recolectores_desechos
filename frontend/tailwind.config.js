@@ -6,6 +6,7 @@ module.exports = {
     ],
     theme: {
         extend: {
+<<<<<<< HEAD
             colors: {
                 'eco-green': '#2ecc71',       // Verde ambiental
                 'eco-blue': '#3498db',        // Azul ecológico
@@ -21,7 +22,11 @@ module.exports = {
             md: '768px',
             lg: '1024px',
             xl: '1280px',
+=======
+
+>>>>>>> nueva-rama
         },
+
     },
     plugins: [],
 };

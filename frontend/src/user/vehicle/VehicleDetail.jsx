@@ -1,4 +1,3 @@
-// src/VehicleDetail.jsx
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { API_BASE_URL, calculateTimeAgo } from '../../utils';
@@ -6,10 +5,8 @@ import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import PhoneIcon from '@mui/icons-material/Phone';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import UpdateIcon from '@mui/icons-material/Update';
-import './VehicleDetail.css';
 import TituloConRegreso from '../../components/TituloConRegreso/TituloConRegreso';
 import { GoogleMap, LoadScript } from '@react-google-maps/api';
-
 
 const VehicleDetail = () => {
     const { id } = useParams();
@@ -35,15 +32,15 @@ const VehicleDetail = () => {
 
     if (message) {
         return (
-            <div className="error-container">
-                <p className="text-danger">{message}</p>
+            <div className="flex justify-center items-center h-screen">
+                <p className="text-red-500">{message}</p>
             </div>
         );
     }
 
     if (!vehicle) {
         return (
-            <div className="loading-container">
+            <div className="flex justify-center items-center h-screen">
                 <div className="spinner-border text-primary" role="status">
                     <span className="visually-hidden">Cargando...</span>
                 </div>
@@ -53,62 +50,64 @@ const VehicleDetail = () => {
 
     const containerStyle = {
         width: '100%',
-        height: '94vh'
+        height: '420px'
     };
 
     const center = {
-        lat: -3.745,
-        lng: -38.523
+        lat: -9.93062,
+        lng: -76.24223
     };
 
+    const zoomLevel = 14;
+
     return (
-        <div className="container vehicle-detail-container text-center py-3">
-            <TituloConRegreso titulo="Detalles" to="/vehicles" />
-            <div className="vehicle-header">
-                <div className="status-indicator">
+        <div className="container mx-auto text-center py-3 px-4">
+            <TituloConRegreso titulo="Detalles" to="/recolectores" />
+            <div className="flex flex-col items-center mb-4">
+                <div className="flex items-center mb-2">
                     <LocalShippingIcon
-                        className={vehicle.estado === 'activo' ? 'text-success' : 'text-danger'}
+                        className={vehicle.estado === 'activo' ? 'text-green-500' : 'text-red-500'}
                         style={{ fontSize: '2.5rem' }}
                     />
-                    <span className={`status-badge ${vehicle.estado === 'activo' ? 'active' : 'inactive'}`}>
+                    <span className={`ml-2 px-2 py-1 rounded ${vehicle.estado === 'activo' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
                         {vehicle.estado === 'activo' ? 'Activo' : 'Inactivo'}
                     </span>
                 </div>
-                <div className="vehicle-titles">
-                    <h1>{vehicle.nombre_recolector}</h1>
-                    <h2>{vehicle.zona_responsable}</h2>
+                <div>
+                    <h1 className="text-2xl font-bold">{vehicle.nombre_recolector}</h1>
+                    <h2 className="text-xl text-gray-600">{vehicle.zona_responsable}</h2>
                 </div>
             </div>
 
-            <div className="vehicle-info-grid">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                 {vehicle.ubicacion_enlace && (
-                    <div className="info-card location-card">
-                        <LocationOnIcon />
+                    <div className="flex flex-col items-center p-4 bg-white rounded shadow">
+                        <LocationOnIcon className="text-blue-500 mb-2" />
                         <a href={vehicle.ubicacion_enlace}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="btn btn-primary btn-sm">
+                            className="text-blue-500 hover:underline">
                             Localizar Vehículo
                         </a>
                     </div>
                 )}
 
                 {vehicle.telefono_recolector && (
-                    <div className="info-card">
-                        <PhoneIcon />
-                        <div className="info-content">
-                            <span className="info-label">Teléfono</span>
-                            <span className="info-value">{vehicle.telefono_recolector}</span>
+                    <div className="flex flex-col items-center p-4 bg-white rounded shadow">
+                        <PhoneIcon className="text-blue-500 mb-2" />
+                        <div className="text-center">
+                            <span className="block text-gray-600">Teléfono</span>
+                            <span className="block text-gray-800">{vehicle.telefono_recolector}</span>
                         </div>
                     </div>
                 )}
 
                 {vehicle.fecha_ubicacion_actualizada && (
-                    <div className="info-card">
-                        <UpdateIcon />
-                        <div className="info-content">
-                            <span className="info-label">Última actualización</span>
-                            <span className="info-value">
+                    <div className="flex flex-col items-center p-4 bg-white rounded shadow">
+                        <UpdateIcon className="text-blue-500 mb-2" />
+                        <div className="text-center">
+                            <span className="block text-gray-600">Última actualización</span>
+                            <span className="block text-gray-800">
                                 {calculateTimeAgo(vehicle.fecha_ubicacion_actualizada)}
                             </span>
                         </div>
@@ -120,16 +119,13 @@ const VehicleDetail = () => {
                     <GoogleMap
                         mapContainerStyle={containerStyle}
                         center={center}
-                        zoom={10}
+                        zoom={zoomLevel}
                     >
-                        { /* Child components, such as markers, info windows, etc. */}
                         <></>
                     </GoogleMap>
                 </LoadScript>
             </div>
         </div>
-
-
     );
 };
 

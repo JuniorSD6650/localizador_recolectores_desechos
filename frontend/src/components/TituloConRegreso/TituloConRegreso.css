@@ -64,7 +64,11 @@
     font-family: 'Montserrat', sans-serif;
     font-weight: bold;
     letter-spacing: 3px;
+<<<<<<< HEAD
     font-size: 6px;
+=======
+    font-size: 8px;
+>>>>>>> nueva-rama
     margin-top: 3px;
     color: #049434;
 }
