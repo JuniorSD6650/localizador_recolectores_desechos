@@ -187,16 +187,16 @@ const Report = () => {
     };
 
     return (
-        <div className="container text-center py-3">
+        <div className="container mx-auto text-center py-3 px-4">
             <TituloConRegreso titulo="Formulario de Reporte" to="/" />
 
-            <form onSubmit={handleSubmit}>
-                <div className="row mb-3">
-                    <div className="col-md-6">
-                        <label htmlFor="nombreReportante" className="form-label">Nombre del Reportante</label>
+            <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label htmlFor="nombreReportante" className="block text-sm font-medium text-gray-700">Nombre del Reportante</label>
                         <input
                             type="text"
-                            className="form-control"
+                            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-eco-blue focus:border-eco-blue sm:text-sm"
                             id="nombreReportante"
                             value={nombreReportante}
                             onChange={(e) => setNombreReportante(e.target.value)}
@@ -204,11 +204,11 @@ const Report = () => {
                             required
                         />
                     </div>
-                    <div className="col-md-6">
-                        <label htmlFor="numeroContacto" className="form-label">Número de Contacto</label>
+                    <div>
+                        <label htmlFor="numeroContacto" className="block text-sm font-medium text-gray-700">Número de Contacto</label>
                         <input
                             type="text"
-                            className="form-control"
+                            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-eco-blue focus:border-eco-blue sm:text-sm"
                             id="numeroContacto"
                             value={numeroContacto}
                             onChange={handlePhoneChange}
@@ -218,14 +218,14 @@ const Report = () => {
                             title="Debe ingresar exactamente 9 números"
                         />
                         {numeroContacto && numeroContacto.length !== 9 && (
-                            <small className="text-danger">El número debe tener 9 dígitos</small>
+                            <small className="text-red-500">El número debe tener 9 dígitos</small>
                         )}
                     </div>
                 </div>
                 <div className="mb-3">
                     <label htmlFor="descripcion" className="form-label">Descripción del Reporte</label>
                     <textarea
-                        className="form-control"
+                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-eco-blue focus:border-eco-blue sm:text-sm"
                         id="descripcion"
                         rows="5"
                         value={descripcion}
@@ -235,19 +235,19 @@ const Report = () => {
                     ></textarea>
                 </div>
 
-                <div className="mb-3">
-                    <label className="form-label d-block">Foto (opcional)</label>
-                    <div className="d-flex flex-column flex-sm-row gap-2 justify-content-center align-items-center">
+                <div>
+                    <label className="block text-sm font-medium text-gray-700">Foto (opcional)</label>
+                    <div className="flex flex-col sm:flex-row gap-2 justify-center items-center">
                         <button
                             type="button"
-                            className={`btn ${selectedOption === 'file' ? 'btn-primary' : 'btn-secondary'} w-100 w-sm-auto`}
+                            className={`w-full sm:w-auto px-4 py-2 rounded-md ${selectedOption === 'file' ? 'bg-blue-500 text-white' : 'bg-gray-300 text-gray-700'}`}
                             onClick={() => handleOptionChange('file')}
                         >
                             Subir Archivo
                         </button>
                         <button
                             type="button"
-                            className={`btn ${selectedOption === 'camera' ? 'btn-primary' : 'btn-secondary'} w-100 w-sm-auto`}
+                            className={`w-full sm:w-auto px-4 py-2 rounded-md ${selectedOption === 'camera' ? 'bg-blue-500 text-white' : 'bg-gray-300 text-gray-700'}`}
                             onClick={() => handleOptionChange('camera')}
                         >
                             Usar Cámara
@@ -258,7 +258,7 @@ const Report = () => {
                         <div className="mt-2">
                             <input
                                 type="file"
-                                className="form-control"
+                                className="block w-full text-sm text-gray-700 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                 accept="image/*"
                                 onChange={handleFileChange}
                             />
@@ -267,8 +267,7 @@ const Report = () => {
                                     <img
                                         src={URL.createObjectURL(foto)}
                                         alt="Vista previa"
-                                        className="img-thumbnail"
-                                        style={{ maxHeight: '200px' }}
+                                        className="max-h-52 rounded-md"
                                     />
                                 </div>
                             )}
@@ -280,7 +279,7 @@ const Report = () => {
                             {availableCameras.length > 1 && (
                                 <div className="mb-2">
                                     <select
-                                        className="form-select w-auto mx-auto"
+                                        className="block w-full text-sm text-gray-700 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                         value={selectedCamera}
                                         onChange={(e) => handleCameraChange(e.target.value)}
                                     >
@@ -296,13 +295,12 @@ const Report = () => {
                                 ref={videoRef}
                                 autoPlay
                                 playsInline
-                                className="w-100"
-                                style={{ maxWidth: '640px' }}
+                                className="w-full max-w-lg mx-auto rounded-md"
                             ></video>
                             {isCameraActive && (
                                 <button
                                     type="button"
-                                    className="btn btn-info mt-2"
+                                    className="mt-2 px-4 py-2 bg-blue-500 text-white rounded-md"
                                     onClick={takePhoto}
                                 >
                                     Tomar Foto
@@ -313,17 +311,16 @@ const Report = () => {
                     )}
 
                     {foto && selectedOption === '' && (
-                        <div className="mt-2">
+                        <div className="mt-2 text-center">
                             <p>Foto capturada:</p>
                             <img
                                 src={URL.createObjectURL(foto)}
                                 alt="Foto capturada"
-                                className="img-thumbnail"
-                                style={{ maxHeight: '200px' }}
+                                className="max-h-52 rounded-md mx-auto"
                             />
                             <button
                                 type="button"
-                                className="btn btn-danger d-block mt-2 mx-auto"
+                                className="mt-2 px-4 py-2 bg-red-500 text-white rounded-md"
                                 onClick={() => setFoto(null)}
                             >
                                 Eliminar Foto
@@ -332,7 +329,7 @@ const Report = () => {
                     )}
                 </div>
 
-                <button type="submit" className="btn btn-primary">
+                <button type="submit" className="w-full px-4 py-2 bg-blue-500 text-white rounded-md">
                     Enviar Reporte
                 </button>
             </form>

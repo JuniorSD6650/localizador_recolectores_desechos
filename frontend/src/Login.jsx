@@ -44,33 +44,35 @@ const Login = () => {
     };
 
     return (
-        <div className="d-flex justify-content-center align-items-center vh-100 bg-light">
-            <div className="login-card shadow p-4 rounded bg-white">
-                <h2 className="text-center mb-4">Iniciar sesión</h2>
-                <form onSubmit={handleSubmit}>
-                    <div className="mb-3">
-                        <label className="form-label">Username:</label>
+        <div className="flex justify-center items-center min-h-[80vh]">
+            <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
+                <h2 className="text-2xl font-bold text-center">Iniciar sesión</h2>
+                <form onSubmit={handleSubmit} className="space-y-6">
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Username:</label>
                         <input
                             type="text"
-                            className="form-control"
+                            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                             value={username}
                             onChange={(e) => setUsername(e.target.value)}
                             required
                         />
                     </div>
                     <div className="mb-3">
-                        <label className="form-label">Password:</label>
+                        <label className="block text-sm font-medium text-gray-700">Password:</label>
                         <input
                             type="password"
-                            className="form-control"
+                            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             required
                         />
                     </div>
-                    <button type="submit" className="btn btn-success w-100">Iniciar sesión</button>
+                    <button type="submit" className="w-full py-2 px-4 bg-green-600 text-white font-medium rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                        Iniciar sesión
+                    </button>
                 </form>
-                {message && <p className="text-danger text-center mt-3">{message}</p>}
+                {message && <p className="mt-3 text-center text-red-600">{message}</p>}
             </div>
         </div>
     );
