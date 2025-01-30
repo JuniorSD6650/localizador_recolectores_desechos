@@ -7,7 +7,7 @@ const AdminPage = () => {
         <div className="container text-center py-3 px-5">
             <TituloConRegreso titulo="Vista de Administrador" />
 
-            <div className="row g-4 px-5 pt-5">
+            <div className="row g-4 px-5 pt-5 mt-5">
                 <div className="col-12 col-sm-6 col-md-4 col-lg-3 d-flex justify-content-center">
                     <CardAnimation
                         title="Perfil"

@@ -9,24 +9,21 @@ const Home = () => {
         <div className="text-center py-3">
             <TituloConRegreso titulo="Bienvenido a la Aplicación" className="mb-4" />
 
-            <div className="container px-5">
-                <Carousel showThumbs={false} autoPlay infiniteLoop>
+            <div className="container mx-auto px-5">
+                <Carousel showThumbs={false} autoPlay infiniteLoop showArrows={false} swipeable emulateTouch>
                     <div>
-                        <img src="/images/conciencia-ambienta.jpg" alt="Noticia 1" className="carousel-image" />
-                        <p className="legend">Noticia 1: Detalles de la noticia 1.</p>
+                        <img src="/images/conciencia-ambienta.jpg" alt="Noticia 1" className="carousel-image" draggable="false" style={{ userSelect: 'none' }} />
                     </div>
                     <div>
-                        <img src="/images/conciencia-ambienta2.jpg" alt="Aviso 1" className="carousel-image" />
-                        <p className="legend">Aviso 1: Detalles del aviso 1.</p>
+                        <img src="/images/conciencia-ambienta2.jpg" alt="Aviso 1" className="carousel-image" draggable="false" style={{ userSelect: 'none' }} />
                     </div>
                     <div>
-                        <img src="/images/conciencia-ambienta3.jpg" alt="Comunicado 1" className="carousel-image" />
-                        <p className="legend">Comunicado 1: Detalles del comunicado 1.</p>
+                        <img src="/images/conciencia-ambienta3.jpg" alt="Comunicado 1" className="carousel-image" draggable="false" style={{ userSelect: 'none' }} />
                     </div>
                 </Carousel>
 
-                <div className="row row-cols-1 row-cols-sm-2 g-2 mt-4">
-                    <div className="col d-flex justify-content-center">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+                    <div className="flex justify-center">
                         <CardAnimation
                             title="Reportar"
                             description="Reporta cualquier acumulación de basura y ayuda a mantener limpia tu comunidad."
@@ -34,7 +31,7 @@ const Home = () => {
                             icon="recycling"
                         />
                     </div>
-                    <div className="col d-flex justify-content-center">
+                    <div className="flex justify-center">
                         <CardAnimation
                             title="Lista de Vehículos Recolectores"
                             description="Consulta la lista de vehículos recolectores disponibles."

@@ -1,5 +1,5 @@
 /** @type {import('tailwindcss').Config} */
-export default {
+module.exports = {
     content: [
         "./index.html",
         "./src/**/*.{js,ts,jsx,tsx}",
@@ -12,7 +12,8 @@ export default {
                 'eco-gray': '#34495e',        // Gris profesional
                 'eco-white': '#ffffff',       // Blanco puro
                 'eco-yellow': '#f1c40f',      // Amarillo energético
-                'eco-dark-green': '#27ae60',  // Verde oscuro
+                'eco-dark-green': '#049434',  // Verde oscuro
+                'eco-red': '#e74c3c',         // Rojo ecológico
             },
         },
         screens: {
