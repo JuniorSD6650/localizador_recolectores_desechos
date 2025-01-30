@@ -218,11 +218,7 @@ const Report = () => {
                             title="Debe ingresar exactamente 9 números"
                         />
                         {numeroContacto && numeroContacto.length !== 9 && (
-<<<<<<< HEAD
-                            <small className="text-eco-red">El número debe tener 9 dígitos</small>
-=======
                             <small className="text-red-500">El número debe tener 9 dígitos</small>
->>>>>>> nueva-rama
                         )}
                     </div>
                 </div>
@@ -244,22 +240,14 @@ const Report = () => {
                     <div className="flex flex-col sm:flex-row gap-2 justify-center items-center">
                         <button
                             type="button"
-<<<<<<< HEAD
-                            className={`w-full sm:w-auto px-4 py-2 rounded-md ${selectedOption === 'file' ? 'bg-eco-blue text-white' : 'bg-gray-300 text-gray-700'}`}
-=======
                             className={`w-full sm:w-auto px-4 py-2 rounded-md ${selectedOption === 'file' ? 'bg-blue-500 text-white' : 'bg-gray-300 text-gray-700'}`}
->>>>>>> nueva-rama
                             onClick={() => handleOptionChange('file')}
                         >
                             Subir Archivo
                         </button>
                         <button
                             type="button"
-<<<<<<< HEAD
-                            className={`w-full sm:w-auto px-4 py-2 rounded-md ${selectedOption === 'camera' ? 'bg-eco-blue text-white' : 'bg-gray-300 text-gray-700'}`}
-=======
                             className={`w-full sm:w-auto px-4 py-2 rounded-md ${selectedOption === 'camera' ? 'bg-blue-500 text-white' : 'bg-gray-300 text-gray-700'}`}
->>>>>>> nueva-rama
                             onClick={() => handleOptionChange('camera')}
                         >
                             Usar Cámara
@@ -270,11 +258,7 @@ const Report = () => {
                         <div className="mt-2">
                             <input
                                 type="file"
-<<<<<<< HEAD
-                                className="block w-full text-sm text-gray-700 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-eco-blue focus:border-eco-blue"
-=======
                                 className="block w-full text-sm text-gray-700 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
->>>>>>> nueva-rama
                                 accept="image/*"
                                 onChange={handleFileChange}
                             />
@@ -295,11 +279,7 @@ const Report = () => {
                             {availableCameras.length > 1 && (
                                 <div className="mb-2">
                                     <select
-<<<<<<< HEAD
-                                        className="block w-full text-sm text-gray-700 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-eco-blue focus:border-eco-blue"
-=======
                                         className="block w-full text-sm text-gray-700 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
->>>>>>> nueva-rama
                                         value={selectedCamera}
                                         onChange={(e) => handleCameraChange(e.target.value)}
                                     >
@@ -320,11 +300,7 @@ const Report = () => {
                             {isCameraActive && (
                                 <button
                                     type="button"
-<<<<<<< HEAD
-                                    className="mt-2 px-4 py-2 bg-eco-blue text-white rounded-md"
-=======
                                     className="mt-2 px-4 py-2 bg-blue-500 text-white rounded-md"
->>>>>>> nueva-rama
                                     onClick={takePhoto}
                                 >
                                     Tomar Foto
@@ -340,19 +316,11 @@ const Report = () => {
                             <img
                                 src={URL.createObjectURL(foto)}
                                 alt="Foto capturada"
-<<<<<<< HEAD
-                                className="max-h-52 rounded-md"
-                            />
-                            <button
-                                type="button"
-                                className="mt-2 px-4 py-2 bg-eco-red text-white rounded-md"
-=======
                                 className="max-h-52 rounded-md mx-auto"
                             />
                             <button
                                 type="button"
                                 className="mt-2 px-4 py-2 bg-red-500 text-white rounded-md"
->>>>>>> nueva-rama
                                 onClick={() => setFoto(null)}
                             >
                                 Eliminar Foto
@@ -361,11 +329,7 @@ const Report = () => {
                     )}
                 </div>
 
-<<<<<<< HEAD
-                <button type="submit" className="w-full px-4 py-2 bg-eco-blue text-white rounded-md">
-=======
                 <button type="submit" className="w-full px-4 py-2 bg-blue-500 text-white rounded-md">
->>>>>>> nueva-rama
                     Enviar Reporte
                 </button>
             </form>
