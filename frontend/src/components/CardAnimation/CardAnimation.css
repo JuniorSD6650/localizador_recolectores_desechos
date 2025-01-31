@@ -8,7 +8,7 @@
 .card-animation {
     animation: 2s gradient-angle infinite linear;
     border: 2px solid transparent;
-    background-image: linear-gradient(#06bb42, #049434),
+    background-image: linear-gradient(#5FBB01, #5FBB01),
         conic-gradient(from var(--gradient-angle),
             #3498db 0%,
             #F38E00 37%,
