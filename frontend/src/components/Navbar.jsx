@@ -30,28 +30,33 @@ const Navbar = () => {
             <nav className="bg-white border-gray-200 dark:bg-gray-900">
                 <div className="flex flex-wrap justify-between items-center mx-auto max-w-screen-xl p-4">
                     <a href="/" className="flex items-center justify-center space-x-3 rtl:space-x-reverse no-underline">
-                        <img src="/images/logo_amarilis.png" alt="Logo Amarilis" className="mx-auto mb-4" style={{ width: '250px', height: 'auto' }} />
+                        <img src="/images/logo_amarilis.png" alt="Logo Amarilis" className="mx-auto" style={{ width: '290px', height: 'auto' }} />
                     </a>
                     <div className="flex items-center space-x-6 rtl:space-x-reverse">
                         <Link
                             to="/"
-                            className={`text-gray-900 dark:text-white no-underline ${location.pathname === '/' ? 'font-bold' : ''}`}
+                            className={`text-gray-900 dark:text-white no-underline ${location.pathname === '/' ? 'font-bold border-b-2 border-green-500' : ''}`}
                             aria-current="page"
                         >
                             Inicio
                         </Link>
                         <Link
                             to="/reportar"
-                            className={`text-gray-900 dark:text-white no-underline ${location.pathname === '/reportar' ? 'font-bold' : ''}`}
+                            className={`text-gray-900 dark:text-white no-underline ${location.pathname === '/reportar' ? 'font-bold border-b-2 border-green-500' : ''}`}
                         >
                             Reportar
                         </Link>
                         <Link
                             to="/recolectores"
-                            className={`text-gray-900 dark:text-white no-underline ${location.pathname === '/recolectores' ? 'font-bold' : ''}`}
+                            className={`text-gray-900 dark:text-white no-underline ${location.pathname === '/recolectores' ? 'font-bold border-b-2 border-green-500' : ''}`}
                         >
                             Recolectores
                         </Link>
+
+                        <Link to="/login" className="text-sm text-gray-600 dark:text-gray-500 no-underline">
+                            <AccountCircleIcon />Login
+                        </Link>
+
                         <div className="relative" ref={notificationsRef}>
                             <button onClick={toggleNotifications} className="text-gray-500 dark:text-white focus:outline-none">
                                 <NotificationsIcon />
@@ -66,9 +71,6 @@ const Navbar = () => {
                                 </div>
                             )}
                         </div>
-                        <Link to="/login" className="text-sm text-gray-600 dark:text-gray-500 no-underline">
-                            <AccountCircleIcon />Login
-                        </Link>
                     </div>
                 </div>
             </nav>
