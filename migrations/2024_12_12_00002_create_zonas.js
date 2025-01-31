@@ -4,7 +4,7 @@ exports.up = function (knex) {
     table.string('nombre', 255).notNullable();
     table.text('descripcion').nullable();
     table.string('imagen', 500).nullable();
-    table.integer('organizacion_id').unsigned().references('id').inTable('organizacion').onDelete('CASCADE');
+    table.integer('organizacion_id').unsigned().references('id').inTable('organizacion').onDelete('RESTRICT')
 
   });
 };
