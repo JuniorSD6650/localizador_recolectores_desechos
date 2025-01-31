@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { API_BASE_URL, BASE_URL, showSuccessAlert, showErrorAlert, showCustomAlert } from '../../utils';
 import TituloConRegreso from '../../components/TituloConRegreso/TituloConRegreso';
+
+// Icons
+import CleaningServicesIcon from '@mui/icons-material/CleaningServices';
 import VisibilityIcon from '@mui/icons-material/Visibility';
+import SearchIcon from '@mui/icons-material/Search';
 
 const AdminReportesPage = () => {
     const [reportes, setReportes] = useState([]);
@@ -39,7 +43,7 @@ const AdminReportesPage = () => {
                 cancelButtonText: 'Cancelar',
             });
 
-            if (confirmed?.isConfirmed) { 
+            if (confirmed?.isConfirmed) {
                 const response = await fetch(`${API_BASE_URL}reportes/${id}`, {
                     method: 'PUT',
                     headers: {
@@ -77,7 +81,7 @@ const AdminReportesPage = () => {
                 cancelButtonText: 'Cancelar',
             });
 
-            if (confirmed?.isConfirmed) { 
+            if (confirmed?.isConfirmed) {
                 const response = await fetch(`${API_BASE_URL}reportes/${id}`, {
                     method: 'DELETE',
                 });
@@ -107,64 +111,100 @@ const AdminReportesPage = () => {
     };
 
     return (
-        <div className="container py-3">
+        <div className="container mx-auto py-3">
             <TituloConRegreso titulo="Gestión de Reportes" to="/admin" />
 
-            {message && <p className="text-danger">{message}</p>}
+            {message && <p className="text-red-500">{message}</p>}
 
-            <div className="list-group mt-4">
+            <div className="bg-gray-50 p-6 rounded-lg shadow-md mb-6">
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+                    <div className="md:col-span-2">
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                            <input className="border p-2 rounded" placeholder="Filtro 1" />
+                            <input className="border p-2 rounded" placeholder="Filtro 2" />
+                            <input className="border p-2 rounded" placeholder="Filtro 3" />
+                        </div>
+                    </div>
+
+                    <div>
+
+                        <div className="flex md:justify-end md:items-start space-x-4">
+                            <button
+                                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            >
+                                <SearchIcon /> Buscar
+                            </button>
+                            <button
+                                className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500"
+                            >
+                                <CleaningServicesIcon /> Limpiar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
                 {reportes.length === 0 ? (
                     <p>No hay reportes disponibles</p>
                 ) : (
                     reportes.map((reporte) => (
-                        <div key={reporte.id} className="list-group-item">
-                            <div className="row g-3">
-                                <div className="col-12">
-                                    <strong className="fs-5 d-block">{reporte.nombre_reportante}</strong>
-                                    <p className="mb-2">{reporte.descripcion}</p>
-                                    <p className="mb-2">
-                                        <strong>Número de Contacto:</strong>{' '}
-                                        {reporte.numero_contacto ? reporte.numero_contacto : 'Sin número disponible'}
-                                    </p>
+                        <div key={reporte.id} className="bg-white p-4 rounded-lg shadow-md">
+                            <div className="space-y-2">
+                                <strong className="text-lg block">{reporte.nombre_reportante}</strong>
+                                <p className="text-gray-700">{reporte.descripcion}</p>
+                                <p className="text-gray-700">
+                                    <strong>Número de Contacto:</strong>{' '}
+                                    {reporte.numero_contacto ? reporte.numero_contacto : 'Sin número disponible'}
+                                </p>
 
-                                    <div className="d-flex flex-wrap gap-2 align-items-center">
-                                        {reporte.ruta_foto && (
-                                            <button
-                                                className="btn btn-outline-primary btn-sm"
-                                                onClick={() => handleShowImage(reporte.ruta_foto)}
-                                            >
-                                                <VisibilityIcon /> Ver Imagen
-                                            </button>
-                                        )}
-                                        <span className={`badge ${reporte.estado === 'pendiente' ? 'bg-warning' : 'bg-success'}`}>
-                                            {reporte.estado}
-                                        </span>
-                                    </div>
+                                <div className="flex flex-wrap gap-2 items-center">
+                                    {reporte.ruta_foto && (
+                                        <button
+                                            className="flex items-center gap-1 px-3 py-1.5 text-sm text-blue-600 border border-blue-600 rounded hover:bg-blue-50"
+                                            onClick={() => handleShowImage(reporte.ruta_foto)}
+                                        >
+                                            <VisibilityIcon fontSize="small" /> Ver Imagen
+                                        </button>
+                                    )}
+                                    <span
+                                        className={`px-2 py-1 text-sm rounded ${reporte.estado === 'pendiente'
+                                            ? 'bg-yellow-100 text-yellow-800'
+                                            : 'bg-green-100 text-green-800'
+                                            }`}
+                                    >
+                                        {reporte.estado}
+                                    </span>
                                 </div>
+                            </div>
 
-                                <div className="col-12">
-                                    <div className="d-flex flex-wrap gap-2">
-                                        <button
-                                            className="btn btn-sm btn-primary"
-                                            onClick={() => handleEstadoChange(reporte.id, 'revisado')}
-                                            disabled={reporte.estado === 'revisado'}
-                                        >
-                                            Marcar como Revisado
-                                        </button>
-                                        <button
-                                            className="btn btn-sm btn-danger"
-                                            onClick={() => handleEliminar(reporte.id)}
-                                        >
-                                            Eliminar
-                                        </button>
-                                    </div>
-                                </div>
+                            <div className="flex flex-wrap gap-2 mt-3">
+                                <button
+                                    className={`px-3 py-1.5 text-sm rounded ${reporte.estado === 'revisado'
+                                        ? 'bg-blue-300 text-white cursor-not-allowed'
+                                        : 'bg-blue-600 text-white hover:bg-blue-700'
+                                        }`}
+                                    onClick={() => handleEstadoChange(reporte.id, 'revisado')}
+                                    disabled={reporte.estado === 'revisado'}
+                                >
+                                    Marcar como Revisado
+                                </button>
+                                <button
+                                    className="px-3 py-1.5 text-sm bg-red-600 text-white rounded hover:bg-red-700"
+                                    onClick={() => handleEliminar(reporte.id)}
+                                >
+                                    Eliminar
+                                </button>
                             </div>
                         </div>
                     ))
                 )}
             </div>
 
+            {/* Modal para la imagen */}
             {showModal && (
                 <div
                     style={{
@@ -183,18 +223,18 @@ const AdminReportesPage = () => {
                 >
                     <div
                         style={{
-                            position: 'relative',
                             backgroundColor: '#fff',
                             padding: '20px',
                             borderRadius: '8px',
-                            maxWidth: '90%',
-                            maxHeight: '90%',
+                            width: '90%',
+                            maxWidth: '600px',
+                            maxHeight: '80vh',
                             overflow: 'auto',
+                            position: 'relative',
                         }}
                         onClick={(e) => e.stopPropagation()}
                     >
                         <button
-                            onClick={handleCloseModal}
                             style={{
                                 position: 'absolute',
                                 top: '10px',
@@ -203,21 +243,33 @@ const AdminReportesPage = () => {
                                 border: 'none',
                                 fontSize: '18px',
                                 cursor: 'pointer',
+                                color: '#4a5568',
                             }}
+                            onClick={handleCloseModal}
                         >
                             ✕
                         </button>
                         {selectedImage && (
-                            <img
-                                src={selectedImage}
-                                alt="Reporte"
+                            <div
                                 style={{
-                                    maxWidth: '90%',
-                                    maxHeight: 'calc(90vh - 90px)',
-                                    display: 'block',
-                                    margin: '0 auto',
+                                    width: '100%',
+                                    height: '600px',
+                                    overflow: 'hidden',
+                                    display: 'flex',
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
                                 }}
-                            />
+                            >
+                                <img
+                                    src={selectedImage}
+                                    alt="Reporte"
+                                    style={{
+                                        maxWidth: '100%',
+                                        maxHeight: '100%',
+                                        objectFit: 'contain',
+                                    }}
+                                />
+                            </div>
                         )}
                     </div>
                 </div>

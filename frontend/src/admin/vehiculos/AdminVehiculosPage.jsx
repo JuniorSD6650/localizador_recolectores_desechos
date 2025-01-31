@@ -1,5 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { API_BASE_URL, showSuccessAlert, showErrorAlert, showCustomAlert } from '../../utils';
+import {
+    API_BASE_URL,
+    showSuccessAlert,
+    showErrorAlert,
+    showCustomAlert,
+} from '../../utils';
 import TituloConRegreso from '../../components/TituloConRegreso/TituloConRegreso';
 import RegisterVehicleModal from './RegisterVehicleModal';
 import EditVehicleModal from './EditVehicleModal';
@@ -31,13 +36,13 @@ const AdminVehiculosPage = () => {
     }, []);
 
     const handleRegister = (newVehicle) => {
-        setVehiculos((prevVehiculos) => [...prevVehiculos, newVehicle]);
+        setVehiculos((prev) => [...prev, newVehicle]);
         obtener();
     };
 
     const handleUpdate = (updatedVehicle) => {
-        setVehiculos((prevVehiculos) =>
-            prevVehiculos.map((vehiculo) =>
+        setVehiculos((prev) =>
+            prev.map((vehiculo) =>
                 vehiculo.id === updatedVehicle.id ? updatedVehicle : vehiculo
             )
         );
@@ -61,7 +66,7 @@ const AdminVehiculosPage = () => {
                 });
 
                 if (response.ok) {
-                    setVehiculos((prevVehiculos) => prevVehiculos.filter((vehiculo) => vehiculo.id !== id));
+                    setVehiculos((prev) => prev.filter((veh) => veh.id !== id));
                     showSuccessAlert('Eliminado', 'El vehículo se eliminó con éxito.');
                 } else {
                     showErrorAlert('Error', 'No se pudo eliminar el vehículo.');
@@ -73,65 +78,86 @@ const AdminVehiculosPage = () => {
     };
 
     return (
-        <div className="container my-5 text-center">
+        <div className="max-w-full px-4 my-5 text-center">
             <TituloConRegreso titulo="Gestión de Vehículos" to="/admin" />
 
-            {message && <p className="text-danger">{message}</p>}
+            {message && <p className="text-red-500">{message}</p>}
 
-            <div className="mb-3 d-flex justify-content-end">
-                <button className="bg-eco-blue" onClick={() => setShowRegisterModal(true)}>
+            <div className="flex justify-end">
+                <button
+                    className="bg-blue-500 text-white text-sm p-2 rounded-md hover:bg-blue-600 mb-1"
+                    style={{ width: 'auto' }}
+                    onClick={() => setShowRegisterModal(true)}
+                >
                     Nuevo Vehículo
                 </button>
             </div>
 
             {vehiculos.length === 0 ? (
-                <p className="text-center">No hay vehículos registrados</p>
+                <p>No hay vehículos registrados</p>
             ) : (
-                <div className="table-responsive">
-                    <table className="table table-striped table-hover text-center">
-                        <thead className="table-light">
+                <div className="overflow-x-auto">
+                    <table className="min-w-full bg-white border border-gray-200">
+                        <thead className="bg-gray-50">
                             <tr>
-                                <th>Nombre</th>
-                                <th>Teléfono</th>
-                                <th>Zona Responsable</th>
-                                <th>Ubicación</th>
-                                <th>Actualización Ubicación</th>
-                                <th>Estado</th>
-                                <th>Acciones</th>
+                                <th className="px-6 py-3 border-b">Nombre</th>
+                                <th className="px-6 py-3 border-b">Teléfono</th>
+                                <th className="px-6 py-3 border-b">Zona Responsable</th>
+                                <th className="px-6 py-3 border-b">Ubicación</th>
+                                <th className="px-6 py-3 border-b">Actualización Ubicación</th>
+                                <th className="px-6 py-3 border-b">Estado</th>
+                                <th className="px-6 py-3 border-b">Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
                             {vehiculos.map((vehiculo) => (
-                                <tr key={vehiculo.id}>
-                                    <td>{vehiculo.nombre_recolector}</td>
-                                    <td>{vehiculo.telefono_recolector || 'No disponible'}</td>
-                                    <td>{vehiculo.zona_responsable || 'No disponible'}</td>
-                                    <td>{vehiculo.ubicacion_enlace || 'No disponible'}</td>
-                                    <td>{vehiculo.fecha_ubicacion_actualizada || 'No disponible'}</td>
-                                    <td>
+                                <tr key={vehiculo.id} className="hover:bg-gray-50">
+                                    <td className="px-6 py-4 border-b">
+                                        {vehiculo.nombre_recolector}
+                                    </td>
+                                    <td className="px-6 py-4 border-b">
+                                        {vehiculo.telefono_recolector || 'No disponible'}
+                                    </td>
+                                    <td className="px-6 py-4 border-b">
+                                        {vehiculo.zona_responsable || 'No disponible'}
+                                    </td>
+                                    <td className="px-6 py-4 border-b">
+                                        {vehiculo.ubicacion_enlace || 'No disponible'}
+                                    </td>
+                                    <td className="px-6 py-4 border-b">
+                                        {vehiculo.fecha_ubicacion_actualizada || 'No disponible'}
+                                    </td>
+                                    <td className="px-6 py-4 border-b">
                                         <span
-                                            className={`badge ${vehiculo.estado === 'activo' ? 'bg-success' : 'bg-danger'
+                                            className={`inline-block px-2 py-1 text-xs font-semibold rounded-full ${vehiculo.estado === 'activo'
+                                                ? 'bg-green-100 text-green-800'
+                                                : 'bg-red-100 text-red-800'
                                                 }`}
                                         >
-                                            {vehiculo.estado.charAt(0).toUpperCase() + vehiculo.estado.slice(1)}
+                                            {vehiculo.estado
+                                                ? vehiculo.estado.charAt(0).toUpperCase() +
+                                                vehiculo.estado.slice(1)
+                                                : 'Desconocido'}
                                         </span>
                                     </td>
-                                    <td>
-                                        <button
-                                            className="btn-edit me-2"
-                                            onClick={() => {
-                                                setSelectedVehicle(vehiculo);
-                                                setShowEditModal(true);
-                                            }}
-                                        >
-                                            Editar
-                                        </button>
-                                        <button
-                                            className="btn-delete"
-                                            onClick={() => handleDelete(vehiculo.id)}
-                                        >
-                                            Eliminar
-                                        </button>
+                                    <td className="px-6 py-4 border-b">
+                                        <div className="flex space-x-2">
+                                            <button
+                                                className="bg-yellow-400 text-white px-4 py-2 rounded-md hover:bg-yellow-500"
+                                                onClick={() => {
+                                                    setSelectedVehicle(vehiculo);
+                                                    setShowEditModal(true);
+                                                }}
+                                            >
+                                                Editar
+                                            </button>
+                                            <button
+                                                className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600"
+                                                onClick={() => handleDelete(vehiculo.id)}
+                                            >
+                                                Eliminar
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                             ))}

@@ -13,9 +13,7 @@ const RegisterLocalizadorModal = ({ show, onClose, onRegister, recolectores }) =
         try {
             const response = await fetch(`${API_BASE_URL}usuarios`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData),
             });
 
@@ -24,11 +22,7 @@ const RegisterLocalizadorModal = ({ show, onClose, onRegister, recolectores }) =
                 onRegister(newLocalizador);
                 showSuccessAlert('Éxito', 'Localizador registrado correctamente');
                 onClose();
-                setFormData({
-                    username: '',
-                    password: '',
-                    recolector_id: null,
-                });
+                setFormData({ username: '', password: '', recolector_id: null });
             } else {
                 showErrorAlert('Error', 'No se pudo registrar el localizador');
             }
@@ -41,7 +35,9 @@ const RegisterLocalizadorModal = ({ show, onClose, onRegister, recolectores }) =
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-            <div className="bg-white rounded-lg shadow-lg w-full max-w-md">
+
+            <div className="bg-white rounded-lg shadow-lg w-full max-w-md relative">
+
                 <div className="p-6 border-b">
                     <h5 className="text-xl font-semibold">Registrar Nuevo Localizador</h5>
                     <button
@@ -52,42 +48,49 @@ const RegisterLocalizadorModal = ({ show, onClose, onRegister, recolectores }) =
                         &times;
                     </button>
                 </div>
+
                 <form onSubmit={handleSubmit}>
                     <div className="p-6 space-y-4">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700">Username</label>
+                            <label className="block text-sm font-medium text-gray-700">
+                                Username
+                            </label>
                             <input
                                 type="text"
-                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                required
+                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md 
+                           shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                 value={formData.username}
                                 onChange={(e) =>
-                                    setFormData({
-                                        ...formData,
-                                        username: e.target.value,
-                                    })
+                                    setFormData({ ...formData, username: e.target.value })
                                 }
-                                required
                             />
                         </div>
+
                         <div>
-                            <label className="block text-sm font-medium text-gray-700">Contraseña</label>
+                            <label className="block text-sm font-medium text-gray-700">
+                                Contraseña
+                            </label>
                             <input
                                 type="password"
-                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                required
+                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md 
+                           shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                 value={formData.password}
                                 onChange={(e) =>
-                                    setFormData({
-                                        ...formData,
-                                        password: e.target.value,
-                                    })
+                                    setFormData({ ...formData, password: e.target.value })
                                 }
-                                required
                             />
                         </div>
+
                         <div>
-                            <label className="block text-sm font-medium text-gray-700">Recolector Asignado</label>
+                            <label className="block text-sm font-medium text-gray-700">
+                                Recolector Asignado
+                            </label>
                             <select
-                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                required
+                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md 
+                           shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                 value={formData.recolector_id || ''}
                                 onChange={(e) =>
                                     setFormData({
@@ -95,19 +98,19 @@ const RegisterLocalizadorModal = ({ show, onClose, onRegister, recolectores }) =
                                         recolector_id: e.target.value || null,
                                     })
                                 }
-                                required
                             >
                                 <option value="" disabled>
                                     Seleccionar un recolector
                                 </option>
-                                {recolectores.map((recolector) => (
-                                    <option key={recolector.id} value={recolector.id}>
-                                        {recolector.nombre_recolector}
+                                {recolectores.map((rec) => (
+                                    <option key={rec.id} value={rec.id}>
+                                        {rec.nombre_recolector}
                                     </option>
                                 ))}
                             </select>
                         </div>
                     </div>
+
                     <div className="p-6 border-t flex justify-end space-x-3">
                         <button
                             type="submit"

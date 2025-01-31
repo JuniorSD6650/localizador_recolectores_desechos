@@ -10,8 +10,11 @@ const RegisterVehicleModal = ({ show, onClose, onRegister }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        if (telefono && (!/^[0-9]{9}$/.test(telefono))) {
-            showErrorAlert('Error', 'El número de teléfono debe ser numérico y tener exactamente 9 dígitos.');
+        if (telefono && !/^[0-9]{9}$/.test(telefono)) {
+            showErrorAlert(
+                'Error',
+                'El número de teléfono debe ser numérico y tener exactamente 9 dígitos.'
+            );
             return;
         }
 
@@ -28,21 +31,23 @@ const RegisterVehicleModal = ({ show, onClose, onRegister }) => {
         try {
             const response = await fetch(`${API_BASE_URL}recolectores`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data),
             });
 
             if (response.ok) {
                 const result = await response.json();
-                showSuccessAlert('¡Vehículo registrado!', 'El nuevo vehículo se ha registrado exitosamente.');
+                showSuccessAlert(
+                    '¡Vehículo registrado!',
+                    'El nuevo vehículo se ha registrado exitosamente.'
+                );
                 onRegister({
                     ...result,
                     estado: result.estado || 'activo',
                     telefono_recolector: result.telefono_recolector || 'No disponible',
                     zona_responsable: result.zona_responsable || 'No asignada',
                 });
+
                 setNombre('');
                 setTelefono('');
                 setZona('');
@@ -66,71 +71,76 @@ const RegisterVehicleModal = ({ show, onClose, onRegister }) => {
 
     return (
         <div
-            style={{
-                position: 'fixed',
-                top: 0,
-                left: 0,
-                width: '100%',
-                height: '100%',
-                backgroundColor: 'rgba(0, 0, 0, 0.5)',
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                zIndex: 1000,
-            }}
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
             onClick={onClose}
         >
             <div
-                style={{
-                    backgroundColor: '#fff',
-                    padding: '20px',
-                    borderRadius: '8px',
-                    maxWidth: '500px',
-                    width: '100%',
-                }}
+                className="bg-white rounded-lg shadow max-w-md w-full p-6 relative"
                 onClick={(e) => e.stopPropagation()}
             >
-                <h4 className="mb-4">Registrar Nuevo Vehículo</h4>
+                <h4 className="text-xl font-semibold mb-4">Registrar Nuevo Vehículo</h4>
+
                 <form onSubmit={handleSubmit}>
-                    <div className="mb-3">
-                        <label htmlFor="nombre" className="form-label">Nombre del Vehículo</label>
+                    <div className="mb-4">
+                        <label htmlFor="nombre" className="block text-sm font-medium text-gray-700">
+                            Nombre del Vehículo
+                        </label>
                         <input
                             type="text"
                             id="nombre"
-                            className="form-control"
+                            className="mt-1 block w-full border border-gray-300 rounded px-3 py-2 
+                         text-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                             value={nombre}
                             onChange={(e) => setNombre(e.target.value)}
                             placeholder="Ingrese el nombre del vehículo"
                             required
                         />
                     </div>
-                    <div className="mb-3">
-                        <label htmlFor="telefono" className="form-label">Teléfono</label>
+
+                    <div className="mb-4">
+                        <label htmlFor="telefono" className="block text-sm font-medium text-gray-700">
+                            Teléfono
+                        </label>
                         <input
                             type="text"
                             id="telefono"
-                            className="form-control"
+                            className="mt-1 block w-full border border-gray-300 rounded px-3 py-2 
+                         text-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                             value={telefono}
                             onChange={handleTelefonoChange}
                             placeholder="Ingrese el teléfono (opcional)"
                         />
                     </div>
-                    <div className="mb-3">
-                        <label htmlFor="zona" className="form-label">Zona Responsable</label>
+
+                    <div className="mb-4">
+                        <label htmlFor="zona" className="block text-sm font-medium text-gray-700">
+                            Zona Responsable
+                        </label>
                         <input
                             type="text"
                             id="zona"
-                            className="form-control"
+                            className="mt-1 block w-full border border-gray-300 rounded px-3 py-2 
+                         text-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                             value={zona}
                             onChange={(e) => setZona(e.target.value)}
                             placeholder="Ingrese la zona responsable (opcional)"
                         />
                     </div>
-                    <div className="text-end">
-                        <button type="submit" className="btn btn-primary mb-2" disabled={loading}>
+
+                    <div className="flex justify-end space-x-2">
+                        <button
+                            type="submit"
+                            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 disabled:opacity-50"
+                            disabled={loading}
+                        >
                             {loading ? 'Registrando...' : 'Registrar'}
                         </button>
-                        <button type="button" className="btn btn-secondary " onClick={onClose} disabled={loading}>
+                        <button
+                            type="button"
+                            className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 disabled:opacity-50"
+                            onClick={onClose}
+                            disabled={loading}
+                        >
                             Cancelar
                         </button>
                     </div>

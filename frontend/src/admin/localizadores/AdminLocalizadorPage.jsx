@@ -79,10 +79,10 @@ const AdminLocalizadorPage = () => {
 
             {message && <p className="text-red-500">{message}</p>}
 
-            {/* Contenedor del botón */}
-            <div className="w-full flex justify-end mb-3">
+            <div className="flex justify-end">
                 <button
-                    className="bg-blue-500 text-white px-3 py-1.5 rounded-md hover:bg-blue-600 text-sm"
+                    className="bg-blue-500 text-white text-sm p-2 rounded-md hover:bg-blue-600 mb-1"
+                    style={{ width: 'auto' }}
                     onClick={() => setShowModal(true)}
                 >
                     Nuevo Localizador
