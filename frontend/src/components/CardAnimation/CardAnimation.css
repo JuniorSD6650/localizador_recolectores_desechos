@@ -11,9 +11,9 @@
     background-image: linear-gradient(#06bb42, #049434),
         conic-gradient(from var(--gradient-angle),
             #3498db 0%,
-            #2011a7 37%,
+            #F38E00 37%,
             #3498db 50%,
-            #2011a7 77%,
+            #F38E00 77%,
             #3498db 90%);
     background-clip: padding-box, border-box;
     background-origin: padding-box, border-box;
