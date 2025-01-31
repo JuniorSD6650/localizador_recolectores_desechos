@@ -4,11 +4,11 @@ import TituloConRegreso from '../components/TituloConRegreso/TituloConRegreso';
 
 const AdminPage = () => {
     return (
-        <div className="container text-center py-3 px-5">
+        <div className="container mx-auto text-center py-3 px-5">
             <TituloConRegreso titulo="Vista de Administrador" />
 
-            <div className="row g-4 px-5 pt-5 mt-5">
-                <div className="col-12 col-sm-6 col-md-4 col-lg-3 d-flex justify-content-center">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 px-5 pt-5 mt-5">
+                <div className="flex justify-center">
                     <CardAnimation
                         title="Perfil"
                         description="Accede y edita tu perfil."
@@ -16,7 +16,7 @@ const AdminPage = () => {
                         icon="account"
                     />
                 </div>
-                <div className="col-12 col-sm-6 col-md-4 col-lg-3 d-flex justify-content-center">
+                <div className="flex justify-center">
                     <CardAnimation
                         title="Conductores"
                         description="Gestiona los Conductores asignados."
@@ -24,7 +24,7 @@ const AdminPage = () => {
                         icon="switch"
                     />
                 </div>
-                <div className="col-12 col-sm-6 col-md-4 col-lg-3 d-flex justify-content-center">
+                <div className="flex justify-center">
                     <CardAnimation
                         title="Reportes"
                         description="Revisa y administra los reportes realizados."
@@ -32,7 +32,7 @@ const AdminPage = () => {
                         icon="recycling"
                     />
                 </div>
-                <div className="col-12 col-sm-6 col-md-4 col-lg-3 d-flex justify-content-center">
+                <div className="flex justify-center">
                     <CardAnimation
                         title="Vehículos Recolectores"
                         description="Consulta y administra los vehículos recolectores."

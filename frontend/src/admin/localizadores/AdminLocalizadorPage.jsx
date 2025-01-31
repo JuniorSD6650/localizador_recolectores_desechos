@@ -74,14 +74,15 @@ const AdminLocalizadorPage = () => {
     };
 
     return (
-        <div className="container my-5 text-center">
+        <div className="max-w-full px-4 my-5 text-center">
             <TituloConRegreso titulo="Gestión de Localizadores" to="/admin" />
 
-            {message && <p className="text-danger">{message}</p>}
+            {message && <p className="text-red-500">{message}</p>}
 
-            <div className="mb-3 d-flex justify-content-end">
+            {/* Contenedor del botón */}
+            <div className="w-full flex justify-end mb-3">
                 <button
-                    className="btn-register"
+                    className="bg-blue-500 text-white px-3 py-1.5 rounded-md hover:bg-blue-600 text-sm"
                     onClick={() => setShowModal(true)}
                 >
                     Nuevo Localizador
@@ -91,25 +92,25 @@ const AdminLocalizadorPage = () => {
             {localizadores.length === 0 ? (
                 <p className="text-center">No hay localizadores registrados</p>
             ) : (
-                <div className="table-responsive">
-                    <table className="table table-striped table-hover text-center">
-                        <thead className="table-light">
+                <div className="overflow-x-auto">
+                    <table className="min-w-full bg-white border border-gray-200">
+                        <thead className="bg-gray-50">
                             <tr>
-                                <th>ID</th>
-                                <th>Username</th>
-                                <th>Recolector Asignado</th>
-                                <th>Acciones</th>
+                                <th className="px-6 py-3 border-b">ID</th>
+                                <th className="px-6 py-3 border-b">Username</th>
+                                <th className="px-6 py-3 border-b">Recolector Asignado</th>
+                                <th className="px-6 py-3 border-b">Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
                             {localizadores.map((localizador) => (
-                                <tr key={localizador.id}>
-                                    <td>{localizador.id}</td>
-                                    <td>{localizador.username}</td>
-                                    <td>{localizador.nombre_recolector || 'No asignado'}</td>
-                                    <td>
+                                <tr key={localizador.id} className="hover:bg-gray-50">
+                                    <td className="px-6 py-4 border-b">{localizador.id}</td>
+                                    <td className="px-6 py-4 border-b">{localizador.username}</td>
+                                    <td className="px-6 py-4 border-b">{localizador.nombre_recolector || 'No asignado'}</td>
+                                    <td className="px-6 py-4 border-b">
                                         <button
-                                            className="btn-delete"
+                                            className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600"
                                             onClick={() => handleDelete(localizador.id)}
                                         >
                                             Eliminar
