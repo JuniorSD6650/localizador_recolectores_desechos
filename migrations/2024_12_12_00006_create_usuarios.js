@@ -4,6 +4,7 @@ exports.up = function (knex) {
     table.string('username', 255).notNullable().unique();
     table.string('password', 255).notNullable();
     table.string('role', 50).notNullable().defaultTo('conductor');
+    table.string('telefono_recolector', 15).nullable();
     table.string('nombre_completo', 255).nullable();
     table.string('email', 255).nullable();
     table.string('telefono', 15).nullable();
