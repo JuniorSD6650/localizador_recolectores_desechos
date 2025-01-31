@@ -3,7 +3,7 @@ exports.up = function (knex) {
     table.increments('id').primary().unsigned();
     table.string('titulo', 255).notNullable();
     table.text('mensaje').notNullable();
-    table.timestamp('fecha_creacion').defaultTo(knex.fn.now());
+    table.timestamp('created_at').defaultTo(knex.fn.now());
     table.string('prioridad', 50).defaultTo('baja');
   });
 };
