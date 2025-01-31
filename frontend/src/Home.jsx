@@ -37,6 +37,7 @@ const Home = () => {
                     />
                 </div>
             </div>
+            <img src="/images/logo_amarilis.png" alt="Logo Amarilis" className="mx-auto mb-4" style={{ width: '390px', height: 'auto' }} />
         </div>
     );
 };
