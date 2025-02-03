@@ -15,3 +15,7 @@
   height: 300px;
   object-fit: cover;
 }
+
+.border-green-custom {
+  border-color: #5FBB01;
+}

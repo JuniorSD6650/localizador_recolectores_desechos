@@ -27,7 +27,7 @@ const Navbar = () => {
 
     return (
         <div>
-            <nav className="bg-white border-gray-200 dark:bg-gray-900">
+            <nav className="bg-white border-gray-200 dark:bg-gray-900 border-b-2">
                 <div className="flex flex-wrap justify-between items-center mx-auto max-w-screen-xl p-4">
                     <a href="/" className="flex items-center justify-center space-x-3 rtl:space-x-reverse no-underline">
                         <img src="/images/logo_amarilis.png" alt="Logo Amarilis" className="mx-auto" style={{ width: '290px', height: 'auto' }} />
@@ -35,20 +35,20 @@ const Navbar = () => {
                     <div className="flex items-center space-x-6 rtl:space-x-reverse">
                         <Link
                             to="/"
-                            className={`text-gray-900 dark:text-white no-underline ${location.pathname === '/' ? 'font-bold border-b-2 border-green-500' : ''}`}
+                            className={`text-gray-900 dark:text-white no-underline ${location.pathname === '/' ? 'font-bold border-b-2 border-green-custom' : ''}`}
                             aria-current="page"
                         >
                             Inicio
                         </Link>
                         <Link
                             to="/reportar"
-                            className={`text-gray-900 dark:text-white no-underline ${location.pathname === '/reportar' ? 'font-bold border-b-2 border-green-500' : ''}`}
+                            className={`text-gray-900 dark:text-white no-underline ${location.pathname === '/reportar' ? 'font-bold border-b-2 border-green-custom' : ''}`}
                         >
                             Reportar
                         </Link>
                         <Link
                             to="/recolectores"
-                            className={`text-gray-900 dark:text-white no-underline ${location.pathname === '/recolectores' ? 'font-bold border-b-2 border-green-500' : ''}`}
+                            className={`text-gray-900 dark:text-white no-underline ${location.pathname === '/recolectores' ? 'font-bold border-b-2 border-green-custom' : ''}`}
                         >
                             Recolectores
                         </Link>
