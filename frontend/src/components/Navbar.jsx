@@ -7,10 +7,26 @@ const Navbar = () => {
     const location = useLocation();
     const [showNotifications, setShowNotifications] = useState(false);
     const notificationsRef = useRef(null);
+    const navbarRef = useRef(null);
 
-    const toggleNotifications = () => {
-        setShowNotifications(!showNotifications);
-    };
+    useEffect(() => {
+        const updateNavbarSpace = () => {
+            const navbarHeight = navbarRef.current?.offsetHeight || 0;
+            document.body.style.paddingTop = `${navbarHeight}px`;
+        };
+
+        // Initial update
+        updateNavbarSpace();
+
+        // Update on window resize
+        window.addEventListener('resize', updateNavbarSpace);
+
+        // Cleanup
+        return () => {
+            window.removeEventListener('resize', updateNavbarSpace);
+            document.body.style.paddingTop = '0px';
+        };
+    }, []);
 
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -26,11 +42,12 @@ const Navbar = () => {
     }, []);
 
     return (
-        <div>
-            <nav className="bg-white border-gray-200 dark:bg-gray-900 border-b-2">
-                <div className="flex flex-wrap justify-between items-center mx-auto max-w-screen-xl p-4">
+        <div className='fixed top-0 w-full z-50' ref={navbarRef}>
+            <nav className="bg-white border-gray-200 dark:bg-gray-900">
+                <div className="flex flex-wrap justify-between items-center mx-auto max-w-screen-xl p-4 border-b-2">
                     <a href="/" className="flex items-center justify-center space-x-3 rtl:space-x-reverse no-underline">
-                        <img src="/images/logo_amarilis.png" alt="Logo Amarilis" className="mx-auto" style={{ width: '290px', height: 'auto' }} />
+                        <img src="/images/logo_amarilis.png" alt="Logo Amarilis"
+                            className="mx-auto w-auto h-auto max-h-16 md:max-h-20" /> {/* Responsive image */}
                     </a>
                     <div className="flex items-center space-x-6 rtl:space-x-reverse">
                         <Link
@@ -58,7 +75,8 @@ const Navbar = () => {
                         </Link>
 
                         <div className="relative" ref={notificationsRef}>
-                            <button onClick={toggleNotifications} className="text-gray-500 dark:text-white focus:outline-none">
+                            <button onClick={() => setShowNotifications(!showNotifications)}
+                                className="text-gray-500 dark:text-white focus:outline-none">
                                 <NotificationsIcon />
                             </button>
                             {showNotifications && (
