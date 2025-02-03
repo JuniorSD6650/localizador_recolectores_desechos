@@ -70,8 +70,9 @@ const Navbar = () => {
                             Recolectores
                         </Link>
 
-                        <Link to="/login" className="text-sm text-gray-600 dark:text-gray-500 no-underline">
-                            <AccountCircleIcon />Login
+                        <Link to="/login"
+                            className={`text-gray-900 dark:text-white no-underline ${location.pathname === '/login' ? 'font-bold border-b-2 border-green-custom' : ''}`}>
+                            Login
                         </Link>
 
                         <div className="relative" ref={notificationsRef}>
