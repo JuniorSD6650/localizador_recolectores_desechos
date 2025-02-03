@@ -5,11 +5,24 @@ const router = express.Router();
 const knexConfig = require('../knexfile');
 const knex = require('knex')(knexConfig);
 
+const applyFilters = (query, filters) => {
+  const { nombre, descripcion } = filters;
+
+  if (nombre) {
+    query = query.where('nombre', 'like', `%${nombre}%`);
+  }
+  if (descripcion) {
+    query = query.where('descripcion', 'like', `%${descripcion}%`);
+  }
+
+  return query;
+};
+
 router.get('/list', async (req, res) => {
   try {
     const organizaciones = await knex('organizacion')
       .select('id', 'nombre')
-      .orderBy('id', 'asc');
+      .orderBy('id', 'desc');
 
     res.status(200).json(organizaciones);
   } catch (err) {
@@ -20,22 +33,57 @@ router.get('/list', async (req, res) => {
   }
 });
 
-
 router.get('/', async (req, res) => {
+  let { nombre, descripcion, page = 1, limit = 10 } = req.query;
+
+  page = parseInt(page, 10);
+  if (isNaN(page) || page < 1) {
+    return res.status(400).json({ error: 'El parámetro "page" debe ser un número mayor o igual a 1.' });
+  }
+
+  limit = parseInt(limit, 10);
+  if (isNaN(limit) || limit < 1) {
+    limit = 10;
+  }
+
+  const offset = (page - 1) * limit;
+
   try {
-    const organizaciones = await knex('organizacion')
+    const filters = {
+      nombre,
+      descripcion,
+    };
+
+    let countQuery = knex('organizacion').count('* as total');
+    countQuery = applyFilters(countQuery, filters);
+    const totalCount = await countQuery.first();
+    const total = parseInt(totalCount.total, 10);
+    const totalPages = total > 0 ? Math.ceil(total / limit) : 1;
+
+    let dataQuery = knex('organizacion')
       .select('*')
       .orderBy('id', 'desc');
+    dataQuery = applyFilters(dataQuery, filters);
+    dataQuery = dataQuery.limit(limit).offset(offset);
 
-    res.json(organizaciones);
+    const organizaciones = await dataQuery;
+
+    res.json({
+      organizaciones,
+      pagination: {
+        total,
+        totalPages,
+        currentPage: page,
+        limit,
+      },
+    });
   } catch (err) {
     res.status(500).json({
       error: 'Error obteniendo las organizaciones',
-      details: err.message || err
+      details: err.message || err,
     });
   }
 });
-
 
 router.get('/:id', async (req, res) => {
   const { id } = req.params;

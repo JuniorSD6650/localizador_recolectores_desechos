@@ -8,6 +8,28 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 
+const applyFilters = (query, filters) => {
+  const { nombre_reportante, descripcion, numero_contacto, estado_reporte, direccion } = filters;
+
+  if (nombre_reportante) {
+    query = query.where('nombre_reportante', 'like', `%${nombre_reportante}%`);
+  }
+  if (descripcion) {
+    query = query.where('descripcion', 'like', `%${descripcion}%`);
+  }
+  if (numero_contacto) {
+    query = query.where('numero_contacto', 'like', `%${numero_contacto}%`);
+  }
+  if (estado_reporte) {
+    query = query.where('estado_reporte', estado_reporte);
+  }
+  if (direccion) {
+    query = query.where('direccion', 'like', `%${direccion}%`);
+  }
+
+  return query;
+};
+
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, 'public/uploads/reportes');
@@ -21,33 +43,51 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-router.post('/', upload.single('foto'), async (req, res) => {
-  const { nombre_reportante, descripcion, numero_contacto, estado } = req.body;
-  const ruta_foto = req.file ? `uploads/reportes/${req.file.filename}` : null;
+router.get('/', async (req, res) => {
+  let { nombre_reportante, descripcion, numero_contacto, estado_reporte, direccion, page = 1, limit = 10 } = req.query;
+
+  page = parseInt(page, 10);
+  if (isNaN(page) || page < 1) {
+    return res.status(400).json({ error: 'El parámetro "page" debe ser un número mayor o igual a 1.' });
+  }
+
+  limit = parseInt(limit, 10);
+  if (isNaN(limit) || limit < 1) {
+    limit = 10;
+  }
+
+  const offset = (page - 1) * limit;
 
   try {
-    const result = await knex('reportes').insert({
+    const filters = {
       nombre_reportante,
       descripcion,
       numero_contacto,
-      ruta_foto,
-      estado: estado || 'pendiente',
+      estado_reporte,
+      direccion,
+    };
+
+    let countQuery = knex('reportes').count('* as total');
+    countQuery = applyFilters(countQuery, filters);
+    const totalCount = await countQuery.first();
+    const total = parseInt(totalCount.total, 10);
+    const totalPages = total > 0 ? Math.ceil(total / limit) : 1;
+
+    let dataQuery = knex('reportes').select('*');
+    dataQuery = applyFilters(dataQuery, filters);
+    dataQuery = dataQuery.orderBy('id', 'desc').limit(limit).offset(offset);
+
+    const reportes = await dataQuery;
+
+    res.json({
+      reportes,
+      pagination: {
+        total,
+        totalPages,
+        currentPage: page,
+        limit,
+      },
     });
-
-    const newReporteId = result[0];
-    res.status(201).json({ message: 'Reporte creado con éxito', id: newReporteId });
-  } catch (err) {
-    res.status(500).json({ error: 'Error creando el reporte', details: err.message || err });
-  }
-});
-
-router.get('/', async (req, res) => {
-  try {
-    const reportes = await knex('reportes')
-      .select('reportes.*')
-      .orderBy('reportes.id', 'desc');
-
-    res.json(reportes);
   } catch (err) {
     res.status(500).json({
       error: 'Error obteniendo los reportes',
@@ -71,6 +111,26 @@ router.get('/:id', async (req, res) => {
     res.json(reporte);
   } catch (err) {
     res.status(500).json({ error: 'Error obteniendo el reporte', details: err.message || err });
+  }
+});
+
+router.post('/', upload.single('foto'), async (req, res) => {
+  const { nombre_reportante, descripcion, numero_contacto, estado } = req.body;
+  const ruta_foto = req.file ? `uploads/reportes/${req.file.filename}` : null;
+
+  try {
+    const result = await knex('reportes').insert({
+      nombre_reportante,
+      descripcion,
+      numero_contacto,
+      ruta_foto,
+      estado: estado || 'pendiente',
+    });
+
+    const newReporteId = result[0];
+    res.status(201).json({ message: 'Reporte creado con éxito', id: newReporteId });
+  } catch (err) {
+    res.status(500).json({ error: 'Error creando el reporte', details: err.message || err });
   }
 });
 

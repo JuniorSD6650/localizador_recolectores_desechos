@@ -6,11 +6,30 @@ const knexConfig = require('../knexfile');
 const knex = require('knex')(knexConfig);
 const { format, addHours, subHours } = require('date-fns');
 
+const applyFilters = (query, filters) => {
+  const { nombre_recolector, placa, tipo_vehiculo, estado_operativo } = filters;
+
+  if (nombre_recolector) {
+    query = query.where('nombre_recolector', 'like', `%${nombre_recolector}%`);
+  }
+  if (placa) {
+    query = query.where('placa', 'like', `%${placa}%`);
+  }
+  if (tipo_vehiculo) {
+    query = query.where('tipo_vehiculo', 'like', `%${tipo_vehiculo}%`);
+  }
+  if (estado_operativo) {
+    query = query.where('estado_operativo', estado_operativo);
+  }
+
+  return query;
+};
+
 router.get('/list', async (req, res) => {
   try {
     const recolectores = await knex('recolectores_desechos')
       .select('id', 'nombre_recolector')
-      .orderBy('id', 'asc');
+      .orderBy('id', 'desc');
 
     res.status(200).json(recolectores);
   } catch (err) {
@@ -22,46 +41,59 @@ router.get('/list', async (req, res) => {
 });
 
 router.get('/', async (req, res) => {
-  let { fecha } = req.query;
+  let { nombre_recolector, placa, tipo_vehiculo, estado_operativo, page = 1, limit = 10 } = req.query;
+
+  page = parseInt(page, 10);
+  if (isNaN(page) || page < 1) {
+    return res.status(400).json({ error: 'El parámetro "page" debe ser un número mayor o igual a 1.' });
+  }
+
+  limit = parseInt(limit, 10);
+  if (isNaN(limit) || limit < 1) {
+    limit = 10;
+  }
+
+  const offset = (page - 1) * limit;
 
   try {
-    let query;
+    const filters = {
+      nombre_recolector,
+      placa,
+      tipo_vehiculo,
+      estado_operativo,
+    };
 
-    if (fecha) {
-      const parsedDate = parse(fecha, 'dd/MM/yyyy', new Date());
-      const formattedDate = format(parsedDate, 'yyyy-MM-dd');
+    let countQuery = knex('recolectores_desechos').count('* as total');
+    countQuery = applyFilters(countQuery, filters);
+    const totalCount = await countQuery.first();
+    const total = parseInt(totalCount.total, 10);
+    const totalPages = total > 0 ? Math.ceil(total / limit) : 1;
 
-      query = knex('recolectores_desechos')
-        .select('recolectores_desechos.*')
-        .leftJoin('eventos', 'recolectores_desechos.id', 'eventos.recolector_id')
-        .where('eventos.fecha', formattedDate)
-        .groupBy('recolectores_desechos.id')
-        .orderBy('recolectores_desechos.id', 'desc');
-    } else {
-      query = knex('recolectores_desechos')
-        .select('*')
-        .orderBy('id', 'desc');
-    }
+    let dataQuery = knex('recolectores_desechos')
+      .select('*')
+      .orderBy('id', 'desc');
+    dataQuery = applyFilters(dataQuery, filters);
+    dataQuery = dataQuery.limit(limit).offset(offset);
 
-    const recolectores = await query;
+    const recolectores = await dataQuery;
 
-    const formattedRecolectores = recolectores.map(recolector => ({
-      ...recolector,
-      fecha_ubicacion_actualizada: recolector.fecha_ubicacion_actualizada
-        ? format(new Date(recolector.fecha_ubicacion_actualizada), 'dd/MM/yyyy HH:mm:ss')
-        : null,
-    }));
-
-    res.json(formattedRecolectores);
+    res.json({
+      recolectores,
+      pagination: {
+        total,
+        totalPages,
+        currentPage: page,
+        limit,
+      },
+    });
   } catch (err) {
     res.status(500).json({
-      error: 'Error obteniendo los recolectores',
-      details: err.message || err
+      error: 'Error obteniendo los recolectores de desechos',
+      details: err.message || err,
     });
   }
 });
 
-// Obtener recolector por ID
 router.get('/:id', async (req, res) => {
   const { id } = req.params;
   try {
@@ -83,7 +115,6 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// Crear un nuevo recolector
 router.post('/', async (req, res) => {
   const {
     nombre_recolector,

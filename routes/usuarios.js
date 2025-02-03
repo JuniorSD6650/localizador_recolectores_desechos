@@ -7,32 +7,99 @@ const knex = require('knex')(require('../knexfile'));
 const router = express.Router();
 const { format } = require('date-fns');
 
-router.get('/', async (req, res) => {
+const applyFilters = (query, filters) => {
+  const { username, role, nombre_completo, email, telefono, telefono_recolector } = filters;
+
+  if (username) {
+    query = query.where('username', 'like', `%${username}%`);
+  }
+  if (role) {
+    query = query.where('role', role);
+  }
+  if (nombre_completo) {
+    query = query.where('nombre_completo', 'like', `%${nombre_completo}%`);
+  }
+  if (email) {
+    query = query.where('email', 'like', `%${email}%`);
+  }
+  if (telefono) {
+    query = query.where('telefono', 'like', `%${telefono}%`);
+  }
+  if (telefono_recolector) {
+    query = query.where('telefono_recolector', 'like', `%${telefono_recolector}%`);
+  }
+
+  return query;
+};
+
+router.get('/list', async (req, res) => {
   try {
-    let usuarios = await knex('usuarios')
-      .select(
-        'usuarios.id',
-        'usuarios.username',
-        'usuarios.role',
-        'usuarios.created_at',
-        'usuarios.recolector_id',
-        'recolectores_desechos.nombre_recolector'
-      )
-      .leftJoin('recolectores_desechos', 'usuarios.recolector_id', 'recolectores_desechos.id')
-      .whereNot('usuarios.role', 'admin')
-      .orderBy('usuarios.id', 'desc');
+    const organizaciones = await knex('usuarios')
+      .select('id', 'username')
+      .orderBy('id', 'desc');
 
-    usuarios = usuarios.map(usuario => ({
-      ...usuario,
-      created_at: usuario.created_at
-        ? format(new Date(usuario.created_at), 'dd/MM/yyyy HH:mm:ss')
-        : null
-    }));
+    res.status(200).json(organizaciones);
+  } catch (err) {
+    res.status(500).json({
+      error: 'Error obteniendo la lista de usuarios',
+      details: err.message || err,
+    });
+  }
+});
 
-    res.status(200).json(usuarios);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Error obteniendo los usuarios.', details: error.message || error });
+router.get('/', async (req, res) => {
+  let { username, role, nombre_completo, email, telefono, telefono_recolector, page = 1, limit = 10 } = req.query;
+
+  page = parseInt(page, 10);
+  if (isNaN(page) || page < 1) {
+    return res.status(400).json({ error: 'El parámetro "page" debe ser un número mayor o igual a 1.' });
+  }
+
+  limit = parseInt(limit, 10);
+  if (isNaN(limit) || limit < 1) {
+    limit = 10;
+  }
+
+  const offset = (page - 1) * limit;
+
+  try {
+    const filters = {
+      username,
+      role,
+      nombre_completo,
+      email,
+      telefono,
+      telefono_recolector,
+    };
+
+    let countQuery = knex('usuarios').count('* as total');
+    countQuery = applyFilters(countQuery, filters);
+    const totalCount = await countQuery.first();
+    const total = parseInt(totalCount.total, 10);
+    const totalPages = total > 0 ? Math.ceil(total / limit) : 1;
+
+    let dataQuery = knex('usuarios')
+      .select('id', 'username', 'role', 'nombre_completo', 'email', 'telefono', 'telefono_recolector', 'created_at')
+      .orderBy('id', 'desc');
+    dataQuery = applyFilters(dataQuery, filters);
+    dataQuery = dataQuery.limit(limit).offset(offset);
+
+    const usuarios = await dataQuery;
+
+    res.json({
+      usuarios,
+      pagination: {
+        total,
+        totalPages,
+        currentPage: page,
+        limit,
+      },
+    });
+  } catch (err) {
+    res.status(500).json({
+      error: 'Error obteniendo los usuarios',
+      details: err.message || err,
+    });
   }
 });
 
