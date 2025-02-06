@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import NotificationsIcon from '@mui/icons-material/Notifications';
 import MenuIcon from '@mui/icons-material/Menu';
 import CloseIcon from '@mui/icons-material/Close';
+import Notifications from './Navbar/Notifications';
 
 const Navbar = () => {
     const location = useLocation();
@@ -17,13 +17,10 @@ const Navbar = () => {
             document.body.style.paddingTop = `${navbarHeight}px`;
         };
 
-        // Initial update
         updateNavbarSpace();
 
-        // Update on window resize
         window.addEventListener('resize', updateNavbarSpace);
 
-        // Cleanup
         return () => {
             window.removeEventListener('resize', updateNavbarSpace);
             document.body.style.paddingTop = '0px';
@@ -43,7 +40,6 @@ const Navbar = () => {
         };
     }, []);
 
-    // Close mobile menu when location changes
     useEffect(() => {
         setIsMobileMenuOpen(false);
     }, [location]);
@@ -90,47 +86,13 @@ const Navbar = () => {
                         />
                     </a>
 
-                    {/* Desktop Navigation */}
                     <div className="hidden md:flex items-center space-x-6 rtl:space-x-reverse">
                         <NavLinks />
-                        <div className="relative" ref={notificationsRef}>
-                            <button
-                                onClick={() => setShowNotifications(!showNotifications)}
-                                className="text-gray-500 dark:text-white focus:outline-none"
-                            >
-                                <NotificationsIcon />
-                            </button>
-                            {showNotifications && (
-                                <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg">
-                                    <ul className="py-1">
-                                        <li className="px-4 py-2 text-sm text-gray-700 dark:text-gray-200">Notificación 1</li>
-                                        <li className="px-4 py-2 text-sm text-gray-700 dark:text-gray-200">Notificación 2</li>
-                                        <li className="px-4 py-2 text-sm text-gray-700 dark:text-gray-200">Notificación 3</li>
-                                    </ul>
-                                </div>
-                            )}
-                        </div>
+                        <Notifications />
                     </div>
 
-                    {/* Mobile Navigation Toggle */}
                     <div className="flex items-center md:hidden">
-                        <div className="relative mr-4" ref={notificationsRef}>
-                            <button
-                                onClick={() => setShowNotifications(!showNotifications)}
-                                className="text-gray-500 dark:text-white focus:outline-none"
-                            >
-                                <NotificationsIcon />
-                            </button>
-                            {showNotifications && (
-                                <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg">
-                                    <ul className="py-1">
-                                        <li className="px-4 py-2 text-sm text-gray-700 dark:text-gray-200">Notificación 1</li>
-                                        <li className="px-4 py-2 text-sm text-gray-700 dark:text-gray-200">Notificación 2</li>
-                                        <li className="px-4 py-2 text-sm text-gray-700 dark:text-gray-200">Notificación 3</li>
-                                    </ul>
-                                </div>
-                            )}
-                        </div>
+                        <Notifications />
                         <button
                             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                             className="text-gray-500 focus:outline-none"
@@ -144,7 +106,6 @@ const Navbar = () => {
                     </div>
                 </div>
 
-                {/* Mobile Menu Overlay */}
                 {isMobileMenuOpen && (
                     <div className="md:hidden absolute top-full left-0 w-full bg-white dark:bg-gray-900 shadow-lg">
                         <div className="flex flex-col p-4 space-y-2">
