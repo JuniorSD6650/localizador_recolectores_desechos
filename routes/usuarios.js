@@ -1,185 +1,164 @@
-// routes/usuarios.js
-
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const knex = require('knex')(require('../knexfile'));
 const router = express.Router();
-const { format } = require('date-fns');
 
 const applyFilters = (query, filters) => {
-  const { username, role, nombre_completo, email, telefono, telefono_recolector } = filters;
+  const { role, nombres, primer_apellido, email, telefono } = filters;
 
-  if (username) {
-    query = query.where('username', 'like', `%${username}%`);
-  }
-  if (role) {
-    query = query.where('role', role);
-  }
-  if (nombre_completo) {
-    query = query.where('nombre_completo', 'like', `%${nombre_completo}%`);
-  }
-  if (email) {
-    query = query.where('email', 'like', `%${email}%`);
-  }
-  if (telefono) {
-    query = query.where('telefono', 'like', `%${telefono}%`);
-  }
-  if (telefono_recolector) {
-    query = query.where('telefono_recolector', 'like', `%${telefono_recolector}%`);
-  }
+  if (role) query = query.where('role', 'like', `%${role}%`);
+  if (nombres) query = query.where('nombres', 'like', `%${nombres}%`);
+  if (primer_apellido) query = query.where('primer_apellido', 'like', `%${primer_apellido}%`);
+  if (email) query = query.where('email', 'like', `%${email}%`);
+  if (telefono) query = query.where('telefono', 'like', `%${telefono}%`);
 
   return query;
 };
 
-router.get('/list', async (req, res) => {
-  try {
-    const organizaciones = await knex('usuarios')
-      .select('id', 'username')
-      .orderBy('id', 'desc');
-
-    res.status(200).json(organizaciones);
-  } catch (err) {
-    res.status(500).json({
-      error: 'Error obteniendo la lista de usuarios',
-      details: err.message || err,
-    });
-  }
-});
-
 router.get('/', async (req, res) => {
-  let { username, role, nombre_completo, email, telefono, telefono_recolector, page = 1, limit = 10 } = req.query;
+  const { role, nombres, primer_apellido, email, telefono, page = 1, limit = 10 } = req.query;
 
-  page = parseInt(page, 10);
-  if (isNaN(page) || page < 1) {
-    return res.status(400).json({ error: 'El parámetro "page" debe ser un número mayor o igual a 1.' });
-  }
-
-  limit = parseInt(limit, 10);
-  if (isNaN(limit) || limit < 1) {
-    limit = 10;
-  }
+  const filters = {
+    role,
+    nombres,
+    primer_apellido,
+    email,
+    telefono,
+  };
 
   const offset = (page - 1) * limit;
 
   try {
-    const filters = {
-      username,
-      role,
-      nombre_completo,
-      email,
-      telefono,
-      telefono_recolector,
-    };
-
-    let countQuery = knex('usuarios').count('* as total');
+    let countQuery = knex('usuarios').count('* as total').whereNot('role', 'admin');
     countQuery = applyFilters(countQuery, filters);
-    const totalCount = await countQuery.first();
-    const total = parseInt(totalCount.total, 10);
+    const totalCountResult = await countQuery.first();
+    const total = parseInt(totalCountResult.total, 10);
     const totalPages = total > 0 ? Math.ceil(total / limit) : 1;
 
-    let dataQuery = knex('usuarios')
-      .select('id', 'username', 'role', 'nombre_completo', 'email', 'telefono', 'telefono_recolector', 'created_at')
-      .orderBy('id', 'desc');
-    dataQuery = applyFilters(dataQuery, filters);
-    dataQuery = dataQuery.limit(limit).offset(offset);
+    let dataQuery = knex('usuarios').select('*').whereNot('role', 'admin');
+    dataQuery = applyFilters(dataQuery, filters).limit(limit).offset(offset);
 
     const usuarios = await dataQuery;
 
-    res.json({
+    res.status(200).json({
       usuarios,
       pagination: {
         total,
         totalPages,
-        currentPage: page,
-        limit,
+        currentPage: parseInt(page, 10),
+        limit: parseInt(limit, 10),
       },
     });
   } catch (err) {
-    res.status(500).json({
-      error: 'Error obteniendo los usuarios',
-      details: err.message || err,
-    });
-  }
-});
-
-router.get('/admin', async (req, res) => {
-  try {
-    const admin = await knex('usuarios').where('role', 'admin').first();
-    if (!admin) {
-      return res.status(404).json({ message: 'Administrador no encontrado.' });
-    }
-
-    res.status(200).json(admin);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Error obteniendo el administrador.' });
+    res.status(500).json({ error: 'Error obteniendo usuarios.', details: err.message });
   }
 });
 
 router.get('/:id', async (req, res) => {
   const { id } = req.params;
+  try {
+    const usuario = await knex('usuarios').where('id', id).first();
+    if (!usuario) {
+      return res.status(404).json({ message: 'Usuario no encontrado.' });
+    }
+
+    const credenciales = await knex('credenciales').where('usuario_id', id).first();
+
+    res.status(200).json({ usuario, credenciales });
+  } catch (err) {
+    res.status(500).json({ error: 'Error obteniendo el usuario.', details: err.message });
+  }
+});
+
+router.post('/', async (req, res) => {
+  const { role, nombres, primer_apellido, segundo_apellido, email, telefono, username, password } = req.body;
 
   try {
-    const user = await knex('usuarios')
-      .select(
-        'usuarios.username',
-        'usuarios.role',
-        'usuarios.recolector_id',
-        'recolectores_desechos.nombre_recolector',
-        'recolectores_desechos.ubicacion_enlace',
-        'recolectores_desechos.fecha_ubicacion_actualizada',
-        'recolectores_desechos.estado'
-      )
-      .leftJoin('recolectores_desechos', 'usuarios.recolector_id', 'recolectores_desechos.id')
-      .where('usuarios.id', id)
-      .first();
+    const [userId] = await knex('usuarios').insert({
+      role,
+      nombres,
+      primer_apellido,
+      segundo_apellido,
+      email,
+      telefono,
+      created_at: knex.fn.now()
+    });
 
+    if (username && password) {
+      const hashedPassword = await bcrypt.hash(password, 10);
+      await knex('credenciales').insert({
+        username,
+        password: hashedPassword,
+        usuario_id: userId,
+        created_at: knex.fn.now()
+      });
+    }
+
+    res.status(201).json({ message: 'Usuario creado exitosamente', userId });
+  } catch (err) {
+    res.status(500).json({ error: 'Error creando el usuario.', details: err.message });
+  }
+});
+
+router.put('/:id', async (req, res) => {
+  const { id } = req.params;
+  const { role, nombres, primer_apellido, segundo_apellido, email, telefono, username, password } = req.body;
+
+  try {
+    const user = await knex('usuarios').where('id', id).first();
     if (!user) {
       return res.status(404).json({ message: 'Usuario no encontrado.' });
     }
 
-    res.json({
-      username: user.username,
-      role: user.role,
-      recolector_id: user.recolector_id,
-      nombre_recolector: user.nombre_recolector,
-      ubicacion_enlace: user.ubicacion_enlace,
-      fecha_ubicacion_actualizada: user.fecha_ubicacion_actualizada
-        ? format(new Date(user.fecha_ubicacion_actualizada), 'dd/MM/yyyy HH:mm:ss')
-        : null,
-      estado: user.estado
-    });
-  } catch (error) {
-    console.error("Error al obtener el perfil del usuario:", error);
-    res.status(500).json({ message: 'Error interno al obtener el perfil del usuario.' });
+    const updateData = {};
+    if (role) updateData.role = role;
+    if (nombres) updateData.nombres = nombres;
+    if (primer_apellido) updateData.primer_apellido = primer_apellido;
+    if (segundo_apellido) updateData.segundo_apellido = segundo_apellido;
+    if (email) updateData.email = email;
+    if (telefono) updateData.telefono = telefono;
+
+    if (Object.keys(updateData).length > 0) {
+      await knex('usuarios').where('id', id).update(updateData);
+    }
+
+    if (username || password) {
+      const credenciales = await knex('credenciales').where('usuario_id', id).first();
+      const updates = {};
+
+      if (username) updates.username = username;
+      if (password) updates.password = await bcrypt.hash(password, 10);
+
+      if (credenciales) {
+        await knex('credenciales').where('usuario_id', id).update(updates);
+      } else {
+        updates.usuario_id = id;
+        updates.created_at = knex.fn.now();
+        await knex('credenciales').insert(updates);
+      }
+    }
+
+    res.status(200).json({ message: 'Usuario actualizado exitosamente' });
+  } catch (err) {
+    res.status(500).json({ error: 'Error actualizando el usuario.', details: err.message });
   }
 });
 
-router.post('/admin', async (req, res) => {
-  const { username, password, email, phone } = req.body;
+
+router.delete('/:id', async (req, res) => {
+  const { id } = req.params;
 
   try {
-    const existingAdmin = await knex('usuarios').where('role', 'admin').first();
-    if (existingAdmin) {
-      return res.status(400).json({ message: 'Ya existe un administrador.' });
+    const user = await knex('usuarios').where('id', id).first();
+    if (!user) {
+      return res.status(404).json({ message: 'Usuario no encontrado.' });
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    const newAdmin = await knex('usuarios').insert({
-      username,
-      password: hashedPassword,
-      role: 'admin',
-      email,
-      phone,
-      created_at: knex.fn.now()
-    });
-
-    res.status(201).json({ message: 'Administrador creado exitosamente', adminId: newAdmin[0] });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Error creando el administrador.' });
+    await knex('usuarios').where('id', id).del();
+    res.status(200).json({ message: 'Usuario eliminado exitosamente.' });
+  } catch (err) {
+    res.status(500).json({ error: 'Error eliminando el usuario.', details: err.message });
   }
 });
 
@@ -187,128 +166,26 @@ router.post('/login', async (req, res) => {
   const { username, password } = req.body;
 
   try {
-    const user = await knex('usuarios').where('username', username).first();
-
-    if (!user) {
-      return res.status(404).json({ message: 'Usuario no encontrado.' });
+    const credenciales = await knex('credenciales').where('username', username).first();
+    if (!credenciales) {
+      return res.status(404).json({ message: 'Credenciales no encontradas.' });
     }
 
-    const isMatch = await bcrypt.compare(password, user.password);
+    const isMatch = await bcrypt.compare(password, credenciales.password);
     if (!isMatch) {
       return res.status(400).json({ message: 'Contraseña incorrecta.' });
     }
 
-    const payload = {
-      id: user.id,
-      username: user.username,
-      role: user.role,
-      recolectorId: user.recolector_id || null,
-    };
+    const usuario = await knex('usuarios').where('id', credenciales.usuario_id).first();
+    const token = jwt.sign(
+      { id: usuario.id, role: usuario.role },
+      process.env.JWT_SECRET || 'secretkey',
+      { expiresIn: '30d' }
+    );
 
-    const token = jwt.sign(payload, process.env.JWT_SECRET || "secretkey", {
-      expiresIn: "30d",
-    });
-
-    res.status(200).json({
-      message: 'Login exitoso',
-      token,
-      role: user.role,
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Error en el login del usuario.' });
-  }
-});
-
-router.post('/', async (req, res) => {
-  const { username, password, recolector_id } = req.body;
-
-  try {
-    if (recolector_id) {
-      const recolector = await knex('recolectores_desechos').where('id', recolector_id).first();
-      if (!recolector) {
-        return res.status(400).json({ message: 'El recolector_id proporcionado no es válido.' });
-      }
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    const [newUserId] = await knex('usuarios').insert({
-      username,
-      password: hashedPassword,
-      role: 'localizador',
-      recolector_id: recolector_id || null,
-      created_at: knex.fn.now()
-    });
-
-    const newUser = await knex('usuarios')
-      .select(
-        'usuarios.id',
-        'usuarios.username',
-        'usuarios.role',
-        'usuarios.created_at',
-        'usuarios.recolector_id',
-        'recolectores_desechos.nombre_recolector'
-      )
-      .leftJoin('recolectores_desechos', 'usuarios.recolector_id', 'recolectores_desechos.id')
-      .where('usuarios.id', newUserId)
-      .first();
-
-    res.status(201).json({
-      message: 'Usuario creado exitosamente',
-      user: newUser,
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Error creando el usuario.', details: error.message || error });
-  }
-});
-
-router.put('/:id', async (req, res) => {
-  const { id } = req.params;
-  const { username, password, role, recolector_id } = req.body;
-
-  try {
-    const user = await knex('usuarios').where('id', id).first();
-    if (!user) {
-      return res.status(404).json({ message: 'Usuario no encontrado.' });
-    }
-
-    const updatedUser = {
-      username: username || user.username,
-      role: role || user.role,
-      recolector_id: role === 'localizador' ? recolector_id : null
-    };
-
-    if (password) {
-      updatedUser.password = await bcrypt.hash(password, 10);
-    }
-
-    await knex('usuarios').where('id', id).update(updatedUser);
-
-    res.status(200).json({ message: 'Usuario actualizado exitosamente' });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Error actualizando el usuario.' });
-  }
-});
-
-router.delete('/:id', async (req, res) => {
-  const { id } = req.params;
-
-  try {
-    const user = await knex('usuarios').where('id', id).first();
-
-    if (!user) {
-      return res.status(404).json({ message: 'Usuario no encontrado.' });
-    }
-
-    await knex('usuarios').where('id', id).del();
-
-    res.status(200).json({ message: 'Usuario eliminado exitosamente.' });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Error eliminando el usuario.' });
+    res.status(200).json({ message: 'Login exitoso', token, role: usuario.role });
+  } catch (err) {
+    res.status(500).json({ error: 'Error en el login.', details: err.message });
   }
 });
 
