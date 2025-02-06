@@ -86,7 +86,7 @@ const Navbar = () => {
                         <img
                             src="/images/logo_amarilis.png"
                             alt="Logo Amarilis"
-                            className="mx-auto w-auto h-auto max-h-16 md:max-h-20"
+                            className="mx-auto w-auto h-auto max-h-12 sm:max-h-14 md:max-h-16 lg:max-h-17"
                         />
                     </a>
 

@@ -19,3 +19,7 @@
 .border-green-custom {
   border-color: #5FBB01;
 }
+
+.router-view-container {
+  padding-top: 50px;
+}
