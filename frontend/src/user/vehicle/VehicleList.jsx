@@ -13,7 +13,7 @@ const VehicleList = () => {
     const [zonas, setZonas] = useState([]);
     const [message, setMessage] = useState('');
     const [searchText, setSearchText] = useState('');
-    const [selectedCategory, setSelectedCategory] = useState('Todos');
+    const [selectedCategory, setSelectedCategory] = useState('Zonas');
     const [dropdownOpen, setDropdownOpen] = useState(false);
 
     // Fetch de vehículos
@@ -61,12 +61,13 @@ const VehicleList = () => {
     const filteredVehicles = Array.isArray(vehicles)
         ? vehicles.filter((vehicle) => {
             const matchesSearch = vehicle.nombre_recolector.toLowerCase().includes(searchText.toLowerCase());
-            const matchesCategory = selectedCategory === 'Todos' || vehicle.zonas_asignadas.some(zona => zona.nombre === selectedCategory);
+            const matchesCategory = selectedCategory === 'Zonas' || vehicle.zonas_asignadas.some(zona => zona.nombre === selectedCategory);
             return matchesSearch && matchesCategory;
         })
         : [];
 
     const handleSearchChange = (e) => {
+
         setSearchText(e.target.value);
     };
 
@@ -108,11 +109,10 @@ const VehicleList = () => {
                         >
                             <ul className="py-2 text-sm text-gray-700 dark:text-gray-200" aria-labelledby="dropdown-button">
                                 <li>
-                                    <button type="button" className="w-full px-4 py-2" onClick={() => handleCategorySelect('Todos')}>
-                                        Todos
+                                    <button type="button" className="w-full px-4 py-2" onClick={() => handleCategorySelect('Zonas')}>
+                                        Zonas
                                     </button>
                                 </li>
-                                {/* Mapeo dinámico de zonas obtenidas del API */}
                                 {zonas.map((zona) => (
                                     <li key={zona.id}>
                                         <button type="button" className="w-full px-4 py-2" onClick={() => handleCategorySelect(zona.nombre)}>
@@ -127,7 +127,7 @@ const VehicleList = () => {
                         type="search"
                         id="search-dropdown"
                         className="block p-2.5 w-full"
-                        placeholder="Busca tu zona"
+                        placeholder="Buscar recolector"
                         value={searchText}
                         onChange={handleSearchChange}
                         required
