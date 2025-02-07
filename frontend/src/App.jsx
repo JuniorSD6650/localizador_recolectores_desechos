@@ -15,8 +15,8 @@ import VehicleList from './user/vehicle/VehicleList';
 import VehicleDetail from './user/vehicle/VehicleDetail';
 import ProtectedRoute from './ProtectedRoute';
 import Mapa from './Mapa';
-import Footer from './components/Footer';
-import Navbar from './components/Navbar';
+import Footer from './components/foot/Footer';
+import Navbar from './components/nav/Navbar';
 
 function App() {
   return (

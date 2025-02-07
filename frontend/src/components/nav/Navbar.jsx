@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import MenuIcon from '@mui/icons-material/Menu';
 import CloseIcon from '@mui/icons-material/Close';
-import Notifications from './Navbar/Notifications';
+import Notifications from './Notifications';
 
 const Navbar = () => {
     const location = useLocation();
