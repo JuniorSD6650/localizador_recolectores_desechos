@@ -126,7 +126,20 @@ router.get('/:id', async (req, res) => {
 
 router.post('/', async (req, res) => {
   const { usuario_id, recolector_id } = req.body;
+
   try {
+    // Verificar si ya existe la asignación
+    const existingAsignacion = await knex('asignaciones_vehiculos')
+      .where({ usuario_id, recolector_id })
+      .first();
+
+    if (existingAsignacion) {
+      return res.status(400).json({
+        error: 'Ya existe una asignación de este recolector al usuario.',
+      });
+    }
+
+    // Crear la asignación
     const result = await knex('asignaciones_vehiculos').insert({
       usuario_id,
       recolector_id,
@@ -145,7 +158,21 @@ router.post('/', async (req, res) => {
 router.put('/:id', async (req, res) => {
   const { id } = req.params;
   const { usuario_id, recolector_id } = req.body;
+
   try {
+    if (usuario_id && recolector_id) {
+      const existingAsignacion = await knex('asignaciones_vehiculos')
+        .where({ usuario_id, recolector_id })
+        .andWhereNot('id', id)
+        .first();
+
+      if (existingAsignacion) {
+        return res.status(400).json({
+          error: 'Ya existe una asignación de este recolector al usuario.',
+        });
+      }
+    }
+
     const updatedAsignacion = await knex('asignaciones_vehiculos')
       .where('id', id)
       .update({

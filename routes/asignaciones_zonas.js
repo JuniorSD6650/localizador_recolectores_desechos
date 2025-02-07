@@ -122,7 +122,20 @@ router.get('/:id', async (req, res) => {
 
 router.post('/', async (req, res) => {
   const { recolector_id, zona_id } = req.body;
+
   try {
+    // Verificar si ya existe la asignación
+    const existingAsignacion = await knex('asignaciones_zonas_recolectores')
+      .where({ recolector_id, zona_id })
+      .first();
+
+    if (existingAsignacion) {
+      return res.status(400).json({
+        error: 'Ya existe una asignación de esta zona al recolector.',
+      });
+    }
+
+    // Crear la asignación
     const result = await knex('asignaciones_zonas_recolectores').insert({
       recolector_id,
       zona_id,
@@ -139,7 +152,23 @@ router.post('/', async (req, res) => {
 router.put('/:id', async (req, res) => {
   const { id } = req.params;
   const { recolector_id, zona_id } = req.body;
+
   try {
+    // Verificar si ya existe una asignación duplicada
+    if (recolector_id && zona_id) {
+      const existingAsignacion = await knex('asignaciones_zonas_recolectores')
+        .where({ recolector_id, zona_id })
+        .andWhereNot('id', id) // Asegurarnos de que no sea la misma asignación que estamos editando
+        .first();
+
+      if (existingAsignacion) {
+        return res.status(400).json({
+          error: 'Ya existe una asignación de esta zona al recolector.',
+        });
+      }
+    }
+
+    // Actualizar la asignación
     const updatedAsignacion = await knex('asignaciones_zonas_recolectores')
       .where('id', id)
       .update({

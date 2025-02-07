@@ -10,23 +10,27 @@ import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 
 const VehicleList = () => {
     const [vehicles, setVehicles] = useState([]);
+    const [zonas, setZonas] = useState([]);
     const [message, setMessage] = useState('');
     const [searchText, setSearchText] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('Todos');
     const [dropdownOpen, setDropdownOpen] = useState(false);
 
+    // Fetch de vehículos
     useEffect(() => {
         const fetchVehicles = async () => {
             try {
                 const response = await fetch(API_BASE_URL + 'recolectores/');
                 const data = await response.json();
 
-                if (response.ok) {
-                    setVehicles(data);
+                if (response.ok && Array.isArray(data.recolectores)) {
+                    setVehicles(data.recolectores);
                 } else {
+                    setVehicles([]);
                     setMessage('No se pudieron cargar los vehículos');
                 }
             } catch (error) {
+                setVehicles([]);
                 setMessage('Error al conectar con la API');
             }
         };
@@ -34,26 +38,33 @@ const VehicleList = () => {
         fetchVehicles();
     }, []);
 
+    // Fetch de zonas
     useEffect(() => {
-        const handleClickOutside = (event) => {
-            const dropdownButton = document.getElementById('dropdown-button');
-            const dropdown = document.getElementById('dropdown');
-            if (dropdownButton && !dropdownButton.contains(event.target) && dropdown && !dropdown.contains(event.target)) {
-                setDropdownOpen(false);
+        const fetchZonas = async () => {
+            try {
+                const response = await fetch('http://localhost:5000/api/zonas/list');
+                const data = await response.json();
+
+                if (Array.isArray(data)) {
+                    setZonas(data);
+                } else {
+                    setMessage('No se pudieron cargar las zonas.');
+                }
+            } catch (error) {
+                setMessage('Error al conectar con el servidor de zonas.');
             }
         };
 
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
-        };
+        fetchZonas();
     }, []);
 
-    const filteredVehicles = vehicles.filter((vehicle) => {
-        const matchesSearch = vehicle.nombre_recolector.toLowerCase().includes(searchText.toLowerCase());
-        const matchesCategory = selectedCategory === 'Todos' || vehicle.zona_responsable === selectedCategory;
-        return matchesSearch && matchesCategory;
-    });
+    const filteredVehicles = Array.isArray(vehicles)
+        ? vehicles.filter((vehicle) => {
+            const matchesSearch = vehicle.nombre_recolector.toLowerCase().includes(searchText.toLowerCase());
+            const matchesCategory = selectedCategory === 'Todos' || vehicle.zonas_asignadas.some(zona => zona.nombre === selectedCategory);
+            return matchesSearch && matchesCategory;
+        })
+        : [];
 
     const handleSearchChange = (e) => {
         setSearchText(e.target.value);
@@ -97,59 +108,32 @@ const VehicleList = () => {
                         >
                             <ul className="py-2 text-sm text-gray-700 dark:text-gray-200" aria-labelledby="dropdown-button">
                                 <li>
-                                    <button
-                                        type="button"
-                                        className="w-full px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
-                                        onClick={() => handleCategorySelect('Todos')}
-                                    >
+                                    <button type="button" className="w-full px-4 py-2" onClick={() => handleCategorySelect('Todos')}>
                                         Todos
                                     </button>
                                 </li>
-                                <li>
-                                    <button
-                                        type="button"
-                                        className="w-full px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
-                                        onClick={() => handleCategorySelect('Colectora')}
-                                    >
-                                        Colectora
-                                    </button>
-                                </li>
-                                <li>
-                                    <button
-                                        type="button"
-                                        className="w-full px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
-                                        onClick={() => handleCategorySelect('Zona Cero')}
-                                    >
-                                        Zona Cero
-                                    </button>
-                                </li>
-                                <li>
-                                    <button
-                                        type="button"
-                                        className="w-full px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
-                                        onClick={() => handleCategorySelect('Esperanza')}
-                                    >
-                                        Esperanza
-                                    </button>
-                                </li>
+                                {/* Mapeo dinámico de zonas obtenidas del API */}
+                                {zonas.map((zona) => (
+                                    <li key={zona.id}>
+                                        <button type="button" className="w-full px-4 py-2" onClick={() => handleCategorySelect(zona.nombre)}>
+                                            {zona.nombre}
+                                        </button>
+                                    </li>
+                                ))}
                             </ul>
                         </div>
                     )}
                     <input
                         type="search"
                         id="search-dropdown"
-                        className="block p-2.5 w-full z-20 text-sm text-gray-900 bg-gray-50 border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:border-blue-500"
+                        className="block p-2.5 w-full"
                         placeholder="Busca tu zona"
                         value={searchText}
                         onChange={handleSearchChange}
                         required
                     />
-                    <button
-                        type="submit"
-                        className="items-center p-2 text-sm font-medium text-center text-white bg-blue-700 border border-blue-700 rounded-r-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-                    >
+                    <button type="submit" className="items-center p-2 text-white bg-blue-700">
                         <SearchIcon className="w-5 h-5" />
-                        <span className="sr-only">Search</span>
                     </button>
                 </div>
             </form>
@@ -165,8 +149,9 @@ const VehicleList = () => {
                             <Link to={`/recolectores/${vehicle.id}`} className="no-underline">
                                 <VehicleCard
                                     vehicleName={vehicle.nombre_recolector}
-                                    zone={vehicle.zona_responsable}
-                                    status={vehicle.estado}
+                                    zone={vehicle.zonas_asignadas.map(z => z.nombre).join(', ')}
+                                    status={vehicle.estado_operativo}
+                                    iconColor={vehicle.estado_operativo}
                                 />
                             </Link>
                         </div>
