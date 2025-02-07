@@ -6,7 +6,7 @@ import TituloConRegreso from './components/TituloConRegreso/TituloConRegreso';
 
 const Home = () => {
     return (
-        <div className="text-center py-3">
+        <div className="text-center py-3 h-screen">
             <TituloConRegreso titulo="Bienvenido a la Aplicación" className="mb-4" />
 
             <div className="container mx-auto px-5">
