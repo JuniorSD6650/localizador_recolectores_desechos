@@ -4,12 +4,10 @@ import { useState, useEffect } from "react";
 import { API_BASE_URL } from "../../utils";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
-
 import NotificationsIcon from '@mui/icons-material/Notifications';
 
-const Notifications = () => {
+const Notifications = ({ showNotifications, setShowNotifications }) => {
     const [notifications, setNotifications] = useState([]);
-    const [showNotifications, setShowNotifications] = useState(false);
     const [hasNewNotifications, setHasNewNotifications] = useState(false);
 
     useEffect(() => {
@@ -94,9 +92,7 @@ const Notifications = () => {
 
             {showNotifications && (
                 <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg overflow-hidden z-50">
-                    <div className="p-4 bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
-                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Notificaciones</h3>
-                    </div>
+
                     <ul className="py-2 max-h-96 overflow-y-auto">
                         {notifications.length > 0 ? (
                             notifications.map((notification) => (

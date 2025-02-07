@@ -42,6 +42,7 @@ const Navbar = () => {
 
     useEffect(() => {
         setIsMobileMenuOpen(false);
+        setShowNotifications(false); // También cerramos las notificaciones al cambiar de ruta
     }, [location]);
 
     const NavLinks = () => (
@@ -88,11 +89,21 @@ const Navbar = () => {
 
                     <div className="hidden md:flex items-center space-x-6 rtl:space-x-reverse">
                         <NavLinks />
-                        <Notifications />
+                        <div ref={notificationsRef}>
+                            <Notifications
+                                showNotifications={showNotifications}
+                                setShowNotifications={setShowNotifications}
+                            />
+                        </div>
                     </div>
 
                     <div className="flex items-center md:hidden">
-                        <Notifications />
+                        <div ref={notificationsRef}>
+                            <Notifications
+                                showNotifications={showNotifications}
+                                setShowNotifications={setShowNotifications}
+                            />
+                        </div>
                         <button
                             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                             className="text-gray-500 focus:outline-none"
