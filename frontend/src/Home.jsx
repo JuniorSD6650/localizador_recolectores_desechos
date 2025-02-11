@@ -6,34 +6,37 @@ import TituloConRegreso from './components/TituloConRegreso/TituloConRegreso';
 
 const Home = () => {
     return (
-        <div className="text-center py-3">
-            {/*  <TituloConRegreso titulo="Bienvenido a la Aplicación" className="mb-4" /> */}
 
-            <div className="container mx-auto px-5">
-                <Carousel showThumbs={false} autoPlay infiniteLoop showArrows={false} swipeable emulateTouch>
-                    <div>
-                        <img src="/images/conciencia-ambienta.jpg" alt="Noticia 1" className="carousel-image" draggable="false" style={{ userSelect: 'none' }} />
-                    </div>
-                    <div>
-                        <img src="/images/conciencia-ambienta2.jpg" alt="Aviso 1" className="carousel-image" draggable="false" style={{ userSelect: 'none' }} />
-                    </div>
-                    <div>
-                        <img src="/images/conciencia-ambienta3.jpg" alt="Comunicado 1" className="carousel-image" draggable="false" style={{ userSelect: 'none' }} />
-                    </div>
-                </Carousel>
 
-                <div className="flex justify-center gap-10 mt-4">
-                    <CardAnimation
-                        title="Reportar"
-                        description="Reporta cualquier acumulación de basura y ayuda a mantener limpia tu comunidad."
-                        to="/reportar"
-                        icon="recycling"
-                    />
-                    <CardAnimation
-                        title="Lista de Vehículos Recolectores"
-                        description="Consulta la lista de vehículos recolectores disponibles."
-                        to="/recolectores"
-                        icon="shipping"
+        <div className="min-h-screen flex items-center justify-center bg-gray-50">
+            <div className="container mx-auto flex flex-col-reverse md:flex-row items-center px-6 md:px-12">
+                {/* Left Section */}
+                <div className="text-center md:text-left md:max-w-lg">
+                    <h1 className="text-4xl md:text-5xl font-bold text-gray-800">
+                        Hola,
+                    </h1>
+                    <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mt-2">
+                        Recolector Digital de Amarilis
+                    </h2>
+                    <p className="text-gray-600 mt-4">
+                        Sistema de reporte y geolocalización de carros recolectores - podras ver exactamente donde se encuantra el carro lector y podras hacer un reporte de la basura.
+                    </p>
+                    <br />
+                    <div className="flex space-x-4">
+                        <button className="px-6 py-3 bg-blue-500 text-white rounded-lg shadow-lg hover:bg-blue-600">
+                            Get Started →
+                        </button>
+                        <button className="px-6 py-3 bg-blue-500 text-white rounded-lg shadow-lg hover:bg-blue-600">
+                            Get Started →
+                        </button>
+                    </div>
+                </div>
+                {/* Right Section */}
+                <div className="md:w-1/2">
+                    <img
+                        src="/images/img-prueba.jpg"
+                        alt="Business Illustration"
+                        className="w-full"
                     />
                 </div>
             </div>
