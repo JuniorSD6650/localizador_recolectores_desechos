@@ -7,7 +7,7 @@ import TituloConRegreso from './components/TituloConRegreso/TituloConRegreso';
 const Home = () => {
     return (
         <div className="text-center py-3">
-            <TituloConRegreso titulo="Bienvenido a la Aplicación" className="mb-4" />
+            {/*  <TituloConRegreso titulo="Bienvenido a la Aplicación" className="mb-4" /> */}
 
             <div className="container mx-auto px-5">
                 <Carousel showThumbs={false} autoPlay infiniteLoop showArrows={false} swipeable emulateTouch>
