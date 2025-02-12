@@ -3,7 +3,7 @@ import React from 'react';
 
 const Footer = () => {
     return (
-        <footer style={{ backgroundColor: '#595957' }} className="text-white">
+        <footer style={{ backgroundColor: '#595957' }} className="text-white h-16">
             <div className="container mx-auto text-center">
                 <p className="text-sm">
                     &copy; {new Date().getFullYear()} Sistema Recolector. Todos los derechos reservados.
