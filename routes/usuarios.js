@@ -16,6 +16,21 @@ const applyFilters = (query, filters) => {
   return query;
 };
 
+router.get('/admin', async (req, res) => {
+  try {
+    const admin = await knex('usuarios').where('role', 'admin').first();
+    if (!admin) {
+      return res.status(404).json({ message: 'Administrador no encontrado.' });
+    }
+
+    const credenciales = await knex('credenciales').where('usuario_id', admin.id).first();
+
+    res.status(200).json({ admin, credenciales });
+  } catch (err) {
+    res.status(500).json({ error: 'Error obteniendo el administrador.', details: err.message });
+  }
+});
+
 router.get('/', async (req, res) => {
   const { role, nombres, primer_apellido, email, telefono, page = 1, limit = 10 } = req.query;
 

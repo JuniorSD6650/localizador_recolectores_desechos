@@ -30,9 +30,14 @@ const applyFilters = (query, filters) => {
   return query;
 };
 
+const uploadDir = 'uploads/reportes';
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
+
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, 'public/uploads/reportes');
+    cb(null, uploadDir);
   },
   filename: (req, file, cb) => {
     const ext = path.extname(file.originalname);
@@ -114,57 +119,70 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-router.post('/', upload.single('foto'), async (req, res) => {
-  const { nombre_reportante, descripcion, numero_contacto, estado } = req.body;
-  const ruta_foto = req.file ? `uploads/reportes/${req.file.filename}` : null;
+router.post('/', upload.single('ruta_foto'), async (req, res) => {
+  const { nombre_reportante, descripcion, numero_contacto, direccion } = req.body;
 
   try {
+    const ruta_foto = req.file ? `uploads/reportes/${req.file.filename}` : null;
+
     const result = await knex('reportes').insert({
       nombre_reportante,
       descripcion,
       numero_contacto,
+      direccion,
       ruta_foto,
-      estado: estado || 'pendiente',
+      estado_reporte: 'pendiente'
     });
 
     const newReporteId = result[0];
-    res.status(201).json({ message: 'Reporte creado con éxito', id: newReporteId });
+    res.status(201).json({
+      message: 'Reporte creado con éxito',
+      id: newReporteId,
+      ruta_foto: ruta_foto
+    });
   } catch (err) {
+    if (req.file) {
+      try {
+        await fs.promises.unlink(req.file.path);
+      } catch (unlinkError) {
+        console.error('Error deleting file after failed insert:', unlinkError);
+      }
+    }
     res.status(500).json({ error: 'Error creando el reporte', details: err.message || err });
   }
 });
 
-router.put('/:id', upload.single('foto'), async (req, res) => {
+router.put('/:id', upload.single('ruta_foto'), async (req, res) => {
   const { id } = req.params;
-  const { nombre_reportante, descripcion, numero_contacto, estado } = req.body;
-  const ruta_foto = req.file ? `uploads/reportes/${req.file.filename}` : null;
+  const { nombre_reportante, descripcion, numero_contacto, estado_reporte, direccion } = req.body;
 
   try {
-    const reporte = await knex('reportes').where('id', id).first();
-    if (!reporte) {
-      return res.status(404).json({ error: 'Reporte no encontrado' });
-    }
-
-    if (ruta_foto && reporte.ruta_foto) {
-      const oldFilePath = path.join(__dirname, '..', 'public', reporte.ruta_foto);
-      if (fs.existsSync(oldFilePath)) {
-        try {
-          fs.unlinkSync(oldFilePath);
-        } catch (err) {
-          console.warn('Error eliminando archivo anterior:', err.message);
-        }
-      }
-    }
-
-    const updateFields = {
+    const updateData = {
       ...(nombre_reportante && { nombre_reportante }),
       ...(descripcion && { descripcion }),
       ...(numero_contacto && { numero_contacto }),
-      ...(ruta_foto && { ruta_foto }),
-      ...(estado && { estado }),
+      ...(estado_reporte && { estado_reporte }),
+      ...(direccion && { direccion })
     };
 
-    const updatedReporte = await knex('reportes').where('id', id).update(updateFields);
+    if (req.file) {
+      const oldReporte = await knex('reportes').where('id', id).first();
+      if (oldReporte && oldReporte.ruta_foto) {
+        try {
+          if (fs.existsSync(oldReporte.ruta_foto)) {
+            await fs.promises.unlink(oldReporte.ruta_foto);
+          }
+        } catch (unlinkError) {
+          console.error('Error deleting old file:', unlinkError);
+        }
+      }
+
+      updateData.ruta_foto = `uploads/reportes/${req.file.filename}`;
+    }
+
+    const updatedReporte = await knex('reportes')
+      .where('id', id)
+      .update(updateData);
 
     if (updatedReporte === 0) {
       return res.status(404).json({ error: 'Reporte no encontrado' });
@@ -172,10 +190,14 @@ router.put('/:id', upload.single('foto'), async (req, res) => {
 
     res.json({ message: 'Reporte actualizado con éxito' });
   } catch (err) {
-    res.status(500).json({
-      error: 'Error actualizando el reporte',
-      details: err.message || err,
-    });
+    if (req.file) {
+      try {
+        await fs.promises.unlink(req.file.path);
+      } catch (unlinkError) {
+        console.error('Error deleting file after failed update:', unlinkError);
+      }
+    }
+    res.status(500).json({ error: 'Error actualizando el reporte', details: err.message || err });
   }
 });
 
@@ -183,24 +205,22 @@ router.delete('/:id', async (req, res) => {
   const { id } = req.params;
   try {
     const reporte = await knex('reportes').where('id', id).first();
-    const ruta_foto = reporte ? reporte.ruta_foto : null;
 
-    if (ruta_foto) {
-      const filePath = path.join(__dirname, '..', 'public', ruta_foto);
+    if (!reporte) {
+      return res.status(404).json({ error: 'Reporte no encontrado' });
+    }
 
+    if (reporte.ruta_foto) {
       try {
-        await fs.promises.unlink(filePath);
-      } catch (err) {
-        return res.status(500).json({ error: 'Error eliminando el archivo', details: err.message || err });
+        if (fs.existsSync(reporte.ruta_foto)) {
+          await fs.promises.unlink(reporte.ruta_foto);
+        }
+      } catch (unlinkError) {
+        console.error('Error al eliminar el archivo:', unlinkError);
       }
     }
 
     const deletedReporte = await knex('reportes').where('id', id).del();
-
-    if (deletedReporte === 0) {
-      return res.status(404).json({ error: 'Reporte no encontrado' });
-    }
-
     res.json({ message: 'Reporte eliminado con éxito' });
   } catch (err) {
     res.status(500).json({

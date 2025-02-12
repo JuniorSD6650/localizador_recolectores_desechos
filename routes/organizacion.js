@@ -99,10 +99,10 @@ router.get('/:id', async (req, res) => {
 });
 
 router.post('/', async (req, res) => {
-  const { nombre, descripcion, streaming_link } = req.body;
+  const { nombre, descripcion } = req.body;
   try {
     const result = await knex('organizacion').insert({
-      nombre, descripcion, streaming_link
+      nombre, descripcion
     });
 
     const newOrganizacion = await knex('organizacion').where('id', result[0]).first();
@@ -115,11 +115,11 @@ router.post('/', async (req, res) => {
 
 router.put('/:id', async (req, res) => {
   const { id } = req.params;
-  const { nombre, descripcion, streaming_link } = req.body;
+  const { nombre, descripcion } = req.body;
   try {
     const updatedOrganizacion = await knex('organizacion')
       .where('id', id)
-      .update({ nombre, descripcion, streaming_link });
+      .update({ nombre, descripcion });
 
     if (updatedOrganizacion === 0) {
       return res.status(404).json({ error: 'Organización no encontrada' });

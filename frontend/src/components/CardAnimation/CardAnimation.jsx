@@ -1,17 +1,25 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import RecyclingIcon from '@mui/icons-material/Recycling';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import SwitchAccountIcon from '@mui/icons-material/SwitchAccount';
+import EditRoadIcon from '@mui/icons-material/EditRoad';
+import LayersIcon from '@mui/icons-material/Layers';
+import WorkHistoryIcon from '@mui/icons-material/WorkHistory';
+import CampaignIcon from '@mui/icons-material/Campaign';
+import ReportIcon from '@mui/icons-material/Report';
 
 import './CardAnimation.css';
 
 const icons = {
-    recycling: RecyclingIcon,
+    report: ReportIcon,
     account: AccountCircleIcon,
     shipping: LocalShippingIcon,
     switch: SwitchAccountIcon,
+    road: EditRoadIcon,
+    layers: LayersIcon,
+    work: WorkHistoryIcon,
+    campaing: CampaignIcon,
 };
 
 const CardAnimation = ({ title, description, to, icon }) => {

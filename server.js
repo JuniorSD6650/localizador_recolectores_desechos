@@ -17,14 +17,14 @@ app.use(cors({
 
 app.use(express.json());
 
-app.use('/uploads', express.static(path.join(__dirname, 'public', 'uploads')));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.use('/api', routes);
 
 app.use(express.static(path.join(__dirname, 'frontend', 'dist')));
 
 app.get('*', (req, res, next) => {
-  if (req.path.startsWith('/api')) {
+  if (req.path.startsWith('/api') || req.path.startsWith('/uploads')) {
     return next();
   }
   res.sendFile(path.join(__dirname, 'frontend', 'dist', 'index.html'));
