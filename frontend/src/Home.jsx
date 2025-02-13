@@ -23,7 +23,7 @@ const Home = () => {
         <div className="min-h-screen flex items-center justify-center bg-gray-50">
             <div className="container mx-auto flex flex-col-reverse md:flex-row items-center px-6 md:px-12">
                 
-                <div className="text-center md:text-left md:max-w-lg">
+                <div className="text-center md:text-left pr-16">
                     <h1 className="text-4xl md:text-5xl font-bold" style={{ color: '#205287' }}>
                         Hola,
                     </h1>
@@ -33,7 +33,7 @@ const Home = () => {
                     <p className="text-gray-600 mt-4 font-normal" style={{ color: '#595957' }}  >
                         Sistema de reporte y geolocalización de carros recolectores - podras ver exactamente donde se encuantra el carro lector y podras hacer un reporte de la basura.
                     </p>
-                    <br />
+                    <br/>
                     <div className="flex space-x-4">
                         <button className="px-6 py-3 bg-green-custom text-white rounded-3xl shadow-lg hover:bg-green2-custom"
                             onClick={handleRecolectoresClick}>    
@@ -47,22 +47,20 @@ const Home = () => {
                 </div>
                 
             </div>
-            <div className="w-full md:w-1/2 flex justify-center md:justify-end">
-                    <Carousel className="w-full md:w-3/4">
-                        <div>
-                            <img src="image1.jpg" alt="Image 1" />
-                            <p className="legend">Legend 1</p>
-                        </div>
-                        <div>
-                            <img src="image2.jpg" alt="Image 2" />
-                            <p className="legend">Legend 2</p>
-                        </div>
-                        <div>
-                            <img src="image3.jpg" alt="Image 3" />
-                            <p className="legend">Legend 3</p>
-                        </div>
-                    </Carousel>
-                </div>
+            <div className="w-full md:px-12">
+                <Carousel showThumbs={false} autoPlay infiniteLoop showArrows={false} swipeable emulateTouch>
+                    <div>
+                        <img src="/images/img-prueba.png" alt="Noticia 1" className="carousel-image" draggable="false" style={{ userSelect: 'none' }} />
+                    </div>
+                    <div>
+                        <img src="/images/conciencia-ambienta2.jpg" alt="Aviso 1" className="carousel-image" draggable="false" style={{ userSelect: 'none' }} />
+                    </div>
+                    <div>
+                        <img src="/images/conciencia-ambienta3.jpg" alt="Comunicado 1" className="carousel-image" draggable="false" style={{ userSelect: 'none' }} />
+                    </div>
+                </Carousel>
+
+            </div>
         </div>
     );
 };
