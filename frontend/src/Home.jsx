@@ -3,8 +3,20 @@ import { Carousel } from 'react-responsive-carousel';
 import 'react-responsive-carousel/lib/styles/carousel.min.css';
 import CardAnimation from './components/CardAnimation/CardAnimation';
 import TituloConRegreso from './components/TituloConRegreso/TituloConRegreso';
+import { useNavigate} from 'react-router-dom';
 
 const Home = () => {
+
+    const navigate = useNavigate();
+
+    const handleRecolectoresClick = () => {
+        navigate('/recolectores');
+    }
+
+    const handleReportesClick = () => {
+        navigate('/reportar');
+    };
+
     return (
 
 
@@ -23,15 +35,34 @@ const Home = () => {
                     </p>
                     <br />
                     <div className="flex space-x-4">
-                        <button className="px-6 py-3 bg-green-custom text-white rounded-3xl shadow-lg hover:bg-green2-custom">    
-                            Get Started
+                        <button className="px-6 py-3 bg-green-custom text-white rounded-3xl shadow-lg hover:bg-green2-custom"
+                            onClick={handleRecolectoresClick}>    
+                            Recolectores
                         </button>
-                        <button className="px-6 py-3 bg-green-custom text-white rounded-3xl shadow-lg hover:green2-custom">
-                            Get Started
+                        <button className="px-6 py-3 bg-green-custom text-white rounded-3xl shadow-lg hover:green2-custom"
+                            onClick={handleReportesClick}>
+                            Reportar
                         </button>
                     </div> 
                 </div>
+                
             </div>
+            <div className="w-full md:w-1/2 flex justify-center md:justify-end">
+                    <Carousel className="w-full md:w-3/4">
+                        <div>
+                            <img src="image1.jpg" alt="Image 1" />
+                            <p className="legend">Legend 1</p>
+                        </div>
+                        <div>
+                            <img src="image2.jpg" alt="Image 2" />
+                            <p className="legend">Legend 2</p>
+                        </div>
+                        <div>
+                            <img src="image3.jpg" alt="Image 3" />
+                            <p className="legend">Legend 3</p>
+                        </div>
+                    </Carousel>
+                </div>
         </div>
     );
 };
