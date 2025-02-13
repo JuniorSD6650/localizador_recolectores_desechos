@@ -4,10 +4,10 @@
 @tailwind components;
 @tailwind utilities;
 
-#root {}
-
-.main-container {
-  flex: 1;
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
 .carousel-image {
@@ -17,8 +17,19 @@
 }
 
 .border-green-custom {
-  border-color: #5FBB01;
+  border-color: #5FBB01; 
 }
+
+
+
+.bg-green-custom {
+  background-color: #5FBB01;
+}
+
+.bg-green-custom:hover {
+  background-color: #4C9502;
+}
+
 
 .router-view-container {
   padding-top: 50px;
