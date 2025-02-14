@@ -8,8 +8,7 @@ const applyFilters = (query, filters) => {
   const { role, nombres, primer_apellido, email, telefono } = filters;
 
   if (role) query = query.where('role', 'like', `%${role}%`);
-  if (nombres) query = query.where('nombres', 'like', `%${nombres}%`);
-  if (primer_apellido) query = query.where('primer_apellido', 'like', `%${primer_apellido}%`);
+  if (nombres) query = query.whereRaw("CONCAT(nombres, ' ', primer_apellido, ' ', segundo_apellido) like ?", [`%${nombres}%`]);
   if (email) query = query.where('email', 'like', `%${email}%`);
   if (telefono) query = query.where('telefono', 'like', `%${telefono}%`);
 
@@ -32,12 +31,11 @@ router.get('/admin', async (req, res) => {
 });
 
 router.get('/', async (req, res) => {
-  const { role, nombres, primer_apellido, email, telefono, page = 1, limit = 10 } = req.query;
+  const { role, nombres, email, telefono, page = 1, limit = 10 } = req.query;
 
   const filters = {
     role,
     nombres,
-    primer_apellido,
     email,
     telefono,
   };
@@ -51,10 +49,59 @@ router.get('/', async (req, res) => {
     const total = parseInt(totalCountResult.total, 10);
     const totalPages = total > 0 ? Math.ceil(total / limit) : 1;
 
-    let dataQuery = knex('usuarios').select('*').whereNot('role', 'admin');
+    let dataQuery = knex('usuarios')
+      .select(
+        'usuarios.*',
+        'asignaciones_vehiculos.id as asignacion_id',
+        'recolectores_desechos.id as recolector_id',
+        'recolectores_desechos.nombre_recolector',
+        'recolectores_desechos.ubicacion_enlace',
+        'recolectores_desechos.fecha_ubicacion_actualizada',
+        'recolectores_desechos.placa',
+        'recolectores_desechos.tipo_vehiculo',
+        'recolectores_desechos.estado_operativo'
+      )
+      .leftJoin('asignaciones_vehiculos', 'usuarios.id', 'asignaciones_vehiculos.usuario_id')
+      .leftJoin('recolectores_desechos', 'asignaciones_vehiculos.recolector_id', 'recolectores_desechos.id')
+      .whereNot('usuarios.role', 'admin')
+      .orderBy('id', 'desc');
+
     dataQuery = applyFilters(dataQuery, filters).limit(limit).offset(offset);
 
-    const usuarios = await dataQuery;
+    const usuariosData = await dataQuery;
+
+    // Agrupar recolectores por usuario
+    const usuarios = usuariosData.reduce((acc, row) => {
+      const usuario = acc.find(u => u.id === row.id);
+      const recolector = {
+        id: row.recolector_id,
+        asignacion_id: row.asignacion_id,
+        nombre_recolector: row.nombre_recolector,
+        ubicacion_enlace: row.ubicacion_enlace,
+        fecha_ubicacion_actualizada: row.fecha_ubicacion_actualizada,
+        placa: row.placa,
+        tipo_vehiculo: row.tipo_vehiculo,
+        estado_operativo: row.estado_operativo,
+      };
+
+      if (usuario) {
+        usuario.recolectores.push(recolector);
+      } else {
+        acc.push({
+          id: row.id,
+          role: row.role,
+          nombres: row.nombres,
+          primer_apellido: row.primer_apellido,
+          segundo_apellido: row.segundo_apellido,
+          email: row.email,
+          telefono: row.telefono,
+          created_at: row.created_at,
+          recolectores: recolector.id ? [recolector] : [],
+        });
+      }
+
+      return acc;
+    }, []);
 
     res.status(200).json({
       usuarios,

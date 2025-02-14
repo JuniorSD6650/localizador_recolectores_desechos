@@ -5,8 +5,8 @@ import './App.css';
 import Home from './Home';
 import Login from './Login';
 import AdminPage from './admin/AdminPage';
-import AdminLocalizadorPage from './admin/localizadores/AdminLocalizadorPage';
-import LocalizadorPage from './localizador/LocalizadorPage';
+import AdminPersonalPage from './admin/personal/AdminPersonalPage';
+import PersonalPage from './personal/PersonalPage';
 import AdminReportesPage from './admin/reportes/AdminReportesPage';
 import AdminVehiculosPage from './admin/vehiculos/AdminVehiculosPage';
 import AdminPerfilPage from './admin/perfil/AdminPerfilPage';
@@ -37,10 +37,10 @@ function AnimatedRoutes() {
         />
 
         <Route
-          path="/admin/conductores"
+          path="/admin/personal"
           element={
             <ProtectedRoute requiredRole="admin">
-              <PageWrapper><AdminLocalizadorPage /></PageWrapper>
+              <PageWrapper><AdminPersonalPage /></PageWrapper>
             </ProtectedRoute>
           }
         />
@@ -73,10 +73,10 @@ function AnimatedRoutes() {
         />
 
         <Route
-          path="/localizador"
+          path="/personal"
           element={
-            <ProtectedRoute requiredRole="localizador">
-              <PageWrapper><LocalizadorPage /></PageWrapper>
+            <ProtectedRoute requiredRole="personal">
+              <PageWrapper><PersonalPage /></PageWrapper>
             </ProtectedRoute>
           }
         />
