@@ -11,33 +11,31 @@ import AssignedVehiclesModal from './AssignedVehiclesModal';
 import EditPersonalModal from './EditPersonalModal';
 import Pagination from '../../components/Pagination/Pagination';
 
-// Icons
 import SearchIcon from '@mui/icons-material/Search';
 import CleaningServicesIcon from '@mui/icons-material/CleaningServices';
 
 const AdminPersonalPage = () => {
     const [personales, setPersonales] = useState([]);
     const [message, setMessage] = useState('');
+
     const [showModal, setShowModal] = useState(false);
     const [showVehiclesModal, setShowVehiclesModal] = useState(false);
     const [vehiclesToShow, setVehiclesToShow] = useState([]);
-    const [showEditModal, setShowEditModal] = useState(false);
     const [currentUserId, setCurrentUserId] = useState(null);
+
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [editingPersonal, setEditingPersonal] = useState(null);
 
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const limit = 10;
 
-    const [editingPersonal, setEditingPersonal] = useState(null);
-
-    // Filtros
     const [filterNombres, setFilterNombres] = useState('');
     const [filterEmail, setFilterEmail] = useState('');
     const [filterRole, setFilterRole] = useState('');
 
     useEffect(() => {
         fetchPersonales(currentPage);
-        // eslint-disable-next-line
     }, [currentPage]);
 
     const buildQueryString = () => {
@@ -95,11 +93,9 @@ const AdminPersonalPage = () => {
                 const response = await fetch(`${API_BASE_URL}usuarios/${id}`, {
                     method: 'DELETE',
                 });
-
                 if (response.ok) {
                     showSuccessAlert('Eliminado', 'El personal se eliminó con éxito.');
-                    // Vuelve a cargar la tabla
-                    fetchPersonales(currentPage);
+                    fetchPersonales(currentPage); 
                 } else {
                     showErrorAlert('Error', 'No se pudo eliminar el personal.');
                 }
@@ -110,7 +106,6 @@ const AdminPersonalPage = () => {
     };
 
     const handleRegister = () => {
-        // Después de registrar un personal, refresca la tabla:
         fetchPersonales(currentPage);
     };
 
@@ -123,43 +118,36 @@ const AdminPersonalPage = () => {
         setCurrentPage(newPage);
     };
 
-    const handleShowVehicles = async (user) => {
+    const fetchAssignedVehicles = async (usuarioId) => {
         try {
-            const response = await fetch(`${API_BASE_URL}usuario-recolector/?usuario_id=${user.id}`);
+            const response = await fetch(`${API_BASE_URL}usuario-recolector/?usuario_id=${usuarioId}`);
             if (response.ok) {
                 const data = await response.json();
-                const vehicles = data.asignaciones.map(vehicle => ({
+                const vehicles = data.asignaciones.map((vehicle) => ({
                     ...vehicle,
-                    id: vehicle.id.toString(),
-                    modelo: vehicle.modelo || 'Desconocido', // Ensure modelo is defined
-                    asignacion_id: vehicle.asignacion_id // Ensure asignacion_id is included
+                    id: vehicle.recolector_id.toString(),
+                    modelo: vehicle.modelo || 'Desconocido',
+                    asignacion_id: vehicle.id.toString(),
                 }));
                 setVehiclesToShow(vehicles);
-                setCurrentUserId(user.id.toString());
-                setShowVehiclesModal(true);
+            } else {
+                showErrorAlert('Error', 'No se pudieron cargar los vehículos asignados');
             }
         } catch (error) {
             showErrorAlert('Error', 'No se pudieron cargar los vehículos asignados');
         }
     };
 
-    // Para cuando se haga un cambio en la asignación desde algún modal,
-    // refrescamos la lista en la tabla principal.
-    const handleUpdate = async () => {
-        await fetchPersonales(currentPage);
+    const handleShowVehicles = async (user) => {
+        setCurrentUserId(user.id.toString());
+        await fetchAssignedVehicles(user.id.toString());
+        setShowVehiclesModal(true);
+    };
 
-        if (showVehiclesModal && currentUserId) {
-            const response = await fetch(`${API_BASE_URL}usuario-recolector/?usuario_id=${currentUserId}`);
-            if (response.ok) {
-                const data = await response.json();
-                const vehicles = data.asignaciones.map(vehicle => ({
-                    ...vehicle,
-                    id: vehicle.id.toString(),
-                    modelo: vehicle.modelo || 'Desconocido', // Ensure modelo is defined
-                    asignacion_id: vehicle.asignacion_id // Ensure asignacion_id is included
-                }));
-                setVehiclesToShow(vehicles);
-            }
+    const handleUpdateAssignments = async () => {
+        await fetchPersonales(currentPage);
+        if (currentUserId) {
+            await fetchAssignedVehicles(currentUserId); 
         }
     };
 
@@ -169,7 +157,6 @@ const AdminPersonalPage = () => {
 
             {message && <p className="text-red-500">{message}</p>}
 
-            {/* Sección de Filtros */}
             <div className="bg-gray-50 p-6 rounded-lg shadow-md mb-6">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <input
@@ -191,16 +178,15 @@ const AdminPersonalPage = () => {
                         onChange={(e) => setFilterRole(e.target.value)}
                     />
                 </div>
-
                 <div className="flex justify-end items-center mt-4 space-x-4">
                     <button
-                        className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
                         onClick={handleSearch}
                     >
                         <SearchIcon /> Buscar
                     </button>
                     <button
-                        className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500"
+                        className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
                         onClick={handleLimpiar}
                     >
                         <CleaningServicesIcon /> Limpiar
@@ -208,7 +194,6 @@ const AdminPersonalPage = () => {
                 </div>
             </div>
 
-            {/* Botón Nuevo Personal */}
             <div className="flex justify-end">
                 <button
                     className="bg-blue-500 text-white text-sm p-2 rounded-md hover:bg-blue-600 mb-1"
@@ -219,7 +204,6 @@ const AdminPersonalPage = () => {
                 </button>
             </div>
 
-            {/* Tabla de personales */}
             {Array.isArray(personales) && personales.length === 0 ? (
                 <p className="text-center">No hay personales registrados</p>
             ) : (
@@ -243,9 +227,7 @@ const AdminPersonalPage = () => {
                                 const apellidos = [
                                     personal?.primer_apellido,
                                     personal?.segundo_apellido
-                                ]
-                                    .filter(Boolean)
-                                    .join(' ');
+                                ].filter(Boolean).join(' ');
 
                                 return (
                                     <tr key={key} className="hover:bg-gray-50">
@@ -297,14 +279,12 @@ const AdminPersonalPage = () => {
                 </div>
             )}
 
-            {/* Paginación */}
             <Pagination
                 currentPage={currentPage}
                 totalPages={totalPages}
                 onPageChange={handlePageChange}
             />
 
-            {/* Modal de registro */}
             <RegisterPersonalModal
                 show={showModal}
                 onClose={() => {
@@ -312,35 +292,30 @@ const AdminPersonalPage = () => {
                     setEditingPersonal(null);
                 }}
                 onRegister={handleRegister}
-                editingPersonal={editingPersonal}
             />
 
-            {/* Modal para ver vehículos asignados */}
             {currentUserId && (
                 <AssignedVehiclesModal
                     show={showVehiclesModal}
                     onClose={() => setShowVehiclesModal(false)}
                     vehicles={vehiclesToShow}
                     userId={currentUserId}
-                    onUpdate={handleUpdate}
+                    onUpdate={handleUpdateAssignments}
                 />
             )}
 
-            {/* Modal de edición */}
             <EditPersonalModal
                 show={showEditModal}
                 onClose={() => {
                     setShowEditModal(false);
-                    // Al cerrar el modal, refresca la tabla principal:
                     fetchPersonales(currentPage);
                 }}
                 onEdit={handleRegister}
                 personal={editingPersonal}
-                // Podemos pasar también un onUpdate si deseamos:
-                onUpdate={handleUpdate}
             />
         </div>
     );
 };
 
 export default AdminPersonalPage;
+

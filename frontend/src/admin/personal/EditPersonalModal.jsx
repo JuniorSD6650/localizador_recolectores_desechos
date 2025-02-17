@@ -25,7 +25,6 @@ const EditPersonalModal = ({ show, onClose, onEdit, personal, onUpdate }) => {
                 email: personal.email,
                 telefono: personal.telefono,
             });
-            // Cargamos las asignaciones de vehículos de este usuario
             fetchAssignedVehicles(personal.id);
         }
     }, [personal]);
@@ -37,7 +36,6 @@ const EditPersonalModal = ({ show, onClose, onEdit, personal, onUpdate }) => {
             );
             if (response.ok) {
                 const data = await response.json();
-                // 'data.asignaciones' debería ser un array de asignaciones
                 setAssignedVehicles(data.asignaciones || []);
             } else {
                 showErrorAlert(
@@ -50,7 +48,6 @@ const EditPersonalModal = ({ show, onClose, onEdit, personal, onUpdate }) => {
         }
     };
 
-    // Maneja los cambios del formulario
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData((prevData) => ({
@@ -59,7 +56,6 @@ const EditPersonalModal = ({ show, onClose, onEdit, personal, onUpdate }) => {
         }));
     };
 
-    // Guarda los cambios de datos personales (PUT /usuarios/:id)
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
@@ -73,10 +69,8 @@ const EditPersonalModal = ({ show, onClose, onEdit, personal, onUpdate }) => {
 
             if (response.ok) {
                 const updatedPersonal = await response.json();
-                // Notificamos al padre que se editó con éxito
                 onEdit(updatedPersonal);
                 showSuccessAlert('Éxito', 'Personal editado correctamente');
-                // Si quieres refrescar la tabla principal de inmediato:
                 if (onUpdate) onUpdate();
 
                 onClose();
@@ -88,8 +82,6 @@ const EditPersonalModal = ({ show, onClose, onEdit, personal, onUpdate }) => {
         }
     };
 
-    // Elimina la asignación desde la tabla pivote (DELETE /usuario-recolector/:id)
-    // Asegúrate de que 'vehicle.id' sea el ID de la ASIGNACIÓN y no del vehículo en sí.
     const handleDeleteAssignment = async (assignmentId) => {
         try {
             const response = await fetch(`${API_BASE_URL}usuario-recolector/${assignmentId}`, {
@@ -97,11 +89,9 @@ const EditPersonalModal = ({ show, onClose, onEdit, personal, onUpdate }) => {
             });
 
             if (response.ok) {
-                // Actualizar estado local del modal
                 const updatedVehicles = vehicles.filter(v => v.id !== assignmentId);
-                setVehicles(updatedVehicles); // Asumiendo que tienes un estado local
+                setVehicles(updatedVehicles); 
 
-                // Notificar al padre
                 onUpdate();
 
                 showSuccessAlert('Éxito', 'Asignación eliminada correctamente');
@@ -136,7 +126,6 @@ const EditPersonalModal = ({ show, onClose, onEdit, personal, onUpdate }) => {
                         >
                             <option value="conductor">Conductor</option>
                             <option value="admin">Admin</option>
-                            {/* Más roles si corresponde */}
                         </select>
                     </div>
                     <div className="mb-4">
@@ -190,13 +179,12 @@ const EditPersonalModal = ({ show, onClose, onEdit, personal, onUpdate }) => {
                         />
                     </div>
 
-                    {/* Vehículos ya asignados */}
                     <div className="mb-4">
                         <label className="block text-gray-700">Vehículos Asignados</label>
                         <ul className="list-disc list-inside">
                             {assignedVehicles.map((assignment) => (
                                 <li
-                                    key={assignment.id} // <-- ID de la asignación
+                                    key={assignment.id} 
                                     className="mb-2 flex justify-between items-center"
                                 >
                                     <div className="text-sm flex-grow">
@@ -215,25 +203,6 @@ const EditPersonalModal = ({ show, onClose, onEdit, personal, onUpdate }) => {
                             ))}
                         </ul>
                     </div>
-
-                    {/* (Opcional) Botón o input para asignar un nuevo vehículo */}
-                    {/* 
-                    <div className="mb-4">
-                        <label className="block text-gray-700">Asignar nuevo vehículo</label>
-                        <input
-                            type="text"
-                            placeholder="ID del vehículo"
-                            onChange={(e) => setVehicleIdToAssign(e.target.value)}
-                        />
-                        <button
-                            type="button"
-                            onClick={() => handleAssignVehicle(vehicleIdToAssign)}
-                            className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
-                        >
-                            Asignar
-                        </button>
-                    </div>
-                    */}
 
                     <div className="flex justify-end space-x-3">
                         <button
@@ -261,7 +230,7 @@ EditPersonalModal.propTypes = {
     onClose: PropTypes.func.isRequired,
     onEdit: PropTypes.func.isRequired,
     personal: PropTypes.shape({
-        id: PropTypes.string.isRequired,
+        id: PropTypes.number,
         role: PropTypes.string,
         nombres: PropTypes.string,
         primer_apellido: PropTypes.string,
@@ -269,7 +238,7 @@ EditPersonalModal.propTypes = {
         email: PropTypes.string,
         telefono: PropTypes.string,
     }),
-    onUpdate: PropTypes.func, // si quieres notificar cambios al padre
+    onUpdate: PropTypes.func,
 };
 
 export default EditPersonalModal;
