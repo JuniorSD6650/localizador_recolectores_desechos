@@ -67,8 +67,9 @@ router.get('/', async (req, res) => {
     const totalPages = total > 0 ? Math.ceil(total / limit) : 1;
 
     let dataQuery = knex('calles')
-      .select('*')
-      .orderBy('id', 'desc');
+      .select('calles.*', 'zonas.nombre as zona_nombre')
+      .join('zonas', 'calles.zona_id', 'zonas.id')
+      .orderBy('calles.id', 'desc');
     dataQuery = applyFilters(dataQuery, filters);
     dataQuery = dataQuery.limit(limit).offset(offset);
 

@@ -10,6 +10,10 @@ import PersonalPage from './personal/PersonalPage';
 import AdminReportesPage from './admin/reportes/AdminReportesPage';
 import AdminVehiculosPage from './admin/vehiculos/AdminVehiculosPage';
 import AdminPerfilPage from './admin/perfil/AdminPerfilPage';
+import AdminZonasPage from './admin/zonas/AdminZonasPage';
+import AdminCallesPage from './admin/calles/AdminCallesPage';
+import AdminPublicacionesPage from './admin/publicaciones/AdminPublicacionesPage';
+import AdminJornadasPage from './admin/jornadas/AdminJornadasPage';
 import Report from './user/report/Report';
 import VehicleList from './user/vehicle/VehicleList';
 import VehicleDetail from './user/vehicle/VehicleDetail';
@@ -32,6 +36,15 @@ function AnimatedRoutes() {
           element={
             <ProtectedRoute requiredRole="admin">
               <PageWrapper><AdminPage /></PageWrapper>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admin/perfil"
+          element={
+            <ProtectedRoute requiredRole="admin">
+              <PageWrapper><AdminPerfilPage /></PageWrapper>
             </ProtectedRoute>
           }
         />
@@ -64,10 +77,37 @@ function AnimatedRoutes() {
         />
 
         <Route
-          path="/admin/perfil"
+          path="/admin/zonas"
           element={
             <ProtectedRoute requiredRole="admin">
-              <PageWrapper><AdminPerfilPage /></PageWrapper>
+              <PageWrapper><AdminZonasPage /></PageWrapper>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admin/calles"
+          element={
+            <ProtectedRoute requiredRole="admin">
+              <PageWrapper><AdminCallesPage /></PageWrapper>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admin/publicaciones"
+          element={
+            <ProtectedRoute requiredRole="admin">
+              <PageWrapper><AdminPublicacionesPage /></PageWrapper>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admin/jornadas"
+          element={
+            <ProtectedRoute requiredRole="admin">
+              <PageWrapper><AdminJornadasPage /></PageWrapper>
             </ProtectedRoute>
           }
         />

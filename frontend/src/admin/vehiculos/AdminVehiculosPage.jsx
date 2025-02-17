@@ -153,7 +153,7 @@ const AdminVehiculosPage = () => {
                                     </td>
                                     <td className="px-6 py-4 border-b">
                                         <button
-                                            className="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600"
+                                            className="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 w-auto"
                                             onClick={() => {
                                                 setSelectedVehicle(vehiculo);
                                                 obtenerAsignaciones(vehiculo.id);

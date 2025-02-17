@@ -47,7 +47,7 @@ const AdminPage = () => {
                     <CardAnimation
                         title="Zonas"
                         description="Gestiona las zonas de recolección."
-                        to="switch"
+                        to="zonas"
                         icon="layers"
                     />
                 </div>
@@ -55,7 +55,7 @@ const AdminPage = () => {
                     <CardAnimation
                         title="Calles"
                         description="Administra las calles asignadas a las zonas."
-                        to="road"
+                        to="calles"
                         icon="road"
                     />
                 </div>
@@ -63,7 +63,7 @@ const AdminPage = () => {
                     <CardAnimation
                         title="Publicaciones"
                         description="Gestiona las publicaciones y anuncios."
-                        to=""
+                        to="publicaciones"
                         icon="campaing"
                     />
                 </div>
@@ -71,7 +71,7 @@ const AdminPage = () => {
                     <CardAnimation
                         title="Jornadas"
                         description="Administra las jornadas de trabajo."
-                        to="ornadas"
+                        to="jornadas"
                         icon="work"
                     />
                 </div>

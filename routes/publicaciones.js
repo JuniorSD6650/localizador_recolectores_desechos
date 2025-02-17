@@ -148,7 +148,7 @@ router.post('/', upload.single('imagen_url'), async (req, res) => {
       await trx('notificaciones').insert({
         titulo: 'Nueva Publicación',
         mensaje: `Se ha creado una nueva publicación: ${titulo}`,
-        prioridad: 'media'
+        prioridad: 'baja'
       });
 
       await trx.commit();

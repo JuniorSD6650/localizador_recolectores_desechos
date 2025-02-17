@@ -179,31 +179,6 @@ const EditPersonalModal = ({ show, onClose, onEdit, personal, onUpdate }) => {
                         />
                     </div>
 
-                    <div className="mb-4">
-                        <label className="block text-gray-700">Vehículos Asignados</label>
-                        <ul className="list-disc list-inside">
-                            {assignedVehicles.map((assignment) => (
-                                <li
-                                    key={assignment.id} 
-                                    className="mb-2 flex justify-between items-center"
-                                >
-                                    <div className="text-sm flex-grow">
-                                        <strong>Nombre:</strong> {assignment.nombre_recolector} <br />
-                                        <strong>Modelo:</strong> {assignment.modelo} <br />
-                                        <strong>Placa:</strong> {assignment.placa}
-                                    </div>
-                                    <button
-                                        type="button"
-                                        className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600 text-xs w-16 ml-2"
-                                        onClick={() => handleDeleteAssignment(assignment.id)}
-                                    >
-                                        Eliminar
-                                    </button>
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
-
                     <div className="flex justify-end space-x-3">
                         <button
                             type="button"
