@@ -2,13 +2,7 @@ import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { API_BASE_URL, showSuccessAlert, showErrorAlert } from '../../utils';
 
-const AssignedVehiclesModal = ({
-    show,
-    onClose,
-    vehicles,
-    userId = '',
-    onUpdate = () => { }
-}) => {
+const AssignedVehiclesModal = ({ show, onClose, vehicles, userId = '', onUpdate = () => {} }) => {
     const [availableVehicles, setAvailableVehicles] = useState([]);
     const [selectedVehicle, setSelectedVehicle] = useState('');
 
@@ -16,7 +10,7 @@ const AssignedVehiclesModal = ({
         if (show) {
             fetchAvailableVehicles();
         }
-    }, [show]);
+    }, [show, vehicles]);
 
     const fetchAvailableVehicles = async () => {
         try {
@@ -33,22 +27,32 @@ const AssignedVehiclesModal = ({
     };
 
     const handleAssignVehicle = async () => {
-        if (!selectedVehicle) return;
-
         try {
-            const response = await fetch(`${API_BASE_URL}usuario-recolector/`, {
-                method: 'POST',
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    usuario_id: userId,
-                    recolector_id: selectedVehicle
-                }),
+            const myHeaders = new Headers();
+            myHeaders.append("Content-Type", "application/json");
+
+            const raw = JSON.stringify({
+                "usuario_id": userId,
+                "recolector_id": selectedVehicle
             });
+
+            const requestOptions = {
+                method: "POST",
+                headers: myHeaders,
+                body: raw,
+                redirect: "follow"
+            };
+
+            const response = await fetch(`${API_BASE_URL}usuario-recolector/`, requestOptions);
 
             if (response.ok) {
                 showSuccessAlert('Éxito', 'Vehículo asignado correctamente');
+                // Notificar al padre para actualizar la lista principal
+                if (onUpdate) onUpdate();
+                // Recargar los vehículos disponibles
+                fetchAvailableVehicles();
+                // Limpiar el select
                 setSelectedVehicle('');
-                await onUpdate();
             } else {
                 const errorData = await response.json();
                 showErrorAlert('Error', errorData.details || 'No se pudo asignar el vehículo');
@@ -60,13 +64,19 @@ const AssignedVehiclesModal = ({
 
     const handleDeleteAssignment = async (asignacionId) => {
         try {
-            const response = await fetch(`${API_BASE_URL}usuario-recolector/${asignacionId}`, {
-                method: 'DELETE'
-            });
+            const requestOptions = {
+                method: "DELETE",
+                redirect: "follow"
+            };
+
+            const response = await fetch(`${API_BASE_URL}usuario-recolector/${asignacionId}`, requestOptions);
 
             if (response.ok) {
                 showSuccessAlert('Éxito', 'Asignación eliminada correctamente');
-                await onUpdate();
+                // Notificar al padre para actualizar la lista principal
+                if (onUpdate) onUpdate();
+                // Recargar los vehículos disponibles
+                fetchAvailableVehicles();
             } else {
                 showErrorAlert('Error', 'No se pudo eliminar la asignación');
             }
@@ -76,9 +86,6 @@ const AssignedVehiclesModal = ({
     };
 
     if (!show) return null;
-
-    const assignedIds = new Set(vehicles.map(v => v.recolector_id));
-    const availableOptions = availableVehicles.filter(av => !assignedIds.has(av.id));
 
     return (
         <div
@@ -100,18 +107,12 @@ const AssignedVehiclesModal = ({
                         <p>No hay vehículos asignados.</p>
                     ) : (
                         <ul className="list-disc list-inside">
-                            {vehicles.map((vehicle) => (
-                                <li
-                                    key={vehicle.id}
-                                    className="mb-2 flex justify-between items-center"
-                                >
+                            {vehicles.map((vehicle, index) => (
+                                <li key={index} className="mb-2 flex justify-between items-center">
                                     <div className="text-lg flex-grow">
-                                        <span className="font-semibold">Nombre:</span>{' '}
-                                        {vehicle.nombre_recolector} <br />
-                                        <span className="font-semibold">Modelo:</span>{' '}
-                                        {vehicle.modelo} <br />
-                                        <span className="font-semibold">Placa:</span>{' '}
-                                        {vehicle.placa}
+                                        <span className="font-semibold">Nombre:</span> {vehicle.nombre_recolector} <br />
+                                        <span className="font-semibold">Modelo:</span> {vehicle.modelo} <br />
+                                        <span className="font-semibold">Placa:</span> {vehicle.placa}
                                     </div>
                                     <button
                                         className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600 text-xs w-16"
@@ -131,12 +132,12 @@ const AssignedVehiclesModal = ({
                         <select
                             className="border p-2 rounded w-full"
                             value={selectedVehicle}
-                            onChange={e => setSelectedVehicle(e.target.value)}
+                            onChange={(e) => setSelectedVehicle(e.target.value)}
                         >
                             <option value="">Seleccione un vehículo</option>
-                            {availableOptions.map(av => (
-                                <option key={av.id} value={av.id}>
-                                    {av.nombre_recolector}
+                            {availableVehicles.map((vehicle) => (
+                                <option key={vehicle.id} value={vehicle.id}>
+                                    {vehicle.nombre_recolector}
                                 </option>
                             ))}
                         </select>
@@ -168,11 +169,11 @@ AssignedVehiclesModal.propTypes = {
     onClose: PropTypes.func.isRequired,
     vehicles: PropTypes.arrayOf(
         PropTypes.shape({
-            id: PropTypes.string,
-            nombre_recolector: PropTypes.string,
-            modelo: PropTypes.string,
-            placa: PropTypes.string,
-            asignacion_id: PropTypes.string,
+            id: PropTypes.string.isRequired,
+            nombre_recolector: PropTypes.string.isRequired,
+            modelo: PropTypes.string.isRequired,
+            placa: PropTypes.string.isRequired,
+            asignacion_id: PropTypes.string.isRequired, // Ensure asignacion_id is required
         })
     ).isRequired,
     userId: PropTypes.string,
