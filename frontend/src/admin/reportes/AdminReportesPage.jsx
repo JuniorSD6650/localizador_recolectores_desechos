@@ -53,7 +53,7 @@ const AdminReportesPage = () => {
     }
     // Ejemplo de paginación
     params.append('page', 1);
-    params.append('limit', 10);
+    params.append('limit', 5);
 
     return params.toString(); // Devuelve algo como: estado_reporte=pendiente&direccion=abc...
   };

@@ -3,27 +3,19 @@ import { API_BASE_URL, showSuccessAlert, showErrorAlert } from '../../utils';
 
 const RegisterVehicleModal = ({ show, onClose, onRegister }) => {
     const [nombre, setNombre] = useState('');
-    const [telefono, setTelefono] = useState('');
-    const [zona, setZona] = useState('');
+    const [placa, setPlaca] = useState('');
+    const [tipoVehiculo, setTipoVehiculo] = useState('');
+    const [estadoOperativo, setEstadoOperativo] = useState('operativo');
     const [loading, setLoading] = useState(false);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        if (telefono && !/^[0-9]{9}$/.test(telefono)) {
-            showErrorAlert(
-                'Error',
-                'El número de teléfono debe ser numérico y tener exactamente 9 dígitos.'
-            );
-            return;
-        }
-
         const data = {
             nombre_recolector: nombre,
-            telefono_recolector: telefono || null,
-            zona_responsable: zona || null,
-            estado: 'activo',
-            organizacion_id: 1,
+            placa: placa,
+            tipo_vehiculo: tipoVehiculo,
+            estado_operativo: estadoOperativo,
         };
 
         setLoading(true);
@@ -41,16 +33,12 @@ const RegisterVehicleModal = ({ show, onClose, onRegister }) => {
                     '¡Vehículo registrado!',
                     'El nuevo vehículo se ha registrado exitosamente.'
                 );
-                onRegister({
-                    ...result,
-                    estado: result.estado || 'activo',
-                    telefono_recolector: result.telefono_recolector || 'No disponible',
-                    zona_responsable: result.zona_responsable || 'No asignada',
-                });
+                onRegister(result);
 
                 setNombre('');
-                setTelefono('');
-                setZona('');
+                setPlaca('');
+                setTipoVehiculo('');
+                setEstadoOperativo('operativo');
                 onClose();
             } else {
                 showErrorAlert('Error', 'No se pudo registrar el vehículo.');
@@ -60,11 +48,6 @@ const RegisterVehicleModal = ({ show, onClose, onRegister }) => {
         } finally {
             setLoading(false);
         }
-    };
-
-    const handleTelefonoChange = (e) => {
-        const value = e.target.value.replace(/\D/g, '');
-        setTelefono(value.slice(0, 9));
     };
 
     if (!show) return null;
@@ -98,33 +81,52 @@ const RegisterVehicleModal = ({ show, onClose, onRegister }) => {
                     </div>
 
                     <div className="mb-4">
-                        <label htmlFor="telefono" className="block text-sm font-medium text-gray-700">
-                            Teléfono
+                        <label htmlFor="placa" className="block text-sm font-medium text-gray-700">
+                            Placa
                         </label>
                         <input
                             type="text"
-                            id="telefono"
+                            id="placa"
                             className="mt-1 block w-full border border-gray-300 rounded px-3 py-2 
                          text-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                            value={telefono}
-                            onChange={handleTelefonoChange}
-                            placeholder="Ingrese el teléfono (opcional)"
+                            value={placa}
+                            onChange={(e) => setPlaca(e.target.value)}
+                            placeholder="Ingrese la placa del vehículo"
+                            required
                         />
                     </div>
 
                     <div className="mb-4">
-                        <label htmlFor="zona" className="block text-sm font-medium text-gray-700">
-                            Zona Responsable
+                        <label htmlFor="tipoVehiculo" className="block text-sm font-medium text-gray-700">
+                            Tipo de Vehículo
                         </label>
                         <input
                             type="text"
-                            id="zona"
+                            id="tipoVehiculo"
                             className="mt-1 block w-full border border-gray-300 rounded px-3 py-2 
                          text-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                            value={zona}
-                            onChange={(e) => setZona(e.target.value)}
-                            placeholder="Ingrese la zona responsable (opcional)"
+                            value={tipoVehiculo}
+                            onChange={(e) => setTipoVehiculo(e.target.value)}
+                            placeholder="Ingrese el tipo de vehículo"
+                            required
                         />
+                    </div>
+
+                    <div className="mb-4">
+                        <label htmlFor="estadoOperativo" className="block text-sm font-medium text-gray-700">
+                            Estado Operativo
+                        </label>
+                        <select
+                            id="estadoOperativo"
+                            className="mt-1 block w-full border border-gray-300 rounded px-3 py-2 
+                         text-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                            value={estadoOperativo}
+                            onChange={(e) => setEstadoOperativo(e.target.value)}
+                            required
+                        >
+                            <option value="operativo">Operativo</option>
+                            <option value="inoperativo">Inoperativo</option>
+                        </select>
                     </div>
 
                     <div className="flex justify-end space-x-2">

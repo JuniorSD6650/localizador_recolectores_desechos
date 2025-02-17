@@ -1,4 +1,4 @@
-.localizador-page {
+.personal-page {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -6,7 +6,7 @@
     text-align: center;
 }
 
-.localizador-content {
+.personal-content {
     background-color: #f8f9fa;
     border-radius: 8px;
     padding: 20px;
