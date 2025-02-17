@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
     API_BASE_URL,
+    BASE_URL,
     showSuccessAlert,
     showErrorAlert,
     showCustomAlert
@@ -17,7 +18,9 @@ const AdminZonasPage = () => {
     const [showEditModal, setShowEditModal] = useState(false);
     const [selectedZona, setSelectedZona] = useState(null);
 
-    // Paginación
+    const [showImageModal, setShowImageModal] = useState(false);
+    const [selectedImageUrl, setSelectedImageUrl] = useState('');
+
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const limit = 10;
@@ -84,6 +87,16 @@ const AdminZonasPage = () => {
         }
     };
 
+    const handleImageClick = (imageUrl) => {
+        setSelectedImageUrl(imageUrl);
+        setShowImageModal(true);
+    };
+
+    const closeImageModal = () => {
+        setShowImageModal(false);
+        setSelectedImageUrl('');
+    };
+
     const handlePageChange = (newPage) => {
         setCurrentPage(newPage);
     };
@@ -113,6 +126,7 @@ const AdminZonasPage = () => {
                             <tr>
                                 <th className="px-6 py-3 border-b">Nombre</th>
                                 <th className="px-6 py-3 border-b">Descripción</th>
+                                <th className="px-6 py-3 border-b">Imagen</th>
                                 <th className="px-6 py-3 border-b">Acciones</th>
                             </tr>
                         </thead>
@@ -124,6 +138,18 @@ const AdminZonasPage = () => {
                                     </td>
                                     <td className="px-6 py-4 border-b">
                                         {zona.descripcion || '---'}
+                                    </td>
+                                    <td className="px-6 py-4 border-b">
+                                        {zona.imagen ? (
+                                            <img
+                                                src={`${BASE_URL}${zona.imagen}`}
+                                                alt={zona.nombre}
+                                                className="h-16 object-cover mx-auto cursor-pointer"
+                                                onClick={() => handleImageClick(zona.imagen)}
+                                            />
+                                        ) : (
+                                            '---'
+                                        )}
                                     </td>
                                     <td className="px-6 py-4 border-b">
                                         <div className="flex space-x-2">
@@ -169,6 +195,26 @@ const AdminZonasPage = () => {
                 onUpdate={handleUpdate}
                 zona={selectedZona}
             />
+
+            {showImageModal && (
+                <div
+                    className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50"
+                    onClick={closeImageModal}
+                >
+                    <img
+                        src={`${BASE_URL}${selectedImageUrl}`}
+                        alt="Zona"
+                        className="p-12 object-cover"
+                        onClick={(e) => e.stopPropagation()}
+                    />
+                    <button
+                        className="absolute top-5 right-5 text-white text-2xl bg-gray-800 bg-opacity-50 rounded-full px-2 py-1"
+                        onClick={closeImageModal}
+                    >
+                        X
+                    </button>
+                </div>
+            )}
         </div>
     );
 };

@@ -26,7 +26,11 @@ const applyFilters = (query, filters) => {
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, 'public/uploads/zonas');
+    const uploadPath = path.join(__dirname, '..', 'uploads', 'zonas');
+    if (!fs.existsSync(uploadPath)) {
+      fs.mkdirSync(uploadPath, { recursive: true });
+    }
+    cb(null, uploadPath);
   },
   filename: (req, file, cb) => {
     const ext = path.extname(file.originalname);
@@ -155,7 +159,7 @@ router.put('/:id', upload.single('imagen'), async (req, res) => {
     }
 
     if (ruta_imagen && zona.imagen) {
-      const oldFilePath = path.join(__dirname, '..', 'public', zona.imagen);
+      const oldFilePath = path.join(__dirname, '..', zona.imagen);
       if (fs.existsSync(oldFilePath)) {
         try {
           fs.unlinkSync(oldFilePath);
@@ -195,7 +199,7 @@ router.delete('/:id', async (req, res) => {
     }
 
     if (zona.imagen) {
-      const filePath = path.join(__dirname, '..', 'public', zona.imagen);
+      const filePath = path.join(__dirname, '..', zona.imagen);
       if (fs.existsSync(filePath)) {
         try {
           await fs.promises.unlink(filePath);
