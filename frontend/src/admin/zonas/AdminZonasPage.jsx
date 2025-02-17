@@ -8,6 +8,7 @@ import {
 import TituloConRegreso from '../../components/TituloConRegreso/TituloConRegreso';
 import RegisterZonaModal from './RegisterZonaModal';
 import EditZonaModal from './EditZonaModal';
+import Pagination from '../../components/Pagination/Pagination';
 
 const AdminZonasPage = () => {
     const [zonas, setZonas] = useState([]);
@@ -16,13 +17,19 @@ const AdminZonasPage = () => {
     const [showEditModal, setShowEditModal] = useState(false);
     const [selectedZona, setSelectedZona] = useState(null);
 
+    // Paginación
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const limit = 10;
+
     const obtenerZonas = async () => {
         try {
-            const response = await fetch(`${API_BASE_URL}zonas`);
+            const response = await fetch(`${API_BASE_URL}zonas?page=${currentPage}&limit=${limit}`);
             const data = await response.json();
 
             if (response.ok) {
                 setZonas(data.zonas);
+                setTotalPages(data.pagination.totalPages);
             } else {
                 setMessage('No se pudieron cargar las zonas');
             }
@@ -33,7 +40,7 @@ const AdminZonasPage = () => {
 
     useEffect(() => {
         obtenerZonas();
-    }, []);
+    }, [currentPage]);
 
     const handleRegister = (newZona) => {
         setZonas((prev) => [...prev, newZona]);
@@ -75,6 +82,10 @@ const AdminZonasPage = () => {
                 showErrorAlert('Error', 'No se pudo eliminar la zona.');
             }
         }
+    };
+
+    const handlePageChange = (newPage) => {
+        setCurrentPage(newPage);
     };
 
     return (
@@ -139,6 +150,12 @@ const AdminZonasPage = () => {
                     </table>
                 </div>
             )}
+
+            <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+            />
 
             <RegisterZonaModal
                 show={showRegisterModal}

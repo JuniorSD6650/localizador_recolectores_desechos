@@ -9,6 +9,7 @@ import {
 import TituloConRegreso from '../../components/TituloConRegreso/TituloConRegreso';
 import RegisterPublicacionModal from './RegisterPublicacionModal';
 import EditPublicacionModal from './EditPublicacionModal';
+import Pagination from '../../components/Pagination/Pagination';
 
 const AdminPublicacionesPage = () => {
     const [publicaciones, setPublicaciones] = useState([]);
@@ -20,13 +21,18 @@ const AdminPublicacionesPage = () => {
     const [showImageModal, setShowImageModal] = useState(false);
     const [selectedImageUrl, setSelectedImageUrl] = useState('');
 
-    const obtenerPublicaciones = async () => {
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const limit = 10;
+
+    const obtenerPublicaciones = async (page) => {
         try {
-            const response = await fetch(`${API_BASE_URL}publicaciones`);
+            const response = await fetch(`${API_BASE_URL}publicaciones?page=${page}&limit=${limit}`);
             const data = await response.json();
 
             if (response.ok) {
                 setPublicaciones(data.publicaciones);
+                setTotalPages(data.pagination.totalPages);
             } else {
                 setMessage('No se pudieron cargar las publicaciones');
             }
@@ -36,15 +42,15 @@ const AdminPublicacionesPage = () => {
     };
 
     useEffect(() => {
-        obtenerPublicaciones();
-    }, []);
+        obtenerPublicaciones(currentPage);
+    }, [currentPage]);
 
     const handleRegister = (newPublicacion) => {
-        obtenerPublicaciones();
+        obtenerPublicaciones(currentPage);
     };
 
     const handleUpdate = (updatedPublicacion) => {
-        obtenerPublicaciones();
+        obtenerPublicaciones(currentPage);
     };
 
     const handleDelete = async (id) => {
@@ -66,6 +72,7 @@ const AdminPublicacionesPage = () => {
                 if (response.ok) {
                     setPublicaciones((prev) => prev.filter((pub) => pub.id !== id));
                     showSuccessAlert('Eliminado', 'La publicación se eliminó con éxito.');
+                    obtenerPublicaciones(currentPage);
                 } else {
                     showErrorAlert('Error', 'No se pudo eliminar la publicación.');
                 }
@@ -166,6 +173,12 @@ const AdminPublicacionesPage = () => {
                     </table>
                 </div>
             )}
+
+            <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={(page) => setCurrentPage(page)}
+            />
 
             <RegisterPublicacionModal
                 show={showRegisterModal}

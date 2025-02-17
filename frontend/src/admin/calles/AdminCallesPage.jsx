@@ -10,6 +10,7 @@ import {
 import TituloConRegreso from '../../components/TituloConRegreso/TituloConRegreso';
 import RegisterCalleModal from './RegisterCalleModal';
 import EditCalleModal from './EditCalleModal';
+import Pagination from '../../components/Pagination/Pagination';
 
 const AdminCallesPage = () => {
     const [calles, setCalles] = useState([]);
@@ -18,13 +19,18 @@ const AdminCallesPage = () => {
     const [showEditModal, setShowEditModal] = useState(false);
     const [selectedCalle, setSelectedCalle] = useState(null);
 
-    const obtenerCalles = async () => {
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const limit = 10;
+
+    const obtenerCalles = async (page) => {
         try {
-            const response = await fetch(`${API_BASE_URL}calles`);
+            const response = await fetch(`${API_BASE_URL}calles?page=${page}&limit=${limit}`);
             const data = await response.json();
 
             if (response.ok) {
                 setCalles(data.calles);
+                setTotalPages(data.pagination.totalPages);
             } else {
                 setMessage('No se pudieron cargar las calles');
             }
@@ -34,15 +40,15 @@ const AdminCallesPage = () => {
     };
 
     useEffect(() => {
-        obtenerCalles();
-    }, []);
+        obtenerCalles(currentPage);
+    }, [currentPage]);
 
     const handleRegister = (newCalle) => {
         setCalles((prev) => [...prev, newCalle]);
     };
 
     const handleUpdate = (updatedCalle) => {
-        obtenerCalles();
+        obtenerCalles(currentPage);
     };
 
     const handleDelete = async (id) => {
@@ -64,6 +70,7 @@ const AdminCallesPage = () => {
                 if (response.ok) {
                     setCalles((prev) => prev.filter((calle) => calle.id !== id));
                     showSuccessAlert('Eliminado', 'La calle se eliminó con éxito.');
+                    obtenerCalles(currentPage);
                 } else {
                     showErrorAlert('Error', 'No se pudo eliminar la calle.');
                 }
@@ -148,6 +155,12 @@ const AdminCallesPage = () => {
                     </table>
                 </div>
             )}
+
+            <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={(page) => setCurrentPage(page)}
+            />
 
             {/* Modal para registrar */}
             <RegisterCalleModal

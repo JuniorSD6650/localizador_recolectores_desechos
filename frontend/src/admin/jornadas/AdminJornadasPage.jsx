@@ -6,6 +6,7 @@ import {
 } from '../../utils';  // Ajusta esta importación según tu proyecto
 import TituloConRegreso from '../../components/TituloConRegreso/TituloConRegreso';
 import EditJornadaModal from './EditJornadaModal';
+import Pagination from '../../components/Pagination/Pagination';
 
 const AdminJornadasPage = () => {
   const [jornadas, setJornadas] = useState([]);
@@ -13,14 +14,19 @@ const AdminJornadasPage = () => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedJornada, setSelectedJornada] = useState(null);
 
-  const obtenerJornadas = async () => {
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const limit = 10;
+
+  const obtenerJornadas = async (page) => {
     try {
-      const response = await fetch(`${API_BASE_URL}jornadas`);
+      const response = await fetch(`${API_BASE_URL}jornadas?page=${page}&limit=${limit}`);
       const data = await response.json();
 
       if (response.ok) {
         // Ajusta si tu API retorna la lista de otra forma
         setJornadas(data.jornadas);
+        setTotalPages(data.pagination.totalPages);
       } else {
         setMessage('No se pudieron cargar las jornadas');
       }
@@ -30,8 +36,8 @@ const AdminJornadasPage = () => {
   };
 
   useEffect(() => {
-    obtenerJornadas();
-  }, []);
+    obtenerJornadas(currentPage);
+  }, [currentPage]);
 
   // Función para actualizar una jornada en el state
   const handleUpdate = (updatedJornada) => {
@@ -98,6 +104,12 @@ const AdminJornadasPage = () => {
           </table>
         </div>
       )}
+
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={(page) => setCurrentPage(page)}
+      />
 
       {/* Modal para Editar Jornada */}
       <EditJornadaModal

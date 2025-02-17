@@ -9,6 +9,7 @@ import TituloConRegreso from '../../components/TituloConRegreso/TituloConRegreso
 import RegisterVehicleModal from './RegisterVehicleModal';
 import EditVehicleModal from './EditVehicleModal';
 import AssignedZonesModal from './AssignedZonesModal';
+import Pagination from '../../components/Pagination/Pagination';
 
 const AdminVehiculosPage = () => {
     const [vehiculos, setVehiculos] = useState([]);
@@ -19,13 +20,18 @@ const AdminVehiculosPage = () => {
     const [selectedVehicle, setSelectedVehicle] = useState(null);
     const [selectedAssignments, setSelectedAssignments] = useState([]);
 
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const limit = 10;
+
     const obtener = async () => {
         try {
-            const response = await fetch(`${API_BASE_URL}recolectores`);
+            const response = await fetch(`${API_BASE_URL}recolectores?page=${currentPage}&limit=${limit}`);
             const data = await response.json();
 
             if (response.ok) {
                 setVehiculos(data.recolectores);
+                setTotalPages(data.pagination.totalPages);
             } else {
                 setMessage('No se pudieron cargar los vehículos');
             }
@@ -54,7 +60,7 @@ const AdminVehiculosPage = () => {
 
     useEffect(() => {
         obtener();
-    }, []);
+    }, [currentPage]);
 
     const handleRegister = (newVehicle) => {
         setVehiculos((prev) => [...prev, newVehicle]);
@@ -96,6 +102,10 @@ const AdminVehiculosPage = () => {
                 showErrorAlert('Error', 'No se pudo eliminar el vehículo.');
             }
         }
+    };
+
+    const handlePageChange = (newPage) => {
+        setCurrentPage(newPage);
     };
 
     return (
@@ -189,6 +199,12 @@ const AdminVehiculosPage = () => {
                     </table>
                 </div>
             )}
+
+            <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+            />
 
             <RegisterVehicleModal
                 show={showRegisterModal}

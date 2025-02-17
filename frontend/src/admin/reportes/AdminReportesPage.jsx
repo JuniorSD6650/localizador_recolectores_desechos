@@ -6,8 +6,8 @@ import {
   showErrorAlert,
   showCustomAlert
 } from '../../utils';
-
 import TituloConRegreso from '../../components/TituloConRegreso/TituloConRegreso';
+import Pagination from '../../components/Pagination/Pagination';
 
 // Icons
 import CleaningServicesIcon from '@mui/icons-material/CleaningServices';
@@ -18,28 +18,25 @@ const AdminReportesPage = () => {
   const [reportes, setReportes] = useState([]);
   const [message, setMessage] = useState('');
 
-  // Modal
   const [showModal, setShowModal] = useState(false);
   const [selectedImage, setSelectedImage] = useState('');
 
-  // Estados para filtros
-  const [filterEstado, setFilterEstado] = useState('');           // "pendiente" / "revisado" / ""
+  const [filterEstado, setFilterEstado] = useState('');           
   const [filterDireccion, setFilterDireccion] = useState('');
   const [filterDescripcion, setFilterDescripcion] = useState('');
   const [filterNombre, setFilterNombre] = useState('');
 
-  // 1) Cargar reportes al montar el componente (sin filtros o con filtros por defecto)
-  useEffect(() => {
-    // Puedes decidir si cargar la data sin filtros al inicio o no
-    fetchReportesBackend();
-  }, []);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const limit = 6;
 
-  // 2) Construir la query string (parámetros GET) según los filtros
+  useEffect(() => {
+    fetchReportesBackend();
+  }, [currentPage]);
+
   const buildQueryString = () => {
     const params = new URLSearchParams();
-    // Nombre del parámetro en backend (ajusta si se llama distinto)
     if (filterEstado) {
-      // asumiendo que tu BE espera 'estado_reporte' como query param
       params.append('estado_reporte', filterEstado);
     }
     if (filterDireccion) {
@@ -51,26 +48,23 @@ const AdminReportesPage = () => {
     if (filterNombre) {
       params.append('nombre_reportante', filterNombre);
     }
-    // Ejemplo de paginación
-    params.append('page', 1);
-    params.append('limit', 5);
+    params.append('page', currentPage);
+    params.append('limit', limit);
 
-    return params.toString(); // Devuelve algo como: estado_reporte=pendiente&direccion=abc...
+    return params.toString();
   };
 
-  // 3) Función que llama al backend con los parámetros
   const fetchReportesBackend = async () => {
     try {
       const queryString = buildQueryString();
-      // Arma la URL final, p.ej. http://localhost:5000/api/reportes/?estado_reporte=pendiente...
       const url = `${API_BASE_URL}reportes/?${queryString}`;
 
       const response = await fetch(url);
       const data = await response.json();
 
       if (response.ok) {
-        // data: { reportes: [...], pagination: {...} }
         setReportes(data.reportes);
+        setTotalPages(data.pagination.totalPages);
         setMessage('');
       } else {
         setMessage('No se pudieron cargar los reportes filtrados');
@@ -81,24 +75,21 @@ const AdminReportesPage = () => {
     }
   };
 
-  // 4) Función para la búsqueda (se llama al hacer clic en "Buscar")
   const handleSearch = () => {
-    // Sencillamente volvemos a llamar al fetch con la querystring actual
+    setCurrentPage(1);
     fetchReportesBackend();
   };
 
-  // 5) Función para limpiar filtros
   const handleLimpiar = () => {
     setFilterEstado('');
     setFilterDireccion('');
     setFilterDescripcion('');
     setFilterNombre('');
     setMessage('');
-    // Opcional: Refetch sin filtros
-    // fetchReportesBackend();
+    setCurrentPage(1);
+    fetchReportesBackend();
   };
 
-  // 6) Manejo de actualización de estado del reporte
   const handleEstadoChange = async (id, nuevoEstado) => {
     try {
       const confirmed = await showCustomAlert({
@@ -111,7 +102,6 @@ const AdminReportesPage = () => {
       });
 
       if (confirmed?.isConfirmed) {
-        // Observa que la propiedad en tu JSON es "estado_reporte"
         const response = await fetch(`${API_BASE_URL}reportes/${id}`, {
           method: 'PUT',
           headers: {
@@ -121,7 +111,6 @@ const AdminReportesPage = () => {
         });
 
         if (response.ok) {
-          // Actualiza en el estado local, para reflejar el cambio sin tener que recargar todo
           setReportes((prevReportes) =>
             prevReportes.map((reporte) =>
               reporte.id === id
@@ -141,7 +130,6 @@ const AdminReportesPage = () => {
     }
   };
 
-  // 7) Manejo de eliminación
   const handleEliminar = async (id) => {
     try {
       const confirmed = await showCustomAlert({
@@ -172,7 +160,6 @@ const AdminReportesPage = () => {
     }
   };
 
-  // 8) Modal para ver imagen
   const handleShowImage = (rutaFoto) => {
     setSelectedImage(`${BASE_URL}${rutaFoto}`);
     setShowModal(true);
@@ -183,17 +170,18 @@ const AdminReportesPage = () => {
     setSelectedImage('');
   };
 
+  const handlePageChange = (newPage) => {
+    setCurrentPage(newPage);
+  };
+
   return (
     <div className="container mx-auto py-3">
       <TituloConRegreso titulo="Gestión de Reportes" to="/admin" />
 
-      {/* Mensaje de error/carga */}
       {message && <p className="text-red-500">{message}</p>}
 
-      {/* Filtros */}
       <div className="bg-gray-50 p-6 rounded-lg shadow-md mb-6">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          {/* Filtro por estado */}
           <select
             className="border p-2 rounded"
             value={filterEstado}
@@ -204,7 +192,6 @@ const AdminReportesPage = () => {
             <option value="revisado">Revisado</option>
           </select>
 
-          {/* Filtro por dirección */}
           <input
             className="border p-2 rounded"
             placeholder="Dirección"
@@ -212,7 +199,6 @@ const AdminReportesPage = () => {
             onChange={(e) => setFilterDireccion(e.target.value)}
           />
 
-          {/* Filtro por descripción */}
           <input
             className="border p-2 rounded"
             placeholder="Descripción"
@@ -220,7 +206,6 @@ const AdminReportesPage = () => {
             onChange={(e) => setFilterDescripcion(e.target.value)}
           />
 
-          {/* Filtro por nombre_reportante */}
           <input
             className="border p-2 rounded"
             placeholder="Reportante"
@@ -245,7 +230,6 @@ const AdminReportesPage = () => {
         </div>
       </div>
 
-      {/* Listado de reportes */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
         {reportes.length === 0 ? (
           <p>No hay reportes disponibles</p>
@@ -309,7 +293,12 @@ const AdminReportesPage = () => {
         )}
       </div>
 
-      {/* Modal para la imagen */}
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={handlePageChange}
+      />
+
       {showModal && (
         <div
           style={{
