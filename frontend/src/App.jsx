@@ -144,8 +144,8 @@ const PageWrapper = ({ children }) => (
 function App() {
   return (
     <Router>
-      <div className="flex flex-col min-h-screen">
-        <Navbar />
+      <Navbar />
+      <div className="flex flex-col">
         <div className="flex-grow">
           <AnimatedRoutes />
         </div>

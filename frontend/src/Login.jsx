@@ -44,8 +44,8 @@ const Login = () => {
     };
 
     return (
-        <div className="flex justify-center items-center">
-            <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md mt-16">
+        <div className="flex justify-center items-center min-h-screen">
+            <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md ">
                 <h2 className="text-2xl font-bold text-center">Iniciar sesión</h2>
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <div>
@@ -68,7 +68,7 @@ const Login = () => {
                             required
                         />
                     </div>
-                    <button type="submit" className="w-full py-2 px-4 bg-green-600 text-white font-medium rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                    <button type="submit" className="w-full py-2 px-4 bg-customGreen text-white font-medium rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
                         Iniciar sesión
                     </button>
                 </form>

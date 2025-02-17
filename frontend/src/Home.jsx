@@ -3,7 +3,7 @@ import { Carousel } from 'react-responsive-carousel';
 import 'react-responsive-carousel/lib/styles/carousel.min.css';
 import CardAnimation from './components/CardAnimation/CardAnimation';
 import TituloConRegreso from './components/TituloConRegreso/TituloConRegreso';
-import { useNavigate} from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { API_BASE_URL, BASE_URL } from './utils';
 
 const Home = () => {
@@ -41,7 +41,7 @@ const Home = () => {
                     <Carousel showThumbs={false} autoPlay infiniteLoop showArrows={false} swipeable emulateTouch>
                         {publicaciones.map((publicacion) => (
                             <div key={publicacion.id}>
-                                <img 
+                                <img
                                     src={BASE_URL + `${publicacion.imagen_url}`}
                                     alt={publicacion.titulo}
                                     className="carousel-image"
@@ -52,7 +52,7 @@ const Home = () => {
                         ))}
                     </Carousel>
                 </div>
-                
+
                 {/* Text Content Section */}
                 <div className="     md:text-left md:w-1/2 md:order-1 md:px-20">
                     <h1 className="text-4xl md:text-5xl font-bold" style={{ color: '#205287' }}>
@@ -64,17 +64,17 @@ const Home = () => {
                     <p className="text-gray-600 mt-4 font-normal" style={{ color: '#595957' }}>
                         Sistema de reporte y geolocalización de carros recolectores - podras ver exactamente donde se encuantra el carro lector y podras hacer un reporte de la basura.
                     </p>
-                    <br/>
+                    <br />
                     <div className="flex space-x-4  justify-start">
                         <button className="px-6 py-3 bg-green-custom text-white rounded-3xl shadow-lg hover:bg-green2-custom"
-                            onClick={handleRecolectoresClick}>    
+                            onClick={handleRecolectoresClick}>
                             Recolectores
                         </button>
                         <button className="px-6 py-3 bg-green-custom text-white rounded-3xl shadow-lg hover:green2-custom"
                             onClick={handleReportesClick}>
                             Reportar
                         </button>
-                    </div> 
+                    </div>
                 </div>
             </div>
         </div>

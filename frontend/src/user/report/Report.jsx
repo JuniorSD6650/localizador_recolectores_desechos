@@ -190,10 +190,10 @@ const Report = () => {
     };
 
     return (
-        <div className="container mx-auto text-center py-3 px-4">
-            <TituloConRegreso titulo="Formulario de Reporte" to="/" />
+        <div className=" container mx-auto text-center  px-0">
 
-            <div className='container ml-auto mr-auto flex items-center justify-center'>
+
+            <div className='container ml-auto mr-auto flex items-center justify-center min-h-screen'>
                 <div className='w-full md:w-1/2'>
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

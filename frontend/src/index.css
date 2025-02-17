@@ -21,13 +21,13 @@
 
 @media (max-width: 768px) {
   .carousel-image {
-      max-width: 100%;
-      aspect-ratio: 16/9;
+    max-width: 100%;
+    aspect-ratio: 16/16;
   }
 }
 
 .border-green-custom {
-  border-color: #5FBB01; 
+  border-color: #5FBB01;
 }
 
 

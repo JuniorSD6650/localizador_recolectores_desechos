@@ -76,7 +76,7 @@ const Navbar = () => {
     );
 
     return (
-        <div className='fixed top-0 w-full z-50' ref={navbarRef}>
+        <div className='fixed top-0 w-full z-50' >
             <nav className="bg-white border-gray-200 dark:bg-gray-900">
                 <div className="flex flex-wrap justify-between items-center mx-auto max-w-screen-xl p-4 border-b-2">
                     <a href="/" className="flex items-center justify-center space-x-3 rtl:space-x-reverse no-underline">
