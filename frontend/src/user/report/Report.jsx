@@ -27,13 +27,14 @@ const Report = () => {
             const rearCamera = cameras.find((camera) =>
                 camera.label.toLowerCase().includes('back') ||
                 camera.label.toLowerCase().includes('trasera') ||
-                camera.label.toLowerCase().includes('rear')
+                camera.label.toLowerCase().includes('rear') ||
+                camera.label.toLowerCase().includes('environment')
             );
 
             if (rearCamera) {
                 setSelectedCamera(rearCamera.deviceId);
             } else if (cameras.length > 0) {
-                setSelectedCamera(cameras[0].deviceId);
+                setSelectedCamera(cameras[cameras.length - 1].deviceId);
             }
         } catch (error) {
             console.error('Error al enumerar cámaras:', error);
@@ -157,7 +158,7 @@ const Report = () => {
         formData.append('nombre_reportante', nombreReportante);
         formData.append('descripcion', descripcion);
         formData.append('numero_contacto', numeroContacto);
-        formData.append('direccion', direccion); 
+        formData.append('direccion', direccion);
         if (foto) {
             formData.append('foto', foto);
         }
@@ -176,7 +177,7 @@ const Report = () => {
                 setNombreReportante('');
                 setDescripcion('');
                 setNumeroContacto('');
-                setDireccion(''); 
+                setDireccion('');
                 setFoto(null);
                 setSelectedOption('');
             } else {
@@ -192,174 +193,178 @@ const Report = () => {
         <div className="container mx-auto text-center py-3 px-4">
             <TituloConRegreso titulo="Formulario de Reporte" to="/" />
 
-            <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label htmlFor="nombreReportante" className="block text-sm font-medium text-gray-700">
-                            Nombre del Reportante
-                        </label>
-                        <input
-                            type="text"
-                            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-eco-blue focus:border-eco-blue sm:text-sm"
-                            id="nombreReportante"
-                            value={nombreReportante}
-                            onChange={(e) => setNombreReportante(e.target.value)}
-                            placeholder="Ingrese su nombre completo"
-                            required
-                        />
-                    </div>
+            <div className='container ml-auto mr-auto flex items-center justify-center'>
+                <div className='w-full md:w-1/2'>
+                    <form onSubmit={handleSubmit} className="space-y-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label htmlFor="nombreReportante" className="block text-sm font-medium text-gray-700 text-left">
+                                    Nombre del Reportante:
+                                </label>
+                                <input
+                                    type="text"
+                                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-eco-blue focus:border-eco-blue sm:text-sm"
+                                    id="nombreReportante"
+                                    value={nombreReportante}
+                                    onChange={(e) => setNombreReportante(e.target.value)}
+                                    placeholder="Ingrese su nombre completo"
+                                    required
+                                />
+                            </div>
 
-                    <div>
-                        <label htmlFor="numeroContacto" className="block text-sm font-medium text-gray-700">
-                            Número de Contacto
-                        </label>
-                        <input
-                            type="text"
-                            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-eco-blue focus:border-eco-blue sm:text-sm"
-                            id="numeroContacto"
-                            value={numeroContacto}
-                            onChange={handlePhoneChange}
-                            placeholder="Ingrese un número de 9 dígitos"
-                            maxLength={9}
-                            pattern="[0-9]{9}"
-                            title="Debe ingresar exactamente 9 números"
-                        />
-                        {numeroContacto && numeroContacto.length !== 9 && (
-                            <small className="text-red-500">El número debe tener 9 dígitos</small>
-                        )}
-                    </div>
-                </div>
-
-                <div>
-                    <label htmlFor="direccion" className="block text-sm font-medium text-gray-700">
-                        Dirección
-                    </label>
-                    <input
-                        type="text"
-                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-eco-blue focus:border-eco-blue sm:text-sm"
-                        id="direccion"
-                        value={direccion}
-                        onChange={(e) => setDireccion(e.target.value)}
-                        placeholder="Ingrese la dirección del reporte"
-                    />
-                </div>
-
-                <div>
-                    <label htmlFor="descripcion" className="block text-sm font-medium text-gray-700">
-                        Descripción del Reporte
-                    </label>
-                    <textarea
-                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-eco-blue focus:border-eco-blue sm:text-sm"
-                        id="descripcion"
-                        rows="5"
-                        value={descripcion}
-                        onChange={(e) => setDescripcion(e.target.value)}
-                        placeholder="Describa la distorsión encontrada"
-                        required
-                    ></textarea>
-                </div>
-
-                <div>
-                    <label className="block text-sm font-medium text-gray-700">Foto (opcional)</label>
-                    <div className="flex flex-col sm:flex-row gap-2 justify-center items-center">
-                        <button
-                            type="button"
-                            className={`w-full sm:w-auto px-4 py-2 rounded-md ${selectedOption === 'file' ? 'bg-blue-500 text-white' : 'bg-gray-300 text-gray-700'
-                                }`}
-                            onClick={() => handleOptionChange('file')}
-                        >
-                            Subir Archivo
-                        </button>
-                        <button
-                            type="button"
-                            className={`w-full sm:w-auto px-4 py-2 rounded-md ${selectedOption === 'camera' ? 'bg-blue-500 text-white' : 'bg-gray-300 text-gray-700'
-                                }`}
-                            onClick={() => handleOptionChange('camera')}
-                        >
-                            Usar Cámara
-                        </button>
-                    </div>
-
-                    {selectedOption === 'file' && (
-                        <div className="mt-2">
-                            <input
-                                type="file"
-                                className="block w-full text-sm text-gray-700 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                                accept="image/*"
-                                onChange={handleFileChange}
-                            />
-                            {foto && (
-                                <div className="mt-2">
-                                    <img
-                                        src={URL.createObjectURL(foto)}
-                                        alt="Vista previa"
-                                        className="max-h-52 rounded-md"
-                                    />
-                                </div>
-                            )}
+                            <div>
+                                <label htmlFor="numeroContacto" className="block text-sm font-medium text-gray-700 text-left">
+                                    Número de Contacto:
+                                </label>
+                                <input
+                                    type="text"
+                                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-eco-blue focus:border-eco-blue sm:text-sm"
+                                    id="numeroContacto"
+                                    value={numeroContacto}
+                                    onChange={handlePhoneChange}
+                                    placeholder="Ingrese un número de 9 dígitos"
+                                    maxLength={9}
+                                    pattern="[0-9]{9}"
+                                    title="Debe ingresar exactamente 9 números"
+                                />
+                                {numeroContacto && numeroContacto.length !== 9 && (
+                                    <small className="text-red-500">El número debe tener 9 dígitos</small>
+                                )}
+                            </div>
                         </div>
-                    )}
 
-                    {selectedOption === 'camera' && (
-                        <div className="mt-2">
-                            {availableCameras.length > 1 && (
-                                <div className="mb-2">
-                                    <select
-                                        className="block w-full text-sm text-gray-700 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                                        value={selectedCamera}
-                                        onChange={(e) => handleCameraChange(e.target.value)}
-                                    >
-                                        {availableCameras.map((camera, index) => (
-                                            <option key={camera.deviceId} value={camera.deviceId}>
-                                                {camera.label || `Cámara ${index + 1}`}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-                            )}
-                            <video
-                                ref={videoRef}
-                                autoPlay
-                                playsInline
-                                className="w-full max-w-lg mx-auto rounded-md"
-                            ></video>
+                        <div>
+                            <label htmlFor="direccion" className="block text-sm font-medium text-gray-700 text-left">
+                                Dirección:
+                            </label>
+                            <input
+                                type="text"
+                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-eco-blue focus:border-eco-blue sm:text-sm"
+                                id="direccion"
+                                value={direccion}
+                                onChange={(e) => setDireccion(e.target.value)}
+                                placeholder="Ingrese la dirección del reporte"
+                            />
+                        </div>
 
-                            {isCameraActive && (
+                        <div>
+                            <label htmlFor="descripcion" className="block text-sm font-medium text-gray-700 text-left">
+                                Descripción del Reporte:
+                            </label>
+                            <textarea
+                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-eco-blue focus:border-eco-blue sm:text-sm"
+                                id="descripcion"
+                                rows="5"
+                                value={descripcion}
+                                onChange={(e) => setDescripcion(e.target.value)}
+                                placeholder="Describa el motivo de su reporte ..."
+                                required
+                            ></textarea>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">Foto (opcional)</label>
+                            <div className="flex p-4 gap-y-20  gap-2 justify-center items-center">
                                 <button
                                     type="button"
-                                    className="mt-2 px-4 py-2 bg-blue-500 text-white rounded-md"
-                                    onClick={takePhoto}
+                                    className={`w-auto sm:w-auto px-4 py-2 rounded-md ${selectedOption === 'file' ? 'bg-customGreen text-white' : 'bg-gray-300 text-gray-700'
+                                        }`}
+                                    onClick={() => handleOptionChange('file')}
                                 >
-                                    Tomar Foto
+                                    Subir Archivo
                                 </button>
+                                <button
+                                    type="button"
+                                    className={`w-auto sm:w-auto px-4 py-2 rounded-md ${selectedOption === 'camera' ? 'bg-customGreen text-white' : 'bg-gray-300 text-gray-700'
+                                        }`}
+                                    onClick={() => handleOptionChange('camera')}
+                                >
+                                    Usar Cámara
+                                </button>
+                            </div>
+
+                            {selectedOption === 'file' && (
+                                <div className="mt-2">
+                                    <input
+                                        type="file"
+                                        className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer border rounded-md p-2"
+                                        accept="image/*"
+                                        onChange={handleFileChange}
+                                    />
+                                    {foto && (
+                                        <div className="mt-2">
+                                            <img
+                                                src={URL.createObjectURL(foto)}
+                                                alt="Vista previa"
+                                                className="max-h-52 rounded-md"
+                                            />
+                                        </div>
+                                    )}
+                                </div>
                             )}
-                            <canvas ref={canvasRef} style={{ display: 'none' }}></canvas>
-                        </div>
-                    )}
 
-                    {foto && selectedOption === '' && (
-                        <div className="mt-2 text-center">
-                            <p>Foto capturada:</p>
-                            <img
-                                src={URL.createObjectURL(foto)}
-                                alt="Foto capturada"
-                                className="max-h-52 rounded-md mx-auto"
-                            />
-                            <button
-                                type="button"
-                                className="mt-2 px-4 py-2 bg-red-500 text-white rounded-md"
-                                onClick={() => setFoto(null)}
-                            >
-                                Eliminar Foto
-                            </button>
+                            {selectedOption === 'camera' && (
+                                <div className="mt-2">
+                                    {availableCameras.length > 1 && (
+                                        <div className="mb-2">
+                                            <select
+                                                className=" mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-eco-blue focus:border-eco-blue sm:text-sm"
+                                                value={selectedCamera}
+                                                onChange={(e) => handleCameraChange(e.target.value)}
+                                            >
+                                                {availableCameras.map((camera, index) => (
+                                                    <option key={camera.deviceId} value={camera.deviceId}>
+                                                        {camera.label || `Cámara ${index + 1}`}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                    )}
+                                    <video
+                                        ref={videoRef}
+                                        autoPlay
+                                        playsInline
+                                        className="w-full p-4 max-w-lg mx-auto rounded-md"
+                                    ></video>
+
+                                    {isCameraActive && (
+                                        <button
+                                            type="button"
+                                            className="w-auto mt-2 px-4 py-2 bg-customGreen text-white rounded-md"
+                                            onClick={takePhoto}
+                                        >
+                                            Tomar Foto
+                                        </button>
+                                    )}
+                                    <canvas ref={canvasRef} style={{ display: 'none' }}></canvas>
+                                </div>
+                            )}
+
+                            {foto && selectedOption === '' && (
+                                <div className="mt-2 text-center">
+                                    <p>Foto capturada:</p>
+                                    <img
+                                        src={URL.createObjectURL(foto)}
+                                        alt="Foto capturada"
+                                        className="max-h-52 rounded-md mx-auto"
+                                    />
+                                    <button
+                                        type="button"
+                                        className=" w-auto mt-2 px-4 py-2 bg-red-500 text-white rounded-md"
+                                        onClick={() => setFoto(null)}
+                                    >
+                                        Eliminar Foto
+                                    </button>
+                                </div>
+                            )}
                         </div>
-                    )}
+
+                        <button type="submit" className="w-64 px-4 py-2 bg-customGreen text-white rounded-md">
+                            Enviar Reporte
+                        </button>
+                    </form>
                 </div>
-
-                <button type="submit" className="w-full px-4 py-2 bg-blue-500 text-white rounded-md">
-                    Enviar Reporte
-                </button>
-            </form>
+            </div>
         </div>
     );
 };

@@ -56,7 +56,7 @@ const Home = () => {
                 {/* Text Content Section */}
                 <div className="     md:text-left md:w-1/2 md:order-1 md:px-20">
                     <h1 className="text-4xl md:text-5xl font-bold" style={{ color: '#205287' }}>
-                        Hola Vecino,
+                        Hola vecino,
                     </h1>
                     <h2 className="text-3xl md:text-4xl font-bold mt-2" style={{ color: '#205287' }}>
                         Recolector Digital de Amarilis
