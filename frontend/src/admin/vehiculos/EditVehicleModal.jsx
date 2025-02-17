@@ -3,15 +3,17 @@ import { API_BASE_URL, showSuccessAlert, showErrorAlert } from '../../utils';
 
 const EditVehicleModal = ({ show, onClose, onUpdate, vehicle }) => {
     const [nombre, setNombre] = useState('');
-    const [telefono, setTelefono] = useState('');
-    const [zona, setZona] = useState('');
+    const [placa, setPlaca] = useState('');
+    const [tipoVehiculo, setTipoVehiculo] = useState('');
+    const [estadoOperativo, setEstadoOperativo] = useState('');
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         if (vehicle) {
             setNombre(vehicle.nombre_recolector);
-            setTelefono(vehicle.telefono_recolector || '');
-            setZona(vehicle.zona_responsable || '');
+            setPlaca(vehicle.placa);
+            setTipoVehiculo(vehicle.tipo_vehiculo);
+            setEstadoOperativo(vehicle.estado_operativo);
         }
     }, [vehicle]);
 
@@ -20,8 +22,9 @@ const EditVehicleModal = ({ show, onClose, onUpdate, vehicle }) => {
 
         const data = {
             nombre_recolector: nombre,
-            telefono_recolector: telefono || null,
-            zona_responsable: zona || null,
+            placa: placa,
+            tipo_vehiculo: tipoVehiculo,
+            estado_operativo: estadoOperativo,
         };
 
         setLoading(true);
@@ -36,7 +39,7 @@ const EditVehicleModal = ({ show, onClose, onUpdate, vehicle }) => {
             if (response.ok) {
                 const result = await response.json();
                 showSuccessAlert('¡Vehículo actualizado!', 'El vehículo se ha actualizado exitosamente.');
-                onUpdate(result.recolector);
+                onUpdate(result);
                 onClose();
             } else {
                 showErrorAlert('Error', 'No se pudo actualizar el vehículo.');
@@ -79,35 +82,52 @@ const EditVehicleModal = ({ show, onClose, onUpdate, vehicle }) => {
                     </div>
 
                     <div className="mb-4">
-                        <label htmlFor="telefono" className="block text-sm font-medium text-gray-700">
-                            Teléfono
+                        <label htmlFor="placa" className="block text-sm font-medium text-gray-700">
+                            Placa
                         </label>
                         <input
                             type="text"
-                            id="telefono"
+                            id="placa"
                             className="mt-1 block w-full border border-gray-300 rounded px-3 py-2 
                          text-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                            value={telefono}
-                            onChange={(e) => setTelefono(e.target.value)}
-                            placeholder="Ingrese el teléfono (opcional)"
-                            pattern="\d{0,9}"
-                            title="Ingrese solo números (máximo 9 dígitos)"
+                            value={placa}
+                            onChange={(e) => setPlaca(e.target.value)}
+                            placeholder="Ingrese la placa del vehículo"
+                            required
                         />
                     </div>
 
                     <div className="mb-4">
-                        <label htmlFor="zona" className="block text-sm font-medium text-gray-700">
-                            Zona Responsable
+                        <label htmlFor="tipoVehiculo" className="block text-sm font-medium text-gray-700">
+                            Tipo de Vehículo
                         </label>
                         <input
                             type="text"
-                            id="zona"
+                            id="tipoVehiculo"
                             className="mt-1 block w-full border border-gray-300 rounded px-3 py-2 
                          text-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                            value={zona}
-                            onChange={(e) => setZona(e.target.value)}
-                            placeholder="Ingrese la zona responsable (opcional)"
+                            value={tipoVehiculo}
+                            onChange={(e) => setTipoVehiculo(e.target.value)}
+                            placeholder="Ingrese el tipo de vehículo"
+                            required
                         />
+                    </div>
+
+                    <div className="mb-4">
+                        <label htmlFor="estadoOperativo" className="block text-sm font-medium text-gray-700">
+                            Estado Operativo
+                        </label>
+                        <select
+                            id="estadoOperativo"
+                            className="mt-1 block w-full border border-gray-300 rounded px-3 py-2 
+                         text-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                            value={estadoOperativo}
+                            onChange={(e) => setEstadoOperativo(e.target.value)}
+                            required
+                        >
+                            <option value="operativo">Operativo</option>
+                            <option value="inoperativo">Inoperativo</option>
+                        </select>
                     </div>
 
                     <div className="flex justify-end space-x-2">
