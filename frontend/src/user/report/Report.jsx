@@ -195,7 +195,7 @@ const Report = () => {
 
             <div className='container ml-auto mr-auto flex items-center justify-center min-h-screen mt-16'>
                 <div className='w-full md:w-1/2 shadow-lg p-6'>
-                    <h2 className='pb-16 text-3xl md:text-4xl font-bold text-customBlue border-b-2 border-custom'>Realiza el reporte a la basura acumulada</h2>
+                    <h2 className='pb-12 text-3xl md:text-4xl font-bold text-customBlue  border-custom'>Realiza el reporte a la basura acumulada</h2>
 
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

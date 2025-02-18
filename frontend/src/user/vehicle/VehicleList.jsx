@@ -87,77 +87,79 @@ const VehicleList = () => {
 
     return (
         <div className="container mx-auto text-center py-3 px-4">
-            <TituloConRegreso titulo="Lista de Vehículos Recolectores" to="/" />
-
-            <form className="max-w-lg mx-auto mb-4" onSubmit={handleSearchSubmit}>
-                <div className="flex relative">
-                    <button
-                        id="dropdown-button"
-                        type="button"
-                        className="items-center px-3 text-sm font-medium text-center text-gray-900 bg-gray-100 border border-gray-300 rounded-l-lg hover:bg-gray-200 focus:ring-4 focus:outline-none focus:ring-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 dark:focus:ring-gray-700 dark:text-white dark:border-gray-600"
-                        onClick={handleDropdownToggle}
-                        aria-expanded={dropdownOpen}
-                        aria-haspopup="true"
-                    >
-                        {selectedCategory}
-                        <ArrowDropDownIcon />
-                    </button>
-                    {dropdownOpen && (
-                        <div
-                            id="dropdown"
-                            className="absolute z-50 bg-white divide-y divide-gray-100 rounded-lg shadow-sm w-44 dark:bg-gray-700 top-full mt-1"
+            <div className='min-h-screen pt-11'>
+                <form className="max-w-lg mx-auto mb-4" onSubmit={handleSearchSubmit}>
+                    <div className="flex relative">
+                        <button
+                            id="dropdown-button"
+                            type="button"
+                            className="items-center px-3 text-sm font-medium text-center text-gray-900 bg-gray-100 border border-gray-300 rounded-l-lg hover:bg-gray-200 focus:ring-4 focus:outline-none focus:ring-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 dark:focus:ring-gray-700 dark:text-white dark:border-gray-600"
+                            onClick={handleDropdownToggle}
+                            aria-expanded={dropdownOpen}
+                            aria-haspopup="true"
                         >
-                            <ul className="py-2 text-sm text-gray-700 dark:text-gray-200" aria-labelledby="dropdown-button">
-                                <li>
-                                    <button type="button" className="w-full px-4 py-2" onClick={() => handleCategorySelect('Zonas')}>
-                                        Zonas
-                                    </button>
-                                </li>
-                                {zonas.map((zona) => (
-                                    <li key={zona.id}>
-                                        <button type="button" className="w-full px-4 py-2" onClick={() => handleCategorySelect(zona.nombre)}>
-                                            {zona.nombre}
+                            {selectedCategory}
+                            <ArrowDropDownIcon />
+                        </button>
+                        {dropdownOpen && (
+                            <div
+                                id="dropdown"
+                                className="absolute z-50 bg-white divide-y divide-gray-100 rounded-lg shadow-sm w-44 dark:bg-gray-700 top-full mt-1"
+                            >
+                                <ul className="py-2 text-sm text-gray-700 dark:text-gray-200" aria-labelledby="dropdown-button">
+                                    <li>
+                                        <button type="button" className="w-full px-4 py-2" onClick={() => handleCategorySelect('Zonas')}>
+                                            Zonas
                                         </button>
                                     </li>
-                                ))}
-                            </ul>
-                        </div>
-                    )}
-                    <input
-                        type="search"
-                        id="search-dropdown"
-                        className="block p-2.5 w-full"
-                        placeholder="Buscar recolector"
-                        value={searchText}
-                        onChange={handleSearchChange}
-                        required
-                    />
-                    <button type="submit" className="items-center p-2 text-white bg-blue-700">
-                        <SearchIcon className="w-5 h-5" />
-                    </button>
-                </div>
-            </form>
+                                    {zonas.map((zona) => (
+                                        <li key={zona.id}>
+                                            <button type="button" className="w-full px-4 py-2" onClick={() => handleCategorySelect(zona.nombre)}>
+                                                {zona.nombre}
+                                            </button>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        )}
+                        <input
+                            type="search"
+                            id="search-dropdown"
+                            className="block p-2.5 w-full"
+                            placeholder="Buscar recolector"
+                            value={searchText}
+                            onChange={handleSearchChange}
+                            required
+                        />
+                        <button type="submit" className="items-center p-2 text-white bg-blue-700">
+                            <SearchIcon className="w-5 h-5" />
+                        </button>
+                    </div>
+                </form>
 
-            {message && <p className="text-red-500">{message}</p>}
+                {message && <p className="text-red-500">{message}</p>}
 
-            {filteredVehicles.length === 0 ? (
-                <p>No se encontraron vehículos</p>
-            ) : (
-                <div className="grid md:grid-cols-2 gap-4 mt-4">
-                    {filteredVehicles.map((vehicle) => (
-                        <div key={vehicle.id} className="w-full">
-                            <Link to={`/recolectores/${vehicle.id}`} className="no-underline">
-                                <VehicleCard
-                                    vehicleName={vehicle.nombre_recolector}
-                                    zone={vehicle.zonas_asignadas.map(z => z.nombre).join(', ')}
-                                    status={vehicle.estado_operativo}
-                                    iconColor={vehicle.estado_operativo}
-                                />
-                            </Link>
-                        </div>
-                    ))}
-                </div>
-            )}
+                {filteredVehicles.length === 0 ? (
+                    <p>No se encontraron vehículos</p>
+                ) : (
+                    <div className="grid md:grid-cols-2 gap-4 mt-4">
+                        {filteredVehicles.map((vehicle) => (
+                            <div key={vehicle.id} className="w-full">
+                                <Link to={`/recolectores/${vehicle.id}`} className="no-underline">
+                                    <VehicleCard
+                                        vehicleName={vehicle.nombre_recolector}
+                                        zone={vehicle.zonas_asignadas.map(z => z.nombre).join(', ')}
+                                        status={vehicle.estado_operativo}
+                                        iconColor={vehicle.estado_operativo}
+                                    />
+                                </Link>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
+
+
         </div>
     );
 };
