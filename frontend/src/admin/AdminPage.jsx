@@ -4,7 +4,7 @@ import TituloConRegreso from '../components/TituloConRegreso/TituloConRegreso';
 
 const AdminPage = () => {
     return (
-        <div className="container mx-auto text-center flex flex-col my-6">
+        <div className="container mx-auto px-4 py-8 min-h-screen mt-16">
             <TituloConRegreso titulo="Vista de Administrador" />
 
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 items-center mt-6">

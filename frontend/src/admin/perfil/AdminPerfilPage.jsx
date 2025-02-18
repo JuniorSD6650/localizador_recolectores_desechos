@@ -55,7 +55,7 @@ const AdminPerfilPage = () => {
     );
 
     return (
-        <div className="container mx-auto px-4 py-8">
+        <div className="container mx-auto px-4 py-8 min-h-screen mt-16">
             <TituloConRegreso titulo="Perfil del Administrador" to="/admin" />
 
             {message && (

@@ -93,7 +93,7 @@ const AdminPublicacionesPage = () => {
     };
 
     return (
-        <div className="max-w-full px-4 my-5 text-center">
+        <div className="container mx-auto px-4 py-8 min-h-screen mt-16">
             <TituloConRegreso titulo="Gestión de Publicaciones" to="/admin" />
 
             {message && <p className="text-red-500">{message}</p>}

@@ -86,7 +86,7 @@ const VehicleList = () => {
     };
 
     return (
-        <div className="container mx-auto text-center py-3 px-4">
+        <div className="container mx-auto px-4 py-8 min-h-screen mt-16">
             <div className='min-h-screen pt-11'>
                 <form className="max-w-lg mx-auto mb-4" onSubmit={handleSearchSubmit}>
                     <div className="flex relative">

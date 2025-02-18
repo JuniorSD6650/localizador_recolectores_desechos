@@ -21,7 +21,7 @@ const AdminReportesPage = () => {
   const [showModal, setShowModal] = useState(false);
   const [selectedImage, setSelectedImage] = useState('');
 
-  const [filterEstado, setFilterEstado] = useState('');           
+  const [filterEstado, setFilterEstado] = useState('');
   const [filterDireccion, setFilterDireccion] = useState('');
   const [filterDescripcion, setFilterDescripcion] = useState('');
   const [filterNombre, setFilterNombre] = useState('');
@@ -175,7 +175,7 @@ const AdminReportesPage = () => {
   };
 
   return (
-    <div className="container mx-auto py-3">
+    <div className="container mx-auto px-4 py-8 min-h-screen mt-16">
       <TituloConRegreso titulo="Gestión de Reportes" to="/admin" />
 
       {message && <p className="text-red-500">{message}</p>}
@@ -258,11 +258,10 @@ const AdminReportesPage = () => {
                     </button>
                   )}
                   <span
-                    className={`px-2 py-1 text-sm rounded ${
-                      reporte.estado_reporte === 'pendiente'
+                    className={`px-2 py-1 text-sm rounded ${reporte.estado_reporte === 'pendiente'
                         ? 'bg-yellow-100 text-yellow-800'
                         : 'bg-green-100 text-green-800'
-                    }`}
+                      }`}
                   >
                     {reporte.estado_reporte}
                   </span>
@@ -271,11 +270,10 @@ const AdminReportesPage = () => {
 
               <div className="flex flex-wrap gap-2 mt-3">
                 <button
-                  className={`px-3 py-1.5 text-sm rounded ${
-                    reporte.estado_reporte === 'revisado'
+                  className={`px-3 py-1.5 text-sm rounded ${reporte.estado_reporte === 'revisado'
                       ? 'bg-blue-300 text-white cursor-not-allowed'
                       : 'bg-blue-600 text-white hover:bg-blue-700'
-                  }`}
+                    }`}
                   onClick={() => handleEstadoChange(reporte.id, 'revisado')}
                   disabled={reporte.estado_reporte === 'revisado'}
                 >
