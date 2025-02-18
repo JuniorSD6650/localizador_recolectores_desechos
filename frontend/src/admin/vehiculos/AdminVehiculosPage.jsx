@@ -3,34 +3,31 @@ import {
     API_BASE_URL,
     showSuccessAlert,
     showErrorAlert,
-    showCustomAlert,
+    showCustomAlert
 } from '../../utils';
 import TituloConRegreso from '../../components/TituloConRegreso/TituloConRegreso';
 import RegisterVehicleModal from './RegisterVehicleModal';
 import EditVehicleModal from './EditVehicleModal';
-import AssignedZonesModal from './AssignedZonesModal';
 import Pagination from '../../components/Pagination/Pagination';
 
 const AdminVehiculosPage = () => {
-    const [vehiculos, setVehiculos] = useState([]);
+    const [vehicles, setVehicles] = useState([]);
     const [message, setMessage] = useState('');
     const [showRegisterModal, setShowRegisterModal] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
-    const [showAssignedZonesModal, setShowAssignedZonesModal] = useState(false);
     const [selectedVehicle, setSelectedVehicle] = useState(null);
-    const [selectedAssignments, setSelectedAssignments] = useState([]);
 
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const limit = 10;
 
-    const obtener = async () => {
+    const obtenerVehiculos = async (page) => {
         try {
-            const response = await fetch(`${API_BASE_URL}recolectores?page=${currentPage}&limit=${limit}`);
+            const response = await fetch(`${API_BASE_URL}recolectores?page=${page}&limit=${limit}`);
             const data = await response.json();
 
             if (response.ok) {
-                setVehiculos(data.recolectores);
+                setVehicles(data.recolectores || []);
                 setTotalPages(data.pagination.totalPages);
             } else {
                 setMessage('No se pudieron cargar los vehículos');
@@ -40,40 +37,16 @@ const AdminVehiculosPage = () => {
         }
     };
 
-    const obtenerAsignaciones = async (recolectorId) => {
-        try {
-            const response = await fetch(`${API_BASE_URL}zona-recolector?recolector_id=${recolectorId}`);
-            const data = await response.json();
-
-            if (response.ok) {
-                setSelectedAssignments(data.asignaciones.map(assignment => ({
-                    ...assignment,
-                    id: assignment.id.toString(),
-                })));
-            } else {
-                showErrorAlert('Error', 'No se pudieron cargar las asignaciones de zonas');
-            }
-        } catch (error) {
-            showErrorAlert('Error', 'Error al conectar con la API');
-        }
-    };
-
     useEffect(() => {
-        obtener();
+        obtenerVehiculos(currentPage);
     }, [currentPage]);
 
     const handleRegister = (newVehicle) => {
-        setVehiculos((prev) => [...prev, newVehicle]);
-        obtener();
+        obtenerVehiculos(currentPage);
     };
 
     const handleUpdate = (updatedVehicle) => {
-        setVehiculos((prev) =>
-            prev.map((vehiculo) =>
-                vehiculo.id === updatedVehicle.id ? updatedVehicle : vehiculo
-            )
-        );
-        obtener();
+        obtenerVehiculos(currentPage);
     };
 
     const handleDelete = async (id) => {
@@ -93,8 +66,9 @@ const AdminVehiculosPage = () => {
                 });
 
                 if (response.ok) {
-                    setVehiculos((prev) => prev.filter((veh) => veh.id !== id));
+                    setVehicles((prev) => prev.filter((vehicle) => vehicle.id !== id));
                     showSuccessAlert('Eliminado', 'El vehículo se eliminó con éxito.');
+                    obtenerVehiculos(currentPage);
                 } else {
                     showErrorAlert('Error', 'No se pudo eliminar el vehículo.');
                 }
@@ -102,10 +76,6 @@ const AdminVehiculosPage = () => {
                 showErrorAlert('Error', 'No se pudo eliminar el vehículo.');
             }
         }
-    };
-
-    const handlePageChange = (newPage) => {
-        setCurrentPage(newPage);
     };
 
     return (
@@ -124,7 +94,7 @@ const AdminVehiculosPage = () => {
                 </button>
             </div>
 
-            {vehiculos.length === 0 ? (
+            {vehicles.length === 0 ? (
                 <p>No hay vehículos registrados</p>
             ) : (
                 <div className="overflow-x-auto">
@@ -135,50 +105,22 @@ const AdminVehiculosPage = () => {
                                 <th className="px-6 py-3 border-b">Placa</th>
                                 <th className="px-6 py-3 border-b">Tipo de Vehículo</th>
                                 <th className="px-6 py-3 border-b">Estado Operativo</th>
-                                <th className="px-6 py-3 border-b">Zonas Asignadas</th>
                                 <th className="px-6 py-3 border-b">Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {vehiculos.map((vehiculo) => (
-                                <tr key={vehiculo.id} className="hover:bg-gray-50">
-                                    <td className="px-6 py-4 border-b">
-                                        {vehiculo.nombre_recolector}
-                                    </td>
-                                    <td className="px-6 py-4 border-b">
-                                        {vehiculo.placa}
-                                    </td>
-                                    <td className="px-6 py-4 border-b">
-                                        {vehiculo.tipo_vehiculo}
-                                    </td>
-                                    <td className="px-6 py-4 border-b">
-                                        <span
-                                            className={`inline-block px-2 py-1 text-xs font-semibold rounded-full ${vehiculo.estado_operativo === 'operativo'
-                                                ? 'bg-green-100 text-green-800'
-                                                : 'bg-red-100 text-red-800'
-                                                }`}
-                                        >
-                                            {vehiculo.estado_operativo}
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-4 border-b">
-                                        <button
-                                            className="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 w-auto"
-                                            onClick={() => {
-                                                setSelectedVehicle(vehiculo);
-                                                obtenerAsignaciones(vehiculo.id);
-                                                setShowAssignedZonesModal(true);
-                                            }}
-                                        >
-                                            Asignar Zonas ({vehiculo.zonas_asignadas.length})
-                                        </button>
-                                    </td>
+                            {vehicles.map((vehicle) => (
+                                <tr key={vehicle.id} className="hover:bg-gray-50">
+                                    <td className="px-6 py-4 border-b">{vehicle.nombre_recolector}</td>
+                                    <td className="px-6 py-4 border-b">{vehicle.placa}</td>
+                                    <td className="px-6 py-4 border-b">{vehicle.tipo_vehiculo}</td>
+                                    <td className="px-6 py-4 border-b">{vehicle.estado_operativo}</td>
                                     <td className="px-6 py-4 border-b">
                                         <div className="flex space-x-2">
                                             <button
                                                 className="bg-yellow-400 text-white px-4 py-2 rounded-md hover:bg-yellow-500"
                                                 onClick={() => {
-                                                    setSelectedVehicle(vehiculo);
+                                                    setSelectedVehicle(vehicle);
                                                     setShowEditModal(true);
                                                 }}
                                             >
@@ -186,11 +128,10 @@ const AdminVehiculosPage = () => {
                                             </button>
                                             <button
                                                 className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600"
-                                                onClick={() => handleDelete(vehiculo.id)}
+                                                onClick={() => handleDelete(vehicle.id)}
                                             >
                                                 Eliminar
                                             </button>
-
                                         </div>
                                     </td>
                                 </tr>
@@ -203,7 +144,7 @@ const AdminVehiculosPage = () => {
             <Pagination
                 currentPage={currentPage}
                 totalPages={totalPages}
-                onPageChange={handlePageChange}
+                onPageChange={(page) => setCurrentPage(page)}
             />
 
             <RegisterVehicleModal
@@ -217,17 +158,6 @@ const AdminVehiculosPage = () => {
                 onClose={() => setShowEditModal(false)}
                 onUpdate={handleUpdate}
                 vehicle={selectedVehicle}
-            />
-
-            <AssignedZonesModal
-                show={showAssignedZonesModal}
-                onClose={() => setShowAssignedZonesModal(false)}
-                assignments={selectedAssignments}
-                recolectorId={selectedVehicle?.id?.toString()}
-                onUpdate={() => {
-                    obtenerAsignaciones(selectedVehicle?.id);
-                    obtener();
-                }}
             />
         </div>
     );

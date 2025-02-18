@@ -5,13 +5,20 @@ import { API_BASE_URL, showSuccessAlert, showErrorAlert } from '../../utils';
 const RegisterZonaModal = ({ show, onClose, onRegister }) => {
     const [nombre, setNombre] = useState('');
     const [descripcion, setDescripcion] = useState('');
+    const [imagen, setImagen] = useState(null);
 
     const handleRegister = async () => {
+        const formData = new FormData();
+        formData.append('nombre', nombre);
+        formData.append('descripcion', descripcion);
+        if (imagen) {
+            formData.append('imagen', imagen);
+        }
+
         try {
             const response = await fetch(`${API_BASE_URL}zonas`, {
                 method: 'POST',
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ nombre, descripcion }),
+                body: formData,
             });
 
             if (response.ok) {
@@ -60,6 +67,14 @@ const RegisterZonaModal = ({ show, onClose, onRegister }) => {
                             className="border p-2 rounded w-full"
                             value={descripcion}
                             onChange={(e) => setDescripcion(e.target.value)}
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-gray-700">Imagen</label>
+                        <input
+                            type="file"
+                            className="border p-2 rounded w-full"
+                            onChange={(e) => setImagen(e.target.files[0])}
                         />
                     </div>
                 </div>
