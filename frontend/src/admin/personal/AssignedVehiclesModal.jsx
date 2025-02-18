@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { API_BASE_URL, showSuccessAlert, showErrorAlert } from '../../utils';
 
-const AssignedVehiclesModal = ({ show, onClose, vehicles, userId = '', onUpdate = () => {} }) => {
+const AssignedVehiclesModal = ({ show, onClose, vehicles, userId = '', onUpdate = () => { } }) => {
     const [availableVehicles, setAvailableVehicles] = useState([]);
     const [selectedVehicle, setSelectedVehicle] = useState('');
 
@@ -17,7 +17,9 @@ const AssignedVehiclesModal = ({ show, onClose, vehicles, userId = '', onUpdate 
             const response = await fetch(`${API_BASE_URL}recolectores/list`);
             if (response.ok) {
                 const data = await response.json();
-                setAvailableVehicles(data);
+                const assignedVehicleIds = new Set(vehicles.map(vehicle => vehicle.recolector_id));
+                const filteredVehicles = data.filter(vehicle => !assignedVehicleIds.has(vehicle.id));
+                setAvailableVehicles(filteredVehicles);
             } else {
                 showErrorAlert('Error', 'No se pudieron cargar los vehículos disponibles');
             }
@@ -47,11 +49,8 @@ const AssignedVehiclesModal = ({ show, onClose, vehicles, userId = '', onUpdate 
 
             if (response.ok) {
                 showSuccessAlert('Éxito', 'Vehículo asignado correctamente');
-                // Notificar al padre para actualizar la lista principal
                 if (onUpdate) onUpdate();
-                // Recargar los vehículos disponibles
                 fetchAvailableVehicles();
-                // Limpiar el select
                 setSelectedVehicle('');
             } else {
                 const errorData = await response.json();
@@ -73,9 +72,7 @@ const AssignedVehiclesModal = ({ show, onClose, vehicles, userId = '', onUpdate 
 
             if (response.ok) {
                 showSuccessAlert('Éxito', 'Asignación eliminada correctamente');
-                // Notificar al padre para actualizar la lista principal
                 if (onUpdate) onUpdate();
-                // Recargar los vehículos disponibles
                 fetchAvailableVehicles();
             } else {
                 showErrorAlert('Error', 'No se pudo eliminar la asignación');
@@ -111,7 +108,7 @@ const AssignedVehiclesModal = ({ show, onClose, vehicles, userId = '', onUpdate 
                                 <li key={index} className="mb-2 flex justify-between items-center">
                                     <div className="text-lg flex-grow">
                                         <span className="font-semibold">Nombre:</span> {vehicle.nombre_recolector} <br />
-                                        <span className="font-semibold">Modelo:</span> {vehicle.modelo} <br />
+                                        <span className="font-semibold">Tipo de Vehículo:</span> {vehicle.tipo_vehiculo} <br />
                                         <span className="font-semibold">Placa:</span> {vehicle.placa}
                                     </div>
                                     <button
@@ -171,9 +168,9 @@ AssignedVehiclesModal.propTypes = {
         PropTypes.shape({
             id: PropTypes.string.isRequired,
             nombre_recolector: PropTypes.string.isRequired,
-            modelo: PropTypes.string.isRequired,
+            tipo_vehiculo: PropTypes.string.isRequired,
             placa: PropTypes.string.isRequired,
-            asignacion_id: PropTypes.string.isRequired, // Ensure asignacion_id is required
+            asignacion_id: PropTypes.string.isRequired,
         })
     ).isRequired,
     userId: PropTypes.string,

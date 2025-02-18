@@ -25,7 +25,6 @@ const RegisterPersonalModal = ({ show, onClose, onRegister }) => {
                 onRegister(newPersonal);
                 showSuccessAlert('Éxito', 'Personal registrado correctamente');
                 onClose();
-                // Resetea el formulario
                 setFormData({
                     role: 'conductor',
                     nombres: '',
@@ -49,12 +48,10 @@ const RegisterPersonalModal = ({ show, onClose, onRegister }) => {
             className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
             onClick={onClose}
         >
-            {/* Evitamos cerrar al hacer click dentro del contenido */}
             <div
                 className="bg-white rounded-lg shadow-lg w-full max-w-2xl relative"
                 onClick={(e) => e.stopPropagation()}
             >
-                {/* Header sin botón de cierre */}
                 <div className="p-4 border-b">
                     <h2 className="text-xl font-semibold text-gray-700">
                         Registrar Nuevo Personal
@@ -62,30 +59,25 @@ const RegisterPersonalModal = ({ show, onClose, onRegister }) => {
                 </div>
 
                 <form onSubmit={handleSubmit}>
-                    {/* Contenedor principal de inputs con spacing */}
                     <div className="p-6 space-y-6">
-                        {/* Grid de 2 columnas en pantallas medianas o mayores */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {/* ROLE */}
                             <div>
                                 <label className="block text-sm font-medium text-gray-700">
                                     Rol
                                 </label>
                                 <select
                                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md 
-                             shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                    shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                     value={formData.role}
                                     onChange={(e) =>
                                         setFormData({ ...formData, role: e.target.value })
                                     }
                                 >
                                     <option value="conductor">Conductor</option>
-                                    <option value="localizador">Localizador</option>
-                                    {/* Agrega otros roles si tu app los maneja */}
+                                    <option value="recolector">Recolector</option>
                                 </select>
                             </div>
 
-                            {/* NOMBRES */}
                             <div>
                                 <label className="block text-sm font-medium text-gray-700">
                                     Nombres
@@ -102,7 +94,6 @@ const RegisterPersonalModal = ({ show, onClose, onRegister }) => {
                                 />
                             </div>
 
-                            {/* PRIMER APELLIDO */}
                             <div>
                                 <label className="block text-sm font-medium text-gray-700">
                                     Primer Apellido
@@ -122,7 +113,6 @@ const RegisterPersonalModal = ({ show, onClose, onRegister }) => {
                                 />
                             </div>
 
-                            {/* SEGUNDO APELLIDO (opcional) */}
                             <div>
                                 <label className="block text-sm font-medium text-gray-700">
                                     Segundo Apellido
@@ -141,7 +131,6 @@ const RegisterPersonalModal = ({ show, onClose, onRegister }) => {
                                 />
                             </div>
 
-                            {/* EMAIL */}
                             <div>
                                 <label className="block text-sm font-medium text-gray-700">
                                     Email
@@ -157,7 +146,6 @@ const RegisterPersonalModal = ({ show, onClose, onRegister }) => {
                                 />
                             </div>
 
-                            {/* TELÉFONO */}
                             <div>
                                 <label className="block text-sm font-medium text-gray-700">
                                     Teléfono
@@ -175,7 +163,6 @@ const RegisterPersonalModal = ({ show, onClose, onRegister }) => {
                         </div>
                     </div>
 
-                    {/* Footer con botones */}
                     <div className="p-4 border-t flex justify-end space-x-3">
                         <button
                             type="submit"

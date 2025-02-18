@@ -12,7 +12,6 @@ const EditPersonalModal = ({ show, onClose, onEdit, personal, onUpdate }) => {
         telefono: personal?.telefono || '',
     });
 
-    // Aquí guardaremos el array de asignaciones retornado por el backend
     const [assignedVehicles, setAssignedVehicles] = useState([]);
 
     useEffect(() => {
@@ -90,7 +89,7 @@ const EditPersonalModal = ({ show, onClose, onEdit, personal, onUpdate }) => {
 
             if (response.ok) {
                 const updatedVehicles = vehicles.filter(v => v.id !== assignmentId);
-                setVehicles(updatedVehicles); 
+                setVehicles(updatedVehicles);
 
                 onUpdate();
 
@@ -125,7 +124,7 @@ const EditPersonalModal = ({ show, onClose, onEdit, personal, onUpdate }) => {
                             className="w-full p-2 border rounded"
                         >
                             <option value="conductor">Conductor</option>
-                            <option value="admin">Admin</option>
+                            <option value="recolector">Recolector</option>
                         </select>
                     </div>
                     <div className="mb-4">

@@ -4,9 +4,10 @@ import { AnimatePresence, motion } from 'framer-motion';
 import './App.css';
 import Home from './Home';
 import Login from './Login';
+import LocalizadorPage from './localizador/LocalizadorPage';
+import VehiculoDetailPage from './localizador/VehiculoDetailPage';
 import AdminPage from './admin/AdminPage';
 import AdminPersonalPage from './admin/personal/AdminPersonalPage';
-import PersonalPage from './personal/PersonalPage';
 import AdminReportesPage from './admin/reportes/AdminReportesPage';
 import AdminVehiculosPage from './admin/vehiculos/AdminVehiculosPage';
 import AdminPerfilPage from './admin/perfil/AdminPerfilPage';
@@ -30,6 +31,24 @@ function AnimatedRoutes() {
       <Routes location={location} key={location.pathname}>
         <Route path="/" element={<PageWrapper><Home /></PageWrapper>} />
         <Route path="/login" element={<PageWrapper><Login /></PageWrapper>} />
+
+        <Route
+          path="/localizador"
+          element={
+            <ProtectedRoute requiredRole="conductor">
+              <PageWrapper><LocalizadorPage /></PageWrapper>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/localizador/vehiculo/:recolectorId"
+          element={
+            <ProtectedRoute requiredRole="conductor">
+              <PageWrapper><VehiculoDetailPage /></PageWrapper>
+            </ProtectedRoute>
+          }
+        />
 
         <Route
           path="/admin"
@@ -108,15 +127,6 @@ function AnimatedRoutes() {
           element={
             <ProtectedRoute requiredRole="admin">
               <PageWrapper><AdminJornadasPage /></PageWrapper>
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/personal"
-          element={
-            <ProtectedRoute requiredRole="personal">
-              <PageWrapper><PersonalPage /></PageWrapper>
             </ProtectedRoute>
           }
         />

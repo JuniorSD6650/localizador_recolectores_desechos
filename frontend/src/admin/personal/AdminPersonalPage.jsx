@@ -9,6 +9,7 @@ import TituloConRegreso from '../../components/TituloConRegreso/TituloConRegreso
 import RegisterPersonalModal from './RegisterPersonalModal';
 import AssignedVehiclesModal from './AssignedVehiclesModal';
 import EditPersonalModal from './EditPersonalModal';
+import EditCredentialsModal from './EditCredentialsModal';
 import Pagination from '../../components/Pagination/Pagination';
 
 import SearchIcon from '@mui/icons-material/Search';
@@ -25,6 +26,9 @@ const AdminPersonalPage = () => {
 
     const [showEditModal, setShowEditModal] = useState(false);
     const [editingPersonal, setEditingPersonal] = useState(null);
+
+    const [showEditCredentialsModal, setShowEditCredentialsModal] = useState(false);
+    const [editingCredentials, setEditingCredentials] = useState(null);
 
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
@@ -114,6 +118,11 @@ const AdminPersonalPage = () => {
         setShowEditModal(true);
     };
 
+    const handleEditCredentials = (personal) => {
+        setEditingCredentials(personal);
+        setShowEditCredentialsModal(true);
+    };
+
     const handlePageChange = (newPage) => {
         setCurrentPage(newPage);
     };
@@ -126,7 +135,6 @@ const AdminPersonalPage = () => {
                 const vehicles = data.asignaciones.map((vehicle) => ({
                     ...vehicle,
                     id: vehicle.recolector_id.toString(),
-                    modelo: vehicle.modelo || 'Desconocido',
                     asignacion_id: vehicle.id.toString(),
                 }));
                 setVehiclesToShow(vehicles);
@@ -171,12 +179,15 @@ const AdminPersonalPage = () => {
                         value={filterEmail}
                         onChange={(e) => setFilterEmail(e.target.value)}
                     />
-                    <input
+                    <select
                         className="border p-2 rounded"
-                        placeholder="Role"
                         value={filterRole}
                         onChange={(e) => setFilterRole(e.target.value)}
-                    />
+                    >
+                        <option value="">Todos</option>
+                        <option value="conductor">Conductor</option>
+                        <option value="recolector">Recolector</option>
+                    </select>
                 </div>
                 <div className="flex justify-end items-center mt-4 space-x-4">
                     <button
@@ -271,6 +282,13 @@ const AdminPersonalPage = () => {
                                                 >
                                                     Eliminar
                                                 </button>
+                                                <button
+                                                    className={`px-4 py-2 rounded-md ${personal.role === 'conductor' ? 'bg-blue-400 text-white hover:bg-blue-500' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}
+                                                    onClick={() => handleEditCredentials(personal)}
+                                                    disabled={personal.role !== 'conductor'}
+                                                >
+                                                    Editar Credenciales
+                                                </button>
                                             </div>
                                         </td>
                                     </tr>
@@ -314,6 +332,16 @@ const AdminPersonalPage = () => {
                 }}
                 onEdit={handleRegister}
                 personal={editingPersonal}
+            />
+
+            <EditCredentialsModal
+                show={showEditCredentialsModal}
+                onClose={() => {
+                    setShowEditCredentialsModal(false);
+                    fetchPersonales(currentPage);
+                }}
+                personal={editingCredentials}
+                onUpdate={handleRegister}
             />
         </div>
     );

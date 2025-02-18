@@ -70,7 +70,6 @@ router.get('/', async (req, res) => {
 
     const usuariosData = await dataQuery;
 
-    // Agrupar recolectores por usuario
     const usuarios = usuariosData.reduce((acc, row) => {
       const usuario = acc.find(u => u.id === row.id);
       const recolector = {
@@ -120,10 +119,46 @@ router.get('/', async (req, res) => {
 router.get('/:id', async (req, res) => {
   const { id } = req.params;
   try {
-    const usuario = await knex('usuarios').where('id', id).first();
-    if (!usuario) {
+    const usuarioData = await knex('usuarios')
+      .select(
+        'usuarios.*',
+        'asignaciones_vehiculos.id as asignacion_id',
+        'recolectores_desechos.id as recolector_id',
+        'recolectores_desechos.nombre_recolector',
+        'recolectores_desechos.ubicacion_enlace',
+        'recolectores_desechos.fecha_ubicacion_actualizada',
+        'recolectores_desechos.placa',
+        'recolectores_desechos.tipo_vehiculo',
+        'recolectores_desechos.estado_operativo'
+      )
+      .leftJoin('asignaciones_vehiculos', 'usuarios.id', 'asignaciones_vehiculos.usuario_id')
+      .leftJoin('recolectores_desechos', 'asignaciones_vehiculos.recolector_id', 'recolectores_desechos.id')
+      .where('usuarios.id', id);
+
+    if (usuarioData.length === 0) {
       return res.status(404).json({ message: 'Usuario no encontrado.' });
     }
+
+    const usuario = {
+      id: usuarioData[0].id,
+      role: usuarioData[0].role,
+      nombres: usuarioData[0].nombres,
+      primer_apellido: usuarioData[0].primer_apellido,
+      segundo_apellido: usuarioData[0].segundo_apellido,
+      email: usuarioData[0].email,
+      telefono: usuarioData[0].telefono,
+      created_at: usuarioData[0].created_at,
+      recolectores: usuarioData[0].recolector_id ? usuarioData.map(row => ({
+        id: row.recolector_id,
+        asignacion_id: row.asignacion_id,
+        nombre_recolector: row.nombre_recolector,
+        ubicacion_enlace: row.ubicacion_enlace,
+        fecha_ubicacion_actualizada: row.fecha_ubicacion_actualizada,
+        placa: row.placa,
+        tipo_vehiculo: row.tipo_vehiculo,
+        estado_operativo: row.estado_operativo,
+      })) : [],
+    };
 
     const credenciales = await knex('credenciales').where('usuario_id', id).first();
 
@@ -206,7 +241,6 @@ router.put('/:id', async (req, res) => {
     res.status(500).json({ error: 'Error actualizando el usuario.', details: err.message });
   }
 });
-
 
 router.delete('/:id', async (req, res) => {
   const { id } = req.params;

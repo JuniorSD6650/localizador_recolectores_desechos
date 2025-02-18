@@ -32,7 +32,7 @@ const Login = () => {
 
                 if (role === 'admin') {
                     navigate('/admin');
-                } else if (role === 'localizador') {
+                } else if (role === 'conductor') {
                     navigate('/localizador');
                 }
             } else {

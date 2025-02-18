@@ -108,12 +108,10 @@ const AssignedZonesModal = ({
                                     <div className="text-lg flex-grow">
                                         <span className="font-semibold">Zona:</span>{' '}
                                         {assignment.zona_nombre} <br />
-                                        <span className="font-semibold">Descripción:</span>{' '}
-                                        {assignment.zona_descripcion || 'N/A'}
                                     </div>
                                     <button
                                         className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600 text-xs w-16"
-                                        onClick={() => handleDeleteAssignment(assignment.id)}
+                                        onClick={() => handleDeleteAssignment(assignment.asignacion_id)}
                                     >
                                         Eliminar
                                     </button>
@@ -169,6 +167,7 @@ AssignedZonesModal.propTypes = {
             id: PropTypes.string,
             zona_nombre: PropTypes.string,
             zona_descripcion: PropTypes.string,
+            asignacion_id: PropTypes.string,
         })
     ).isRequired,
     recolectorId: PropTypes.string,
