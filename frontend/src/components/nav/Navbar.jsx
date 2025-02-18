@@ -45,6 +45,35 @@ const Navbar = () => {
         setShowNotifications(false); // También cerramos las notificaciones al cambiar de ruta
     }, [location]);
 
+    const AdminLinks = () => (
+        <>
+            <Link
+                to="/admin"
+                className={`text-gray-900 dark:text-white no-underline block py-2 ${location.pathname === '/admin' ? 'font-bold border-b-2 border-green-custom' : ''}`}
+            >
+                Dashboard
+            </Link>
+            <Link
+                to="/admin/personal"
+                className={`text-gray-900 dark:text-white no-underline block py-2 ${location.pathname === '/admin/personal' ? 'font-bold border-b-2 border-green-custom' : ''}`}
+            >
+                Personal
+            </Link>
+            <Link
+                to="/admin/reportes"
+                className={`text-gray-900 dark:text-white no-underline block py-2 ${location.pathname === '/admin/reportes' ? 'font-bold border-b-2 border-green-custom' : ''}`}
+            >
+                Reportes
+            </Link>
+            <Link
+                to="/admin/perfil"
+                className={`text-gray-900 dark:text-white no-underline block py-2 ${location.pathname === '/admin/perfil' ? 'font-bold border-b-2 border-green-custom' : ''}`}
+            >
+                Perfil
+            </Link>
+        </>
+    );
+
     const NavLinks = () => (
         <>
             <Link
@@ -74,6 +103,21 @@ const Navbar = () => {
             </Link>
         </>
     );
+
+    const renderNavigationLinks = () => {
+        if (!user) return <PublicLinks />;
+
+        switch (user.role) {
+            case 'admin':
+                return <AdminLinks />;
+            case 'personal':
+                return <PersonalLinks />;
+            default:
+                return <PublicLinks />;
+        }
+    };
+
+    {/* {renderNavigationLinks()} */ }
 
     return (
         <div className='fixed top-0 w-full z-50' >
