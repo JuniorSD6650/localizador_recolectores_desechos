@@ -190,11 +190,13 @@ const Report = () => {
     };
 
     return (
-        <div className=" container mx-auto text-center  px-0">
+        <div className=" container mx-auto text-center">
 
 
-            <div className='container ml-auto mr-auto flex items-center justify-center min-h-screen'>
-                <div className='w-full md:w-1/2'>
+            <div className='container ml-auto mr-auto flex items-center justify-center min-h-screen mt-16'>
+                <div className='w-full md:w-1/2 shadow-lg p-6'>
+                    <h2 className='pb-16 text-3xl md:text-4xl font-bold text-customBlue border-b-2 border-custom'>Realiza el reporte a la basura acumulada</h2>
+
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
