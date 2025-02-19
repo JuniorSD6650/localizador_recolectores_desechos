@@ -160,11 +160,11 @@ const Report = () => {
         formData.append('numero_contacto', numeroContacto);
         formData.append('direccion', direccion);
         if (foto) {
-            formData.append('foto', foto);
+            formData.append('ruta_foto', foto);
         }
 
         try {
-            const response = await fetch(`${API_BASE_URL}/reportes`, {
+            const response = await fetch(`${API_BASE_URL}reportes/`, {
                 method: 'POST',
                 body: formData,
             });
