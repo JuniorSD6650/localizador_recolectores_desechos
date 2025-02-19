@@ -142,7 +142,7 @@ const VehicleList = () => {
                 {filteredVehicles.length === 0 ? (
                     <p>No se encontraron vehículos</p>
                 ) : (
-                    <div className="grid md:grid-cols-2 gap-4 mt-4">
+                    <div className="grid md:grid-cols-3 gap-4 mt-4">
                         {filteredVehicles.map((vehicle) => (
                             <div key={vehicle.id} className="w-full">
                                 <Link to={`/recolectores/${vehicle.id}`} className="no-underline">
