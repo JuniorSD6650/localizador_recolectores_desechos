@@ -7,16 +7,16 @@ const applyFilters = (query, filters) => {
   const { nombre, descripcion, zona_id, numero_cuadra } = filters;
 
   if (nombre) {
-    query = query.where('nombre', 'like', `%${nombre}%`);
+    query = query.where('calles.nombre', 'like', `%${nombre}%`);
   }
   if (descripcion) {
-    query = query.where('descripcion', 'like', `%${descripcion}%`);
+    query = query.where('calles.descripcion', 'like', `%${descripcion}%`);
   }
   if (zona_id) {
-    query = query.where('zona_id', zona_id);
+    query = query.where('calles.zona_id', zona_id);
   }
   if (numero_cuadra) {
-    query = query.where('numero_cuadra', numero_cuadra);
+    query = query.where('calles.numero_cuadra', numero_cuadra);
   }
 
   return query;

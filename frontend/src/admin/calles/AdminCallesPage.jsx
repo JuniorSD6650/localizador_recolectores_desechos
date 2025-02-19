@@ -12,20 +12,59 @@ import RegisterCalleModal from './RegisterCalleModal';
 import EditCalleModal from './EditCalleModal';
 import Pagination from '../../components/Pagination/Pagination';
 
+// Icons
+import CleaningServicesIcon from '@mui/icons-material/CleaningServices';
+import SearchIcon from '@mui/icons-material/Search';
+
 const AdminCallesPage = () => {
     const [calles, setCalles] = useState([]);
+    const [zonas, setZonas] = useState([]);
     const [message, setMessage] = useState('');
     const [showRegisterModal, setShowRegisterModal] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
     const [selectedCalle, setSelectedCalle] = useState(null);
 
+    const [filterNombre, setFilterNombre] = useState('');
+    const [filterNumeroCuadra, setFilterNumeroCuadra] = useState('');
+    const [filterZonaId, setFilterZonaId] = useState('');
+
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const limit = 10;
 
+    useEffect(() => {
+        fetchZonas();
+        obtenerCalles(currentPage);
+    }, [currentPage]);
+
+    const fetchZonas = async () => {
+        try {
+            const response = await fetch(`${API_BASE_URL}zonas/list`);
+            const data = await response.json();
+            if (response.ok) {
+                setZonas(data);
+            } else {
+                setMessage('No se pudieron cargar las zonas');
+            }
+        } catch (error) {
+            setMessage('Error al conectar con la API');
+        }
+    };
+
+    const buildQueryString = () => {
+        const params = new URLSearchParams();
+        if (filterNombre) params.append('nombre', filterNombre);
+        if (filterNumeroCuadra) params.append('numero_cuadra', filterNumeroCuadra);
+        if (filterZonaId) params.append('zona_id', filterZonaId);
+        params.append('page', currentPage);
+        params.append('limit', limit);
+        return params.toString();
+    };
+
     const obtenerCalles = async (page) => {
         try {
-            const response = await fetch(`${API_BASE_URL}calles?page=${page}&limit=${limit}`);
+            const queryString = buildQueryString();
+            const response = await fetch(`${API_BASE_URL}calles?${queryString}`);
             const data = await response.json();
 
             if (response.ok) {
@@ -39,16 +78,26 @@ const AdminCallesPage = () => {
         }
     };
 
-    useEffect(() => {
-        obtenerCalles(currentPage);
-    }, [currentPage]);
-
-    const handleRegister = (newCalle) => {
-        setCalles((prev) => [...prev, newCalle]);
+    const handleSearch = () => {
+        setCurrentPage(1);
+        obtenerCalles(1);
     };
 
-    const handleUpdate = (updatedCalle) => {
-        obtenerCalles(currentPage);
+    const handleLimpiar = () => {
+        setFilterNombre('');
+        setFilterNumeroCuadra('');
+        setFilterZonaId('');
+        setMessage('');
+        setCurrentPage(1);
+        obtenerCalles(1);
+    };
+
+    const handleRegister = () => {
+        obtenerCalles();
+    };
+
+    const handleUpdate = () => {
+        obtenerCalles();
     };
 
     const handleDelete = async (id) => {
@@ -85,6 +134,51 @@ const AdminCallesPage = () => {
             <TituloConRegreso titulo="Gestión de Calles" to="/admin" />
 
             {message && <p className="text-red-500">{message}</p>}
+
+            <div className="bg-gray-50 p-6 rounded-lg shadow-md mb-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <input
+                        type="text"
+                        placeholder="Nombre"
+                        value={filterNombre}
+                        onChange={(e) => setFilterNombre(e.target.value)}
+                        className="border p-2 rounded-md"
+                    />
+                    <input
+                        type="text"
+                        placeholder="Número Cuadra"
+                        value={filterNumeroCuadra}
+                        onChange={(e) => setFilterNumeroCuadra(e.target.value)}
+                        className="border p-2 rounded-md"
+                    />
+                    <select
+                        value={filterZonaId}
+                        onChange={(e) => setFilterZonaId(e.target.value)}
+                        className="border p-2 rounded-md"
+                    >
+                        <option value="">Seleccionar Zona</option>
+                        {zonas.map((zona) => (
+                            <option key={zona.id} value={zona.id}>
+                                {zona.nombre}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+                <div className="flex justify-end items-center mt-4 space-x-4">
+                    <button
+                        className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                        onClick={handleSearch}
+                    >
+                        <SearchIcon /> Buscar
+                    </button>
+                    <button
+                        className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
+                        onClick={handleLimpiar}
+                    >
+                        <CleaningServicesIcon /> Limpiar
+                    </button>
+                </div>
+            </div>
 
             <div className="flex justify-end">
                 <button

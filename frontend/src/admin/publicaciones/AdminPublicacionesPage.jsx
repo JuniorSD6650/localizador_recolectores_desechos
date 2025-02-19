@@ -11,6 +11,10 @@ import RegisterPublicacionModal from './RegisterPublicacionModal';
 import EditPublicacionModal from './EditPublicacionModal';
 import Pagination from '../../components/Pagination/Pagination';
 
+// Icons
+import CleaningServicesIcon from '@mui/icons-material/CleaningServices';
+import SearchIcon from '@mui/icons-material/Search';
+
 const AdminPublicacionesPage = () => {
     const [publicaciones, setPublicaciones] = useState([]);
     const [message, setMessage] = useState('');
@@ -21,13 +25,18 @@ const AdminPublicacionesPage = () => {
     const [showImageModal, setShowImageModal] = useState(false);
     const [selectedImageUrl, setSelectedImageUrl] = useState('');
 
+    const [filterTitulo, setFilterTitulo] = useState('');
+    const [filterDescripcion, setFilterDescripcion] = useState('');
+    const [filterActivo, setFilterActivo] = useState('');
+
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const limit = 10;
 
     const obtenerPublicaciones = async (page) => {
         try {
-            const response = await fetch(`${API_BASE_URL}publicaciones?page=${page}&limit=${limit}`);
+            const queryString = buildQueryString();
+            const response = await fetch(`${API_BASE_URL}publicaciones?${queryString}`);
             const data = await response.json();
 
             if (response.ok) {
@@ -44,6 +53,30 @@ const AdminPublicacionesPage = () => {
     useEffect(() => {
         obtenerPublicaciones(currentPage);
     }, [currentPage]);
+
+    const buildQueryString = () => {
+        const params = new URLSearchParams();
+        if (filterTitulo) params.append('titulo', filterTitulo);
+        if (filterDescripcion) params.append('descripcion', filterDescripcion);
+        if (filterActivo) params.append('activo', filterActivo);
+        params.append('page', currentPage);
+        params.append('limit', limit);
+        return params.toString();
+    };
+
+    const handleSearch = () => {
+        setCurrentPage(1);
+        obtenerPublicaciones(1);
+    };
+
+    const handleLimpiar = () => {
+        setFilterTitulo('');
+        setFilterDescripcion('');
+        setFilterActivo('');
+        setMessage('');
+        setCurrentPage(1);
+        obtenerPublicaciones(1);
+    };
 
     const handleRegister = (newPublicacion) => {
         obtenerPublicaciones(currentPage);
@@ -97,6 +130,46 @@ const AdminPublicacionesPage = () => {
             <TituloConRegreso titulo="Gestión de Publicaciones" to="/admin" />
 
             {message && <p className="text-red-500">{message}</p>}
+
+            <div className="bg-gray-50 p-6 rounded-lg shadow-md mb-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <input
+                        className="border p-2 rounded"
+                        placeholder="Título"
+                        value={filterTitulo}
+                        onChange={(e) => setFilterTitulo(e.target.value)}
+                    />
+                    <input
+                        className="border p-2 rounded"
+                        placeholder="Descripción"
+                        value={filterDescripcion}
+                        onChange={(e) => setFilterDescripcion(e.target.value)}
+                    />
+                    <select
+                        className="border p-2 rounded"
+                        value={filterActivo}
+                        onChange={(e) => setFilterActivo(e.target.value)}
+                    >
+                        <option value="">Todos</option>
+                        <option value="true">Activo</option>
+                        <option value="false">Inactivo</option>
+                    </select>
+                </div>
+                <div className="flex justify-end items-center mt-4 space-x-4">
+                    <button
+                        className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                        onClick={handleSearch}
+                    >
+                        <SearchIcon /> Buscar
+                    </button>
+                    <button
+                        className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
+                        onClick={handleLimpiar}
+                    >
+                        <CleaningServicesIcon /> Limpiar
+                    </button>
+                </div>
+            </div>
 
             <div className="flex justify-end">
                 <button

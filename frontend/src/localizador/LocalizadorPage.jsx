@@ -85,14 +85,18 @@ const LocalizadorPage = () => {
                 {personal.recolectores && personal.recolectores.length > 0 && (
                     <div className="mt-6">
                         <h4 className="text-lg font-semibold mb-4">Recolectores Asignados</h4>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 justify-center">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {personal.recolectores.map((recolector) => (
-                                <div key={recolector.id} className="flex justify-center">
+                                <div key={recolector.id} className="bg-gray-100 p-4 rounded-lg shadow-md">
+                                    <h5 className="text-md font-semibold mb-2">{recolector.nombre_recolector}</h5>
+                                    <p className="text-sm mb-2">Placa: {recolector.placa}</p>
+                                    <p className="text-sm mb-2">Tipo: {recolector.tipo_vehiculo}</p>
+                                    <p className="text-sm mb-2">Estado: {recolector.estado_operativo}</p>
                                     <button
-                                        className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 mt-3 w-full max-w-xs"
+                                        className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 mt-3 w-full"
                                         onClick={() => handleEditVehicle(recolector.id)}
                                     >
-                                        Editar Vehículo: {recolector.nombre_recolector}
+                                        Editar Vehículo
                                     </button>
                                 </div>
                             ))}

@@ -136,18 +136,18 @@ const VehiculoDetailPage = () => {
                     </div>
                     <button
                         type="submit"
-                        className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                        className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-full"
                     >
                         Actualizar Ubicación
                     </button>
                 </form>
-                <div className="mt-4">
+                <div className="mt-4 text-center">
                     <h4 className="text-lg font-semibold mb-2">Estado Operativo</h4>
                     <span className={`inline-block px-2 py-1 text-sm font-medium rounded-full ${estadoOperativo === 'operativo' ? 'bg-green-200 text-green-800' : 'bg-red-200 text-red-800'}`}>
                         {estadoOperativo === 'operativo' ? 'Operativo' : 'Inoperativo'}
                     </span>
                     <button
-                        className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 mt-3"
+                        className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 mt-3 w-full"
                         onClick={handleToggleEstadoOperativo}
                     >
                         Cambiar Estado Operativo

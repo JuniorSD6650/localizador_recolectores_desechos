@@ -30,6 +30,21 @@ router.get('/admin', async (req, res) => {
   }
 });
 
+router.get('/list', async (req, res) => {
+  try {
+    const zonas = await knex('usuarios')
+      .select('id', 'nombres')
+      .orderBy('id', 'desc');
+
+    res.status(200).json(zonas);
+  } catch (err) {
+    res.status(500).json({
+      error: 'Error obteniendo la lista de usuarios',
+      details: err.message || err,
+    });
+  }
+});
+
 router.get('/', async (req, res) => {
   const { role, nombres, email, telefono, page = 1, limit = 10 } = req.query;
 

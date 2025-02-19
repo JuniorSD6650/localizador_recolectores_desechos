@@ -21,13 +21,17 @@ const AdminZonasPage = () => {
     const [showImageModal, setShowImageModal] = useState(false);
     const [selectedImageUrl, setSelectedImageUrl] = useState('');
 
+    const [filterNombre, setFilterNombre] = useState('');
+    const [filterDescripcion, setFilterDescripcion] = useState('');
+
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
-    const limit = 10;
+    const limit = 8;
 
     const obtenerZonas = async () => {
         try {
-            const response = await fetch(`${API_BASE_URL}zonas?page=${currentPage}&limit=${limit}`);
+            const queryString = buildQueryString();
+            const response = await fetch(`${API_BASE_URL}zonas?${queryString}`);
             const data = await response.json();
 
             if (response.ok) {
@@ -44,6 +48,28 @@ const AdminZonasPage = () => {
     useEffect(() => {
         obtenerZonas();
     }, [currentPage]);
+
+    const buildQueryString = () => {
+        const params = new URLSearchParams();
+        if (filterNombre) params.append('nombre', filterNombre);
+        if (filterDescripcion) params.append('descripcion', filterDescripcion);
+        params.append('page', currentPage);
+        params.append('limit', limit);
+        return params.toString();
+    };
+
+    const handleSearch = () => {
+        setCurrentPage(1);
+        obtenerZonas(1);
+    };
+
+    const handleLimpiar = () => {
+        setFilterNombre('');
+        setFilterDescripcion('');
+        setMessage('');
+        setCurrentPage(1);
+        obtenerZonas(1);
+    };
 
     const handleRegister = (newZona) => {
         setZonas((prev) => [...prev, newZona]);
@@ -106,6 +132,37 @@ const AdminZonasPage = () => {
             <TituloConRegreso titulo="Gestión de Zonas" to="/admin" />
 
             {message && <p className="text-red-500">{message}</p>}
+
+            <div className="bg-gray-50 p-6 rounded-lg shadow-md mb-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <input
+                        className="border p-2 rounded"
+                        placeholder="Nombre"
+                        value={filterNombre}
+                        onChange={(e) => setFilterNombre(e.target.value)}
+                    />
+                    <input
+                        className="border p-2 rounded"
+                        placeholder="Descripción"
+                        value={filterDescripcion}
+                        onChange={(e) => setFilterDescripcion(e.target.value)}
+                    />
+                </div>
+                <div className="flex justify-end items-center mt-4 space-x-4">
+                    <button
+                        className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                        onClick={handleSearch}
+                    >
+                        Buscar
+                    </button>
+                    <button
+                        className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
+                        onClick={handleLimpiar}
+                    >
+                        Limpiar
+                    </button>
+                </div>
+            </div>
 
             <div className="flex justify-end">
                 <button
