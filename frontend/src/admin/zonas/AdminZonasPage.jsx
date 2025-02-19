@@ -204,7 +204,7 @@ const AdminZonasPage = () => {
                     <img
                         src={`${BASE_URL}${selectedImageUrl}`}
                         alt="Zona"
-                        className="p-12 object-cover"
+                        className="object-cover h-96"
                         onClick={(e) => e.stopPropagation()}
                     />
                     <button

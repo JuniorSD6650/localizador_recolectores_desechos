@@ -249,18 +249,17 @@ const AdminReportesPage = () => {
                 </p>
 
                 <div className="flex flex-wrap gap-2 items-center">
-                  {reporte.ruta_foto && (
-                    <button
-                      className="flex items-center gap-1 px-3 py-1.5 text-sm text-blue-600 border border-blue-600 rounded hover:bg-blue-50"
-                      onClick={() => handleShowImage(reporte.ruta_foto)}
-                    >
-                      <VisibilityIcon fontSize="small" /> Ver Imagen
-                    </button>
-                  )}
+                  <button
+                    className={`flex items-center gap-1 px-3 py-1.5 text-sm ${reporte.ruta_foto ? 'text-blue-600 border border-blue-600 hover:bg-blue-50' : 'text-gray-400 border border-gray-400 cursor-not-allowed'}`}
+                    onClick={() => handleShowImage(reporte.ruta_foto)}
+                    disabled={!reporte.ruta_foto}
+                  >
+                    <VisibilityIcon fontSize="small" /> Ver Imagen
+                  </button>
                   <span
                     className={`px-2 py-1 text-sm rounded ${reporte.estado_reporte === 'pendiente'
-                        ? 'bg-yellow-100 text-yellow-800'
-                        : 'bg-green-100 text-green-800'
+                      ? 'bg-yellow-100 text-yellow-800'
+                      : 'bg-green-100 text-green-800'
                       }`}
                   >
                     {reporte.estado_reporte}
@@ -271,8 +270,8 @@ const AdminReportesPage = () => {
               <div className="flex flex-wrap gap-2 mt-3">
                 <button
                   className={`px-3 py-1.5 text-sm rounded ${reporte.estado_reporte === 'revisado'
-                      ? 'bg-blue-300 text-white cursor-not-allowed'
-                      : 'bg-blue-600 text-white hover:bg-blue-700'
+                    ? 'bg-blue-300 text-white cursor-not-allowed'
+                    : 'bg-blue-600 text-white hover:bg-blue-700'
                     }`}
                   onClick={() => handleEstadoChange(reporte.id, 'revisado')}
                   disabled={reporte.estado_reporte === 'revisado'}

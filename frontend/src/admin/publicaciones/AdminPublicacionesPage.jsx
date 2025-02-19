@@ -195,13 +195,13 @@ const AdminPublicacionesPage = () => {
 
             {showImageModal && (
                 <div
-                    className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50"
+                    className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-8"
                     onClick={closeImageModal}
                 >
                     <img
                         src={`${BASE_URL}${selectedImageUrl}`}
                         alt="Publicación"
-                        className="p-12 object-cover"
+                        className="object-cover h-96"
                         onClick={(e) => e.stopPropagation()}
                     />
                     <button
