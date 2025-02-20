@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { API_BASE_URL, showSuccessAlert, showErrorAlert } from '../utils';
 import TituloConRegreso from '../components/TituloConRegreso/TituloConRegreso';
+import Cargando from '../components/Cargando/carga';
+
 
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 
@@ -103,11 +105,7 @@ const VehiculoDetailPage = () => {
 
     if (!recolector) {
         return (
-            <div className="flex items-center justify-center min-h-screen">
-                <div className="spinner-border text-primary" role="status">
-                    <span className="visually-hidden">Cargando...</span>
-                </div>
-            </div>
+            <Cargando />
         );
     }
 
