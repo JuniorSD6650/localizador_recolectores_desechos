@@ -20,19 +20,11 @@ dist/
 # Windows system files
 Thumbs.db
 
-# Scripts
-cofrades.json
-registerCofrades.js
-eventos.json
-registerEventos.js
-
 # Ignorar archivos en public/uploads
-public/uploads/cofrades/*
-public/uploads/reportes/*
-uploads/*
-
+uploads/publicaciones/*
+uploads/reportes/*
 
 # Excepciones para .gitkeep
-!public/uploads/cofrades/.gitkeep
-!public/uploads/reportes/.gitkeep
-!uploads/.gitkeep
+!uploads/publicaciones/.gitkeep
+!uploads/reportes/.gitkeep
+!uploads/zonas/*

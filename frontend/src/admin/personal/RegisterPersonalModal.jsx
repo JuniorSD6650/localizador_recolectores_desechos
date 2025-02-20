@@ -7,6 +7,7 @@ const RegisterPersonalModal = ({ show, onClose, onRegister }) => {
         nombres: '',
         primer_apellido: '',
         segundo_apellido: '',
+        dni: '',
         email: '',
         telefono: '',
     });
@@ -30,6 +31,7 @@ const RegisterPersonalModal = ({ show, onClose, onRegister }) => {
                     nombres: '',
                     primer_apellido: '',
                     segundo_apellido: '',
+                    dni: '',
                     email: '',
                     telefono: '',
                 });
@@ -127,6 +129,21 @@ const RegisterPersonalModal = ({ show, onClose, onRegister }) => {
                                             ...formData,
                                             segundo_apellido: e.target.value,
                                         })
+                                    }
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">
+                                    DNI
+                                </label>
+                                <input
+                                    type="text"
+                                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md 
+                             shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                    value={formData.dni}
+                                    onChange={(e) =>
+                                        setFormData({ ...formData, dni: e.target.value })
                                     }
                                 />
                             </div>

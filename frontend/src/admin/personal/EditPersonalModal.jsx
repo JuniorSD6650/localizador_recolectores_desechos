@@ -8,6 +8,7 @@ const EditPersonalModal = ({ show, onClose, onEdit, personal, onUpdate }) => {
         nombres: personal?.nombres || '',
         primer_apellido: personal?.primer_apellido || '',
         segundo_apellido: personal?.segundo_apellido || '',
+        dni: personal?.dni || '',
         email: personal?.email || '',
         telefono: personal?.telefono || '',
     });
@@ -21,6 +22,7 @@ const EditPersonalModal = ({ show, onClose, onEdit, personal, onUpdate }) => {
                 nombres: personal.nombres,
                 primer_apellido: personal.primer_apellido,
                 segundo_apellido: personal.segundo_apellido,
+                dni: personal.dni,
                 email: personal.email,
                 telefono: personal.telefono,
             });
@@ -158,6 +160,16 @@ const EditPersonalModal = ({ show, onClose, onEdit, personal, onUpdate }) => {
                         />
                     </div>
                     <div className="mb-4">
+                        <label className="block text-gray-700">DNI</label>
+                        <input
+                            type="text"
+                            name="dni"
+                            value={formData.dni}
+                            onChange={handleChange}
+                            className="w-full p-2 border rounded"
+                        />
+                    </div>
+                    <div className="mb-4">
                         <label className="block text-gray-700">Email</label>
                         <input
                             type="email"
@@ -209,6 +221,7 @@ EditPersonalModal.propTypes = {
         nombres: PropTypes.string,
         primer_apellido: PropTypes.string,
         segundo_apellido: PropTypes.string,
+        dni: PropTypes.string,
         email: PropTypes.string,
         telefono: PropTypes.string,
     }),

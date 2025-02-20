@@ -35,7 +35,7 @@ const AdminPersonalPage = () => {
     const limit = 10;
 
     const [filterNombres, setFilterNombres] = useState('');
-    const [filterEmail, setFilterEmail] = useState('');
+    const [filterDni, setFilterDni] = useState('');
     const [filterRole, setFilterRole] = useState('');
 
     useEffect(() => {
@@ -45,7 +45,7 @@ const AdminPersonalPage = () => {
     const buildQueryString = () => {
         const params = new URLSearchParams();
         if (filterNombres) params.append('nombres', filterNombres);
-        if (filterEmail) params.append('email', filterEmail);
+        if (filterDni) params.append('dni', filterDni);
         if (filterRole) params.append('role', filterRole);
         params.append('page', currentPage);
         params.append('limit', limit);
@@ -75,7 +75,7 @@ const AdminPersonalPage = () => {
 
     const handleLimpiar = () => {
         setFilterNombres('');
-        setFilterEmail('');
+        setFilterDni('');
         setFilterRole('');
         setMessage('');
         setCurrentPage(1);
@@ -175,9 +175,9 @@ const AdminPersonalPage = () => {
                     />
                     <input
                         className="border p-2 rounded"
-                        placeholder="Email"
-                        value={filterEmail}
-                        onChange={(e) => setFilterEmail(e.target.value)}
+                        placeholder="DNI"
+                        value={filterDni}
+                        onChange={(e) => setFilterDni(e.target.value)}
                     />
                     <select
                         className="border p-2 rounded"
@@ -225,7 +225,7 @@ const AdminPersonalPage = () => {
                                 <th className="px-4 py-3 border-b">ID</th>
                                 <th className="px-4 py-3 border-b">Rol</th>
                                 <th className="px-4 py-3 border-b">Nombres</th>
-                                <th className="px-4 py-3 border-b">Apellidos</th>
+                                <th className="px-4 py-3 border-b">DNI</th>
                                 <th className="px-4 py-3 border-b">Email</th>
                                 <th className="px-4 py-3 border-b">Teléfono</th>
                                 <th className="px-4 py-3 border-b">Vehículos Asignados</th>
@@ -249,10 +249,10 @@ const AdminPersonalPage = () => {
                                             {personal?.role || '---'}
                                         </td>
                                         <td className="px-4 py-3 border-b">
-                                            {personal?.nombres || '---'}
+                                            {personal?.nombres} {apellidos || '---'}
                                         </td>
                                         <td className="px-4 py-3 border-b">
-                                            {apellidos || '---'}
+                                            {personal?.dni || '---'}
                                         </td>
                                         <td className="px-4 py-3 border-b">
                                             {personal?.email || '---'}
