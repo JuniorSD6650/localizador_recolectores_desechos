@@ -15,14 +15,14 @@
 
 .lds-ripple div {
     position: absolute;
-    border: 4px solid currentColor;
+    border: 4px solid #fc640c;
     opacity: 1;
     border-radius: 50%;
-    animation: lds-ripple 1s cubic-bezier(0, 0.2, 0.8, 1) infinite;
+    animation: lds-ripple 1.5s cubic-bezier(0, 0.2, 0.8, 1) infinite;
 }
 
 .lds-ripple div:nth-child(2) {
-    animation-delay: -0.5s;
+    animation-delay: -0.7s;
 }
 
 @keyframes lds-ripple {
@@ -68,6 +68,39 @@
     background-color: rgba(255, 255, 255, 0.8);
     z-index: 9999;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
+}
+
+.loading-text {
+    margin-top: 100px;
+    font-size: 1.5rem;
+    color: #fc640c;
+}
+
+@keyframes dots {
+
+    0%,
+    20% {
+        content: 'Cargando :o';
+    }
+
+    40% {
+        content: 'Cargando :|';
+    }
+
+    60% {
+        content: 'Cargando :)';
+    }
+
+    80%,
+    100% {
+        content: 'Cargando :D';
+    }
+}
+
+.dots::after {
+    content: 'Cargando :o';
+    animation: dots 2s steps(1, end) infinite;
 }

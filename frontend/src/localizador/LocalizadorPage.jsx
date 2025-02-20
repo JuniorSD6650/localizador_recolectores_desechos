@@ -3,11 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { API_BASE_URL, calculateTimeAgo, showSuccessAlert, showErrorAlert } from '../utils';
 import TituloConRegreso from '../components/TituloConRegreso/TituloConRegreso';
 import { format, isSameDay } from 'date-fns';
-import Cargando from '../components/Cargando/carga';
-
+import withLoading from '../components/Cargando/withLoading';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 
-const LocalizadorPage = () => {
+const LocalizadorPage = ({ isLoading }) => {
     const [personal, setPersonal] = useState(null);
     const [credenciales, setCredenciales] = useState(null);
     const [message, setMessage] = useState('');
@@ -143,7 +142,9 @@ const LocalizadorPage = () => {
 
     if (!personal) {
         return (
-            <Cargando />
+            <div className="flex items-center justify-center min-h-screen">
+                <p>Cargando...</p>
+            </div>
         );
     }
 
@@ -235,4 +236,4 @@ const LocalizadorPage = () => {
     );
 };
 
-export default LocalizadorPage;
+export default withLoading(LocalizadorPage);

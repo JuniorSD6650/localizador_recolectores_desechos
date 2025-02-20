@@ -8,6 +8,7 @@ const Cargando = () => {
                 <div></div>
                 <div></div>
             </div>
+            <div className="loading-text"><span className="dots"></span></div>
         </div>
     );
 };

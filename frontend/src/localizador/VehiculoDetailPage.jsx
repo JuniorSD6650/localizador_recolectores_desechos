@@ -3,11 +3,12 @@ import { useParams } from 'react-router-dom';
 import { API_BASE_URL, showSuccessAlert, showErrorAlert } from '../utils';
 import TituloConRegreso from '../components/TituloConRegreso/TituloConRegreso';
 import Cargando from '../components/Cargando/carga';
-
+import withLoading from '../components/Cargando/withLoading';
 
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 
 const formatDate = (dateString) => {
+    if (!dateString) return 'Sin fecha de actualización';
     const [datePart, timePart] = dateString.split(' ');
     const [day, month, year] = datePart.split('/');
     return new Date(`${year}-${month}-${day}T${timePart}`).toLocaleString();
@@ -161,4 +162,4 @@ const VehiculoDetailPage = () => {
     );
 };
 
-export default VehiculoDetailPage;
+export default withLoading(VehiculoDetailPage);
