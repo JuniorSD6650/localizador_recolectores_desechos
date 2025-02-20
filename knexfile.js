@@ -8,5 +8,11 @@ module.exports = {
     user: process.env.DB_USER || 'root',
     password: process.env.DB_PASSWORD || '',
     database: process.env.DB_NAME || 'recolector_db'
-  }
+  },
+  migrations: {
+    tableName: 'knex_migrations',
+  },
+  seeds: {
+    directory: './seeds',
+  },
 };

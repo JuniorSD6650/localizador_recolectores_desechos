@@ -7,6 +7,7 @@ exports.up = function (knex) {
     table.string('ruta_foto', 255).nullable();
     table.string('estado_reporte', 50).defaultTo('pendiente');
     table.string('direccion', 255).nullable();
+    table.timestamp('created_at').defaultTo(knex.fn.now());
   });
 };
 

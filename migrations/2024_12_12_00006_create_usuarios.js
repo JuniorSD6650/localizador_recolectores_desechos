@@ -5,6 +5,7 @@ exports.up = function (knex) {
     table.string('nombres', 100).nullable();
     table.string('primer_apellido', 100).nullable();
     table.string('segundo_apellido', 100).nullable();
+    table.string('dni', 8).nullable();
     table.string('email', 255).nullable();
     table.string('telefono', 15).nullable();
     table.timestamp('created_at').defaultTo(knex.fn.now());

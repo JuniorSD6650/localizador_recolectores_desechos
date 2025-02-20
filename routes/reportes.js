@@ -131,7 +131,8 @@ router.post('/', upload.single('ruta_foto'), async (req, res) => {
       numero_contacto,
       direccion,
       ruta_foto,
-      estado_reporte: 'pendiente'
+      estado_reporte: 'pendiente',
+      created_at: knex.fn.now()
     });
 
     const newReporteId = result[0];
@@ -162,7 +163,8 @@ router.put('/:id', upload.single('ruta_foto'), async (req, res) => {
       ...(descripcion && { descripcion }),
       ...(numero_contacto && { numero_contacto }),
       ...(estado_reporte && { estado_reporte }),
-      ...(direccion && { direccion })
+      ...(direccion && { direccion }),
+      created_at: knex.fn.now()
     };
 
     if (req.file) {

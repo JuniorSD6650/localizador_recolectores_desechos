@@ -5,12 +5,13 @@ const knex = require('knex')(require('../knexfile'));
 const router = express.Router();
 
 const applyFilters = (query, filters) => {
-  const { role, nombres, primer_apellido, email, telefono } = filters;
+  const { role, nombres, email, telefono, dni } = filters;
 
   if (role) query = query.where('role', 'like', `%${role}%`);
   if (nombres) query = query.whereRaw("CONCAT(nombres, ' ', primer_apellido, ' ', segundo_apellido) like ?", [`%${nombres}%`]);
   if (email) query = query.where('email', 'like', `%${email}%`);
   if (telefono) query = query.where('telefono', 'like', `%${telefono}%`);
+  if (dni) query = query.where('dni', 'like', `%${dni}%`);
 
   return query;
 };
@@ -46,13 +47,14 @@ router.get('/list', async (req, res) => {
 });
 
 router.get('/', async (req, res) => {
-  const { role, nombres, email, telefono, page = 1, limit = 10 } = req.query;
+  const { role, nombres, email, telefono, dni, page = 1, limit = 10 } = req.query;
 
   const filters = {
     role,
     nombres,
     email,
     telefono,
+    dni,
   };
 
   const offset = (page - 1) * limit;
@@ -107,6 +109,7 @@ router.get('/', async (req, res) => {
           nombres: row.nombres,
           primer_apellido: row.primer_apellido,
           segundo_apellido: row.segundo_apellido,
+          dni: row.dni,
           email: row.email,
           telefono: row.telefono,
           created_at: row.created_at,
@@ -160,6 +163,7 @@ router.get('/:id', async (req, res) => {
       nombres: usuarioData[0].nombres,
       primer_apellido: usuarioData[0].primer_apellido,
       segundo_apellido: usuarioData[0].segundo_apellido,
+      dni: usuarioData[0].dni,
       email: usuarioData[0].email,
       telefono: usuarioData[0].telefono,
       created_at: usuarioData[0].created_at,
@@ -184,7 +188,7 @@ router.get('/:id', async (req, res) => {
 });
 
 router.post('/', async (req, res) => {
-  const { role, nombres, primer_apellido, segundo_apellido, email, telefono, username, password } = req.body;
+  const { role, nombres, primer_apellido, segundo_apellido, dni, email, telefono, username, password } = req.body;
 
   try {
     const [userId] = await knex('usuarios').insert({
@@ -192,6 +196,7 @@ router.post('/', async (req, res) => {
       nombres,
       primer_apellido,
       segundo_apellido,
+      dni,
       email,
       telefono,
       created_at: knex.fn.now()
@@ -215,7 +220,7 @@ router.post('/', async (req, res) => {
 
 router.put('/:id', async (req, res) => {
   const { id } = req.params;
-  const { role, nombres, primer_apellido, segundo_apellido, email, telefono, username, password } = req.body;
+  const { role, nombres, primer_apellido, segundo_apellido, dni, email, telefono, username, password } = req.body;
 
   try {
     const user = await knex('usuarios').where('id', id).first();
@@ -228,6 +233,7 @@ router.put('/:id', async (req, res) => {
     if (nombres) updateData.nombres = nombres;
     if (primer_apellido) updateData.primer_apellido = primer_apellido;
     if (segundo_apellido) updateData.segundo_apellido = segundo_apellido;
+    if (dni) updateData.dni = dni;
     if (email) updateData.email = email;
     if (telefono) updateData.telefono = telefono;
 
