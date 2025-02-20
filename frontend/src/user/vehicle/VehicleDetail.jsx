@@ -79,7 +79,7 @@ const VehicleDetail = () => {
                     </div>
                     <div>
                         <h1 className="text-2xl font-bold">{vehicle.nombre_recolector}</h1>
-                        <h2 className="text-xl text-gray-600">{vehicle.zona_responsable}</h2>
+                        <h2 className="text-xl text-gray-600">{vehicle.zonas_asignadas}</h2>
                     </div>
                 </div>
 

@@ -56,13 +56,13 @@ const Home = () => {
                 {/* Text Content Section */}
                 <div className="     md:text-left md:w-1/2 md:order-1 md:px-20">
                     <h1 className="text-4xl md:text-5xl font-bold" style={{ color: '#205287' }}>
-                        Hola vecino,
+                        Hola Vecino,
                     </h1>
                     <h2 className="text-3xl md:text-4xl font-bold mt-2" style={{ color: '#205287' }}>
-                        Recolector Digital de Amarilis
+                        Recolector Digital
                     </h2>
                     <p className="text-gray-600 mt-4 font-normal" style={{ color: '#595957' }}>
-                        Sistema de reporte y geolocalización de carros recolectores - podras ver exactamente donde se encuantra el carro lector y podras hacer un reporte de la basura.
+                        Sistema de reporte y geolocalización de carros recolectores - podrás ver exactamente donde se encuantra el carro recolector y podras hacer un reporte de la basura.
                     </p>
                     <br />
                     <div className="flex space-x-4  justify-start">

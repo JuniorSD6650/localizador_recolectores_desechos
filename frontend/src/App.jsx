@@ -22,6 +22,7 @@ import ProtectedRoute from './ProtectedRoute';
 import Mapa from './Mapa';
 import Footer from './components/foot/Footer';
 import Navbar from './components/nav/Navbar';
+import ZoneList from './user/zone/ZoneList';
 
 function AnimatedRoutes() {
   const location = useLocation();
@@ -135,6 +136,7 @@ function AnimatedRoutes() {
         <Route path="/recolectores" element={<PageWrapper><VehicleList /></PageWrapper>} />
         <Route path="/recolectores/:id" element={<PageWrapper><VehicleDetail /></PageWrapper>} />
         <Route path="/mapa" element={<PageWrapper><Mapa /></PageWrapper>} />
+        <Route path="/zonas" element={<PageWrapper> <ZoneList /> </PageWrapper>} />
       </Routes>
     </AnimatePresence>
   );

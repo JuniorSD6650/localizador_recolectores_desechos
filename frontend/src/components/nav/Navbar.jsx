@@ -96,6 +96,12 @@ const Navbar = () => {
                 Recolectores
             </Link>
             <Link
+                to="/zonas"
+                className={`text-gray-900 dark:text-white no-underline block py-2 ${location.pathname === '/recolectores' ? 'font-bold border-b-2 border-green-custom' : ''}`}
+            >
+                Zonas
+            </Link>
+            <Link
                 to="/login"
                 className={`text-gray-900 dark:text-white no-underline block py-2 ${location.pathname === '/login' ? 'font-bold border-b-2 border-green-custom' : ''}`}
             >
