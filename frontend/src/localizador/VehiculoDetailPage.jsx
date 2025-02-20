@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { API_BASE_URL, showSuccessAlert, showErrorAlert } from '../utils';
 import TituloConRegreso from '../components/TituloConRegreso/TituloConRegreso';
+
+import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 
 const formatDate = (dateString) => {
     const [datePart, timePart] = dateString.split(' ');
@@ -14,7 +16,6 @@ const VehiculoDetailPage = () => {
     const [recolector, setRecolector] = useState(null);
     const [ubicacionEnlace, setUbicacionEnlace] = useState('');
     const [estadoOperativo, setEstadoOperativo] = useState('');
-    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchRecolector = async () => {
@@ -121,11 +122,26 @@ const VehiculoDetailPage = () => {
                     <h3 className="text-lg mb-2">Estado Operativo: {estadoOperativo}</h3>
                     <h3 className="text-lg mb-2">Fecha de Última Actualización: {formatDate(recolector.fecha_ubicacion_actualizada)}</h3>
                 </div>
-                <form onSubmit={handleUpdateEnlace} className="mb-6">
+                <div className="mt-4 text-center mb-6">
+                    <h4 className="text-lg font-semibold mb-2">Estado Operativo</h4>
+                    <span className={`inline-block px-2 py-1 text-sm font-medium rounded-full mb-2 `}>
+                        <div className="flex flex-col items-center">
+                            <LocalShippingIcon
+                                style={{ fontSize: '35px', color: estadoOperativo === 'operativo' ? 'green' : 'red' }}
+                            />
+                            <span>{estadoOperativo === 'operativo' ? 'Operativo' : 'Inoperativo'}</span>
+                        </div>
+                    </span>
+                    <button
+                        className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 w-auto ml-2 mb-2"
+                        onClick={handleToggleEstadoOperativo}
+                    >
+                        Cambiar Estado
+                    </button>
+                </div>
+                <form onSubmit={handleUpdateEnlace} className="mb-6 text-center">
                     <div className="mb-4">
-                        <label htmlFor="ubicacionEnlace" className="block text-sm font-medium text-gray-700">
-                            Enlace de Ubicación
-                        </label>
+                        <h4 className="text-lg font-semibold mb-2"> Enlace de Ubicación</h4>
                         <input
                             type="text"
                             id="ubicacionEnlace"
@@ -141,18 +157,7 @@ const VehiculoDetailPage = () => {
                         Actualizar Ubicación
                     </button>
                 </form>
-                <div className="mt-4 text-center">
-                    <h4 className="text-lg font-semibold mb-2">Estado Operativo</h4>
-                    <span className={`inline-block px-2 py-1 text-sm font-medium rounded-full ${estadoOperativo === 'operativo' ? 'bg-green-200 text-green-800' : 'bg-red-200 text-red-800'}`}>
-                        {estadoOperativo === 'operativo' ? 'Operativo' : 'Inoperativo'}
-                    </span>
-                    <button
-                        className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 mt-3 w-full"
-                        onClick={handleToggleEstadoOperativo}
-                    >
-                        Cambiar Estado Operativo
-                    </button>
-                </div>
+
             </div>
         </div>
     );
