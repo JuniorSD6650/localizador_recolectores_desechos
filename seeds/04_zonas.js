@@ -4,7 +4,7 @@ exports.seed = function (knex) {
       return knex('zonas').insert([
         {
           id: 1,
-          nombre: 'Paucarbambilla',
+          nombre: 'Paucarbamba S1 y S2',
           descripcion: 'Zona ubicada en Paucarbambilla, esta es la zona 1 de recolección.',
           imagen: 'uploads/zonas/ZONA_1_Pbba.jpg',
           organizacion_id: 1
