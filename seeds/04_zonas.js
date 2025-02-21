@@ -25,8 +25,8 @@ exports.seed = function (knex) {
         },
         {
           id: 4,
-          nombre: 'San Luis S1 y S2',
-          descripcion: 'Zona ubicada en San Luis S1 y S2, esta es la zona 4 de recolección.',
+          nombre: 'San Luis S1, S2 y S3',
+          descripcion: 'Zona ubicada en San Luis S1, S2 y S3, esta es la zona 4 de recolección.',
           imagen: 'uploads/zonas/ZONA_4_San_Luis_1_2_3.jpg',
           organizacion_id: 1
         },
