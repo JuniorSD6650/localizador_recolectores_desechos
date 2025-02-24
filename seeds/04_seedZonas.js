@@ -85,6 +85,13 @@ exports.seed = function (knex) {
           descripcion: 'Zona ubicada en Matibamba, esta es la zona 11B de recolección.',
           imagen: 'uploads/zonas/ZONA_11B_Matibamba.jpg',
           organizacion_id: 1
+        },
+        {
+          id: 13,
+          nombre: 'Via Regional',
+          descripcion: 'Zona ubicada en Via Regional, esta es la zona 13 de recolección.',
+          imagen: '',
+          organizacion_id: 1
         }
       ]);
     });
