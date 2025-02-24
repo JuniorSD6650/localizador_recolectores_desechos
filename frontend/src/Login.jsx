@@ -10,6 +10,7 @@ const Login = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        e.preventDefault();
         try {
             const response = await fetch(API_BASE_URL + 'usuarios/login', {
                 method: 'POST',
@@ -22,16 +23,13 @@ const Login = () => {
             const data = await response.json();
 
             if (response.ok) {
-                const token = data.token;
+                login(data.token); // Usa la función login del contexto
+                const decoded = JSON.parse(atob(data.token.split('.')[1]));
 
-                localStorage.setItem('token', token);
-
-                const decoded = JSON.parse(atob(token.split('.')[1]));
-                const role = decoded.role;
-
-                if (role === 'admin') {
+                // Redirige según el rol
+                if (decoded.role === 'admin') {
                     navigate('/admin');
-                } else if (role === 'conductor') {
+                } else if (decoded.role === 'conductor') {
                     navigate('/localizador');
                 }
             } else {
