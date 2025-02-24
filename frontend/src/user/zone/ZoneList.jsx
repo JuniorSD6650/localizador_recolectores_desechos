@@ -7,8 +7,7 @@ import {
     showCustomAlert
 } from '../../utils';
 import TituloConRegreso from '../../components/TituloConRegreso/TituloConRegreso';
-import RegisterZonaModal from './RegisterZonaModal';
-import EditZonaModal from './EditZonaModal';
+
 import Pagination from '../../components/Pagination/Pagination';
 
 const AdminZonasPage = () => {
@@ -129,50 +128,9 @@ const AdminZonasPage = () => {
 
     return (
         <div className="container mx-auto px-4 py-8 min-h-screen mt-16">
-            <TituloConRegreso titulo="Gestión de Zonas" to="/admin" />
+            <TituloConRegreso titulo="Lista de Zonas" to="/admin" />
 
             {message && <p className="text-red-500">{message}</p>}
-
-            <div className="bg-gray-50 p-6 rounded-lg shadow-md mb-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <input
-                        className="border p-2 rounded"
-                        placeholder="Nombre"
-                        value={filterNombre}
-                        onChange={(e) => setFilterNombre(e.target.value)}
-                    />
-                    <input
-                        className="border p-2 rounded"
-                        placeholder="Descripción"
-                        value={filterDescripcion}
-                        onChange={(e) => setFilterDescripcion(e.target.value)}
-                    />
-                </div>
-                <div className="flex justify-end items-center mt-4 space-x-4">
-                    <button
-                        className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-                        onClick={handleSearch}
-                    >
-                        Buscar
-                    </button>
-                    <button
-                        className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
-                        onClick={handleLimpiar}
-                    >
-                        Limpiar
-                    </button>
-                </div>
-            </div>
-
-            <div className="flex justify-end">
-                <button
-                    className="bg-blue-500 text-white text-sm p-2 rounded-md hover:bg-blue-600 mb-1"
-                    style={{ width: 'auto' }}
-                    onClick={() => setShowRegisterModal(true)}
-                >
-                    Nueva Zona
-                </button>
-            </div>
 
             {zonas.length === 0 ? (
                 <p>No hay zonas registradas</p>
@@ -184,7 +142,6 @@ const AdminZonasPage = () => {
                                 <th className="px-6 py-3 border-b">Nombre</th>
                                 <th className="px-6 py-3 border-b">Descripción</th>
                                 <th className="px-6 py-3 border-b">Imagen</th>
-                                <th className="px-6 py-3 border-b">Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -208,25 +165,7 @@ const AdminZonasPage = () => {
                                             '---'
                                         )}
                                     </td>
-                                    <td className="px-6 py-4 border-b">
-                                        <div className="flex space-x-2">
-                                            <button
-                                                className="bg-yellow-400 text-white px-4 py-2 rounded-md hover:bg-yellow-500"
-                                                onClick={() => {
-                                                    setSelectedZona(zona);
-                                                    setShowEditModal(true);
-                                                }}
-                                            >
-                                                Editar
-                                            </button>
-                                            <button
-                                                className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600"
-                                                onClick={() => handleDelete(zona.id)}
-                                            >
-                                                Eliminar
-                                            </button>
-                                        </div>
-                                    </td>
+
                                 </tr>
                             ))}
                         </tbody>

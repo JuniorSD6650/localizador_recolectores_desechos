@@ -267,14 +267,7 @@ const Report = () => {
                         <div>
                             <label className="block text-sm font-medium text-gray-700">Foto (opcional)</label>
                             <div className="flex p-4 gap-y-20  gap-2 justify-center items-center">
-                                <button
-                                    type="button"
-                                    className={`w-auto sm:w-auto px-4 py-2 rounded-md ${selectedOption === 'file' ? 'bg-customGreen text-white' : 'bg-gray-300 text-gray-700'
-                                        }`}
-                                    onClick={() => handleOptionChange('file')}
-                                >
-                                    Subir Archivo
-                                </button>
+
                                 <button
                                     type="button"
                                     className={`w-auto sm:w-auto px-4 py-2 rounded-md ${selectedOption === 'camera' ? 'bg-customGreen text-white' : 'bg-gray-300 text-gray-700'
