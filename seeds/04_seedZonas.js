@@ -76,7 +76,7 @@ exports.seed = function (knex) {
           id: 11,
           nombre: 'Colpa',
           descripcion: 'Zona ubicada en Colpa, esta es la zona 11A de recolección.',
-          imagen: 'uploads/zonas/ZONA_11A_Colpaj.jpg',
+          imagen: 'uploads/zonas/ZONA_11A_Colpa.jpg',
           organizacion_id: 1
         },
         {
