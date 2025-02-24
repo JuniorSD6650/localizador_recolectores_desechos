@@ -1,15 +1,16 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { API_BASE_URL } from './utils';
+import { useAuth } from './context/AuthContext'; // Añadir esta importación
 
 const Login = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [message, setMessage] = useState('');
     const navigate = useNavigate();
+    const { login } = useAuth();
 
     const handleSubmit = async (e) => {
-        e.preventDefault();
         e.preventDefault();
         try {
             const response = await fetch(API_BASE_URL + 'usuarios/login', {
@@ -37,6 +38,7 @@ const Login = () => {
             }
         } catch (error) {
             setMessage('Error de conexión');
+            console.error('Error:', error);
         }
     };
 
