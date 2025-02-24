@@ -42,7 +42,7 @@ const VehicleList = () => {
     useEffect(() => {
         const fetchZonas = async () => {
             try {
-                const response = await fetch('http://localhost:5000/api/zonas/list');
+                const response = await fetch(API_BASE_URL + 'zonas/list');
                 const data = await response.json();
 
                 if (Array.isArray(data)) {

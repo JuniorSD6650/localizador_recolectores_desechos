@@ -3,24 +3,11 @@ import React from 'react';
 
 const Footer = () => {
     return (
-        <footer style={{ backgroundColor: '#595957' }} className="text-white h-16">
-            <div className="container mx-auto text-center">
-                <p className="text-sm">
-                    &copy; {new Date().getFullYear()} Sistema Recolector. Todos los derechos reservados.
-                </p>
-                <p className="text-sm mt-2">
-                    Desarrollado por{' '}
-                    <a
-                        href="https://www.instagram.com/transformaciondigitaludh/"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-400 hover:text-blue-300"
-                    >
-                        Laboratorio de Transformación Digital
-                    </a>
-                </p>
-            </div>
-        </footer>
+        <div className="flex flex-col w-full h-fit bg-[#374151] text-[#e5e7eb] p-5">
+
+            <div className="w-full border-t border-gray-500 my-8"></div>
+            <div className="text-center">© 2025 LTD - Todos los derechos reservados.</div>
+        </div>
     );
 };
 
