@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { API_BASE_URL } from './utils';
-import { useAuth } from './context/AuthContext'; // Añadir esta importación
+import { useAuth } from './context/AuthContext';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 
 const Login = () => {
     const [username, setUsername] = useState('');
@@ -9,6 +11,12 @@ const Login = () => {
     const [message, setMessage] = useState('');
     const navigate = useNavigate();
     const { login } = useAuth();
+
+    const [showPassword, setShowPassword] = useState(false);
+
+    const togglePasswordVisibility = () => {
+        setShowPassword(!showPassword);
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -57,15 +65,29 @@ const Login = () => {
                             required
                         />
                     </div>
-                    <div className="mb-3">
+                    <div className="mb-3 relative">
                         <label className="form-label">Password:</label>
-                        <input
-                            type="password"
-                            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
-                        />
+                        <div className='relative'>
+                            <input
+                                type={showPassword ? "text" : "password"}
+                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                required
+                            />
+                            <button
+                                type="button"
+                                className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-600 cursor-pointer"
+                                onClick={togglePasswordVisibility}
+                            >
+                                {showPassword ? (
+                                    <VisibilityOffIcon className="h-5 w-5" />
+                                ) : (
+                                    <VisibilityIcon className="h-5 w-5" />
+                                )}
+                            </button>
+                        </div>
+
                     </div>
                     <button type="submit" className="w-full py-2 px-4 bg-customGreen text-white font-medium rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
                         Iniciar sesión
