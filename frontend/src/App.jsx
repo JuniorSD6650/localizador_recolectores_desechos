@@ -23,6 +23,7 @@ import Mapa from './Mapa';
 import Footer from './components/foot/Footer';
 import Navbar from './components/nav/Navbar';
 import ZoneList from './user/zone/ZoneList';
+import { AuthProvider } from './context/AuthContext';
 
 function AnimatedRoutes() {
   const location = useLocation();
@@ -155,15 +156,17 @@ const PageWrapper = ({ children }) => (
 
 function App() {
   return (
-    <Router>
-      <Navbar />
-      <div className="flex flex-col">
-        <div className="flex-grow">
-          <AnimatedRoutes />
+    <AuthProvider>
+      <Router>
+        <Navbar />
+        <div className="flex flex-col">
+          <div className="flex-grow">
+            <AnimatedRoutes />
+          </div>
+          <Footer />
         </div>
-        <Footer />
-      </div>
-    </Router>
+      </Router>
+    </AuthProvider>
   );
 }
 

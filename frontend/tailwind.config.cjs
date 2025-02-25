@@ -9,7 +9,9 @@ module.exports = {
                 customGray: '#595957',
                 customGreen: '#5FBB01',
                 customGreenHover: '#5EAA22',
-                customGrayOscuro: '#519F00'
+                customGrayOscuro: '#519F00',
+                customOrange: '#F29512',
+                customOrangeHover: '#DD8509',
             },
         },
     },

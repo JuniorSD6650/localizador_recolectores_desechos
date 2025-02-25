@@ -1,34 +1,21 @@
-// src/ProtectedRoute.jsx
-import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
+import { useAuth } from './context/AuthContext';
 
 const ProtectedRoute = ({ children, requiredRole }) => {
-    const navigate = useNavigate();
-    const [isAuthorized, setIsAuthorized] = useState(false);
+    const { user } = useAuth();
 
-    useEffect(() => {
-        const token = localStorage.getItem('token');
+    // Si no hay usuario autenticado, redirige al login
+    if (!user) {
+        return <Navigate to="/login" replace />;
+    }
 
-        if (!token) {
-            navigate('/login');
-        } else {
-            try {
-                const decoded = JSON.parse(atob(token.split('.')[1]));
-                const role = decoded.role;
+    // Si el rol del usuario no coincide con el requerido, redirige al inicio
+    if (user.role !== requiredRole) {
+        return <Navigate to="/" replace />;
+    }
 
-                if (role !== requiredRole) {
-                    navigate('/login');
-                } else {
-                    setIsAuthorized(true);
-                }
-            } catch (err) {
-                console.error('Error al decodificar el token:', err);
-                navigate('/login');
-            }
-        }
-    }, [navigate, requiredRole]);
-
-    return isAuthorized ? children : null;
+    // Si todo está bien, renderiza los componentes hijos
+    return children;
 };
 
 export default ProtectedRoute;

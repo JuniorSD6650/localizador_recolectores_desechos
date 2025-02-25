@@ -1,10 +1,16 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, createContext, useContext } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import MenuIcon from '@mui/icons-material/Menu';
 import CloseIcon from '@mui/icons-material/Close';
 import Notifications from './Notifications';
+import { useAuth } from '../../context/AuthContext';
+
 
 const Navbar = () => {
+
+    const { user, logout } = useAuth();
+
+
     const location = useLocation();
     const [showNotifications, setShowNotifications] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -66,13 +72,31 @@ const Navbar = () => {
                 Reportes
             </Link>
             <Link
-                to="/admin/perfil"
-                className={`text-gray-900 dark:text-white no-underline block py-2 ${location.pathname === '/admin/perfil' ? 'font-bold border-b-2 border-green-custom' : ''}`}
+                to="/admin/vehiculos"
+                className={`text-gray-900 dark:text-white no-underline block py-2 ${location.pathname === '/admin/vehiculos' ? 'font-bold border-b-2 border-green-custom' : ''}`}
             >
-                Perfil
+                Vehículos
+            </Link>
+            <Link
+                to="/admin/publicaciones"
+                className={`text-gray-900 dark:text-white no-underline block py-2 ${location.pathname === '/admin/publicaciones' ? 'font-bold border-b-2 border-green-custom' : ''}`}
+            >
+                Publicaciones
             </Link>
         </>
     );
+
+    const ConductorLinks = () => (
+        <>
+            <Link
+                to="/localizador"
+                className={`text-gray-900 dark:text-white no-underline block py-2 ${location.pathname === '/localizador' ? 'font-bold border-b-2 border-green-custom' : ''}`}
+            >
+                Localizador
+            </Link>
+
+        </>
+    )
 
     const NavLinks = () => (
         <>
@@ -111,25 +135,25 @@ const Navbar = () => {
     );
 
     const renderNavigationLinks = () => {
-        if (!user) return <PublicLinks />;
+        if (!user) return <NavLinks />;
 
         switch (user.role) {
             case 'admin':
                 return <AdminLinks />;
-            case 'personal':
-                return <PersonalLinks />;
+            case 'conductor':
+                return <ConductorLinks />;
             default:
-                return <PublicLinks />;
+                return <NavLinks />;
         }
     };
 
-    {/* {renderNavigationLinks()} */ }
 
     return (
-        <div className='fixed top-0 w-full z-50' >
+        <div className='fixed top-0 w-full z-50'>
             <nav className="bg-white border-gray-200 dark:bg-gray-900">
                 <div className="flex flex-wrap justify-between items-center mx-auto max-w-screen-xl p-4 border-b-2">
-                    <a href="/" className="flex items-center justify-center space-x-3 rtl:space-x-reverse no-underline">
+                    <a href="/" className="flex items-center justify-center space-x-3 rtl:space-x-reverse no-underline"
+                        onClick={logout}>
                         <img
                             src="/images/logo_amarilis.png"
                             alt="Logo Amarilis"
@@ -138,7 +162,15 @@ const Navbar = () => {
                     </a>
 
                     <div className="hidden md:flex items-center space-x-6 rtl:space-x-reverse">
-                        <NavLinks />
+                        {renderNavigationLinks()}
+                        {user && (
+                            <button
+                                onClick={logout}
+                                className="text-gray-900 dark:text-white no-underline block py-2"
+                            >
+                                Cerrar Sesión
+                            </button>
+                        )}
                         <div ref={notificationsRef}>
                             <Notifications
                                 showNotifications={showNotifications}
@@ -170,7 +202,15 @@ const Navbar = () => {
                 {isMobileMenuOpen && (
                     <div className="md:hidden absolute top-full left-0 w-full bg-white dark:bg-gray-900 shadow-lg">
                         <div className="flex flex-col p-4 space-y-2">
-                            <NavLinks />
+                            {renderNavigationLinks()}
+                            {user && (
+                                <button
+                                    onClick={logout}
+                                    className="text-gray-900 dark:text-white no-underline block py-2"
+                                >
+                                    Cerrar Sesión
+                                </button>
+                            )}
                         </div>
                     </div>
                 )}

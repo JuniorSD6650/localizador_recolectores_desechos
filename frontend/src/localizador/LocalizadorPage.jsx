@@ -154,7 +154,7 @@ const LocalizadorPage = ({ isLoading }) => {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                 <div className="p-4 rounded-xl">
                     <div className="text-center mb-6">
-                        <div className="w-20 h-20 bg-blue-500 rounded-full mx-auto mb-3 flex items-center justify-center text-white text-2xl font-bold">
+                        <div className="w-20 h-20 bg-customBlue rounded-full mx-auto mb-3 flex items-center justify-center text-white text-2xl font-bold">
                             {personal.nombres[0]}
                             {personal.primer_apellido[0]}
                         </div>
@@ -171,19 +171,20 @@ const LocalizadorPage = ({ isLoading }) => {
                     </div>
                 </div>
                 <div className="lg:col-span-2">
-                    <div className="p-4 rounded-xl mb-4">
+                    <div className="p-4 rounded-xl mb-4 max-w-xl">
                         <h4 className="text-lg font-semibold mb-4">Marcar asistencia</h4>
                         {!isSameDayJornada ? (
                             <>
-                                <input
-                                    type="text"
-                                    className="border rounded w-full mb-4 p-2"
-                                    placeholder="Observaciones"
+                                <textarea
+                                    className="my-4 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-eco-blue focus:border-eco-blue sm:text-sm"
+                                    rows="3"
                                     value={observaciones}
                                     onChange={(e) => setObservaciones(e.target.value)}
-                                />
+                                    placeholder="Observaciones"
+                                ></textarea>
+
                                 <button
-                                    className="bg-blue-500 text-white p-2 rounded hover:bg-blue-600 w-full"
+                                    className="bg-customBlue text-white p-2 rounded hover:bg-blue-600 w-full"
                                     onClick={handleStartJornada}
                                 >
                                     Marcar Entrada
@@ -191,7 +192,7 @@ const LocalizadorPage = ({ isLoading }) => {
                             </>
                         ) : (
                             <button
-                                className="bg-red-500 text-white px-4 rounded hover:bg-red-600 w-full"
+                                className="bg-red-500 text-white p-2 rounded hover:bg-red-600 w-full"
                                 onClick={handleEndJornada}
                             >
                                 Marcar Salida
@@ -219,7 +220,7 @@ const LocalizadorPage = ({ isLoading }) => {
                                                 </div>
                                             </div>
                                             <button
-                                                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 mt-3 w-full"
+                                                className="bg-customBlue text-white px-4 py-2 rounded hover:bg-blue-600 mt-3 w-full"
                                                 onClick={() => handleEditVehicle(recolector.id)}
                                             >
                                                 Editar Vehículo
