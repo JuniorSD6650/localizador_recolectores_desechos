@@ -14,17 +14,72 @@ const Report = () => {
     const [availableCameras, setAvailableCameras] = useState([]);
     const [selectedCamera, setSelectedCamera] = useState(null);
 
+    const [ubicacion, setUbicacion] = useState(null);
+    const [obteniendoUbicacion, setObteniendoUbicacion] = useState(false);
+
     const videoRef = useRef(null);
     const canvasRef = useRef(null);
     const streamRef = useRef(null);
 
+    const obtenerUbicacion = () => {
+        if (!navigator.geolocation) {
+            showErrorAlert('Error', 'Tu navegador no soporta geolocalización');
+            return Promise.reject('Geolocalización no soportada');
+        }
+
+        setObteniendoUbicacion(true);
+
+        return new Promise((resolve, reject) => {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const ubicacionData = {
+                        latitud: position.coords.latitude,
+                        longitud: position.coords.longitude,
+                        precision: position.coords.accuracy
+                    };
+                    setUbicacion(ubicacionData);
+                    setObteniendoUbicacion(false);
+                    resolve(ubicacionData);
+                },
+                (error) => {
+                    let mensaje = 'Error al obtener la ubicación';
+                    switch (error.code) {
+                        case error.PERMISSION_DENIED:
+                            mensaje = 'No se dio permiso para obtener la ubicación';
+                            break;
+                        case error.POSITION_UNAVAILABLE:
+                            mensaje = 'La ubicación no está disponible';
+                            break;
+                        case error.TIMEOUT:
+                            mensaje = 'Se agotó el tiempo de espera';
+                            break;
+                    }
+                    showErrorAlert('Error', mensaje);
+                    setObteniendoUbicacion(false);
+                    reject(mensaje);
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 5000,
+                    maximumAge: 0
+                }
+            );
+        });
+    };
+
     const getAvailableCameras = async () => {
         try {
+            // Primero pide acceso a la cámara con preferencia environment (trasera)
+            await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: 'environment' }
+            });
+
             const devices = await navigator.mediaDevices.enumerateDevices();
-            const cameras = devices.filter((device) => device.kind === 'videoinput');
+            const cameras = devices.filter(device => device.kind === 'videoinput');
             setAvailableCameras(cameras);
 
-            const rearCamera = cameras.find((camera) =>
+            // Intenta encontrar la cámara trasera
+            const rearCamera = cameras.find(camera =>
                 camera.label.toLowerCase().includes('back') ||
                 camera.label.toLowerCase().includes('trasera') ||
                 camera.label.toLowerCase().includes('rear') ||
@@ -33,11 +88,13 @@ const Report = () => {
 
             if (rearCamera) {
                 setSelectedCamera(rearCamera.deviceId);
-            } else if (cameras.length > 0) {
-                setSelectedCamera(cameras[cameras.length - 1].deviceId);
+            } else {
+                // Si no encuentra específicamente una trasera, usa facingMode: 'environment'
+                setSelectedCamera('environment');
             }
         } catch (error) {
             console.error('Error al enumerar cámaras:', error);
+            showErrorAlert('Error', 'No se pudo acceder a la cámara');
         }
     };
 
@@ -49,16 +106,24 @@ const Report = () => {
 
         try {
             if (streamRef.current) {
-                streamRef.current.getTracks().forEach((track) => track.stop());
+                streamRef.current.getTracks().forEach(track => track.stop());
             }
 
-            const stream = await navigator.mediaDevices.getUserMedia({
-                video: {
-                    deviceId: selectedCamera ? { exact: selectedCamera } : undefined,
-                    width: { ideal: 1280 },
-                    height: { ideal: 720 },
-                },
-            });
+            const constraints = {
+                video: selectedCamera === 'environment'
+                    ? {
+                        facingMode: 'environment',
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    }
+                    : {
+                        deviceId: { exact: selectedCamera },
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    }
+            };
+
+            const stream = await navigator.mediaDevices.getUserMedia(constraints);
 
             if (videoRef.current) {
                 videoRef.current.srcObject = stream;
@@ -154,16 +219,21 @@ const Report = () => {
             return;
         }
 
-        const formData = new FormData();
-        formData.append('nombre_reportante', nombreReportante);
-        formData.append('descripcion', descripcion);
-        formData.append('numero_contacto', numeroContacto);
-        formData.append('direccion', direccion);
-        if (foto) {
-            formData.append('ruta_foto', foto);
-        }
-
         try {
+            // Obtener ubicación antes de enviar el reporte
+            const ubicacionActual = await obtenerUbicacion();
+
+            const formData = new FormData();
+            formData.append('nombre_reportante', nombreReportante);
+            formData.append('descripcion', descripcion);
+            formData.append('numero_contacto', numeroContacto);
+            formData.append('direccion', direccion);
+            formData.append('latitud', ubicacionActual.latitud.toString());
+            formData.append('longitud', ubicacionActual.longitud.toString());
+            if (foto) {
+                formData.append('ruta_foto', foto);
+            }
+
             const response = await fetch(`${API_BASE_URL}reportes/`, {
                 method: 'POST',
                 body: formData,
@@ -172,19 +242,20 @@ const Report = () => {
             if (response.ok) {
                 const result = await response.json();
                 showSuccessAlert('¡Reporte creado!', 'Tu reporte ha sido registrado exitosamente.');
-                console.log(result);
 
+                // Limpiar el formulario
                 setNombreReportante('');
                 setDescripcion('');
                 setNumeroContacto('');
                 setDireccion('');
                 setFoto(null);
                 setSelectedOption('');
+                setUbicacion(null);
             } else {
                 showErrorAlert('Error', 'No se pudo crear el reporte.');
             }
         } catch (error) {
-            showErrorAlert('Error', 'Hubo un problema al conectar con la API.');
+            showErrorAlert('Error', 'Hubo un problema al enviar el reporte.');
             console.error(error);
         }
     };
@@ -303,7 +374,7 @@ const Report = () => {
 
                             {selectedOption === 'camera' && (
                                 <div className="mt-2">
-                                    {availableCameras.length > 1 && (
+                                    {availableCameras.length > 1 && !(/Android|iPhone/i.test(navigator.userAgent)) && (
                                         <div className="mb-2">
                                             <select
                                                 className=" mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-eco-blue focus:border-eco-blue sm:text-sm"
