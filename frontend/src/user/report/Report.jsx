@@ -194,7 +194,10 @@ const Report = () => {
 
 
             <div className='container ml-auto mr-auto flex items-center justify-center min-h-screen mt-16'>
+
+
                 <div className='w-full md:w-1/2 shadow-lg p-6'>
+
                     <h2 className='pb-12 text-3xl md:text-4xl font-bold text-customBlue  border-custom'>Realiza el reporte a la basura acumulada</h2>
 
                     <form onSubmit={handleSubmit} className="space-y-6">

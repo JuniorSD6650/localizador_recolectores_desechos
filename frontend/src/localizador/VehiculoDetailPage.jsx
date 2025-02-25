@@ -113,50 +113,52 @@ const VehiculoDetailPage = () => {
     return (
         <div className="container mx-auto px-4 py-8 min-h-screen mt-16">
             <TituloConRegreso titulo="Detalles del Vehículo" to="/localizador" />
-            <div className="bg-white shadow-md rounded-lg p-6">
-                <div className="text-center mb-6">
-                    <h1 className="text-2xl font-bold mb-2">Vehículo: {recolector.nombre_recolector}</h1>
-                    <h2 className="text-xl mb-2">Placa: {recolector.placa}</h2>
-                    <h3 className="text-lg mb-2">Tipo de Vehículo: {recolector.tipo_vehiculo}</h3>
-                    <h3 className="text-lg mb-2">Estado Operativo: {estadoOperativo}</h3>
-                    <h3 className="text-lg mb-2">Fecha de Última Actualización: {formatDate(recolector.fecha_ubicacion_actualizada)}</h3>
-                </div>
-                <div className="mt-4 text-center mb-6">
-                    <h4 className="text-lg font-semibold mb-2">Estado Operativo</h4>
-                    <span className={`inline-block px-2 py-1 text-sm font-medium rounded-full mb-2 `}>
-                        <div className="flex flex-col items-center">
-                            <LocalShippingIcon
-                                style={{ fontSize: '35px', color: estadoOperativo === 'operativo' ? 'green' : 'red' }}
-                            />
-                            <span>{estadoOperativo === 'operativo' ? 'Operativo' : 'Inoperativo'}</span>
-                        </div>
-                    </span>
-                    <button
-                        className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 w-auto ml-2 mb-2"
-                        onClick={handleToggleEstadoOperativo}
-                    >
-                        Cambiar Estado
-                    </button>
-                </div>
-                <form onSubmit={handleUpdateEnlace} className="mb-6 text-center">
-                    <div className="mb-4">
-                        <h4 className="text-lg font-semibold mb-2"> Enlace de Ubicación</h4>
-                        <input
-                            type="text"
-                            id="ubicacionEnlace"
-                            className="mt-1 block w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                            value={ubicacionEnlace}
-                            onChange={(e) => setUbicacionEnlace(e.target.value)}
-                        />
+            <div className='flex justify-center items-center'>
+                <div className="bg-white shadow-md rounded-lg p-6 max-w-2xl w-full">
+                    <div className="text-center mb-6">
+                        <h1 className="text-2xl font-bold mb-2">Vehículo: {recolector.nombre_recolector}</h1>
+                        <h2 className="text-xl mb-2">Placa: {recolector.placa}</h2>
+                        <h3 className="text-lg mb-2">Tipo de Vehículo: {recolector.tipo_vehiculo}</h3>
+                        <h3 className="text-lg mb-2">Estado Operativo: {estadoOperativo}</h3>
+                        <h3 className="text-lg mb-2">Fecha de Última Actualización: {formatDate(recolector.fecha_ubicacion_actualizada)}</h3>
                     </div>
-                    <button
-                        type="submit"
-                        className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-full"
-                    >
-                        Actualizar Ubicación
-                    </button>
-                </form>
+                    <div className="mt-4 text-center mb-6">
+                        <h4 className="text-lg font-semibold mb-2">Estado Operativo</h4>
+                        <span className={`inline-block px-2 py-1 text-sm font-medium rounded-full mb-2 `}>
+                            <div className="flex flex-col items-center">
+                                <LocalShippingIcon
+                                    style={{ fontSize: '35px', color: estadoOperativo === 'operativo' ? 'green' : 'red' }}
+                                />
+                                <span>{estadoOperativo === 'operativo' ? 'Operativo' : 'Inoperativo'}</span>
+                            </div>
+                        </span>
+                        <button
+                            className="bg-customOrange text-white px-4 py-2 rounded hover:bg-customOrangeHover w-auto ml-2 mb-2"
+                            onClick={handleToggleEstadoOperativo}
+                        >
+                            Cambiar Estado
+                        </button>
+                    </div>
+                    <form onSubmit={handleUpdateEnlace} className="mb-6 text-center">
+                        <div className="mb-4">
+                            <h4 className="text-lg font-semibold mb-2"> Enlace de Ubicación</h4>
+                            <input
+                                type="text"
+                                id="ubicacionEnlace"
+                                className="mt-1 block w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                value={ubicacionEnlace}
+                                onChange={(e) => setUbicacionEnlace(e.target.value)}
+                            />
+                        </div>
+                        <button
+                            type="submit"
+                            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-full"
+                        >
+                            Actualizar Ubicación
+                        </button>
+                    </form>
 
+                </div>
             </div>
         </div>
     );

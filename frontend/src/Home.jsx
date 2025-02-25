@@ -34,7 +34,7 @@ const Home = () => {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="min-h-screen flex items-center justify-center ">
             <div className="container mx-auto flex flex-col md:flex-row items-center px-6 md:px-20 mt-16">
                 {/* Carousel Section */}
                 <div className="w-full md:w-1/2 md:order-2 mb-8 md:mb-0">

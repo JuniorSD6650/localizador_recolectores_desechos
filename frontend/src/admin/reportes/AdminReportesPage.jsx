@@ -247,6 +247,10 @@ const AdminReportesPage = () => {
                   <strong>Dirección:</strong>{' '}
                   {reporte.direccion || 'Sin dirección disponible'}
                 </p>
+                <p className="text-gray-700">
+                  <strong>Fecha - Hora:</strong>{' '}
+                  {reporte.created_at || 'Sin dirección disponible'}
+                </p>
 
                 <div className="flex flex-wrap gap-2 items-center">
                   <button
