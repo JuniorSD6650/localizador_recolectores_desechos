@@ -120,7 +120,7 @@ router.get('/:id', async (req, res) => {
 });
 
 router.post('/', upload.single('ruta_foto'), async (req, res) => {
-  const { nombre_reportante, descripcion, numero_contacto, direccion } = req.body;
+  const { nombre_reportante, descripcion, numero_contacto, direccion, latitud, longitud } = req.body;
 
   try {
     const ruta_foto = req.file ? `uploads/reportes/${req.file.filename}` : null;
@@ -132,6 +132,8 @@ router.post('/', upload.single('ruta_foto'), async (req, res) => {
       direccion,
       ruta_foto,
       estado_reporte: 'pendiente',
+      latitud,
+      longitud,
       created_at: knex.fn.now()
     });
 
@@ -155,7 +157,7 @@ router.post('/', upload.single('ruta_foto'), async (req, res) => {
 
 router.put('/:id', upload.single('ruta_foto'), async (req, res) => {
   const { id } = req.params;
-  const { nombre_reportante, descripcion, numero_contacto, estado_reporte, direccion } = req.body;
+  const { nombre_reportante, descripcion, numero_contacto, estado_reporte, direccion, latitud, longitud } = req.body;
 
   try {
     const updateData = {
@@ -164,6 +166,8 @@ router.put('/:id', upload.single('ruta_foto'), async (req, res) => {
       ...(numero_contacto && { numero_contacto }),
       ...(estado_reporte && { estado_reporte }),
       ...(direccion && { direccion }),
+      ...(latitud && { latitud }),
+      ...(longitud && { longitud }),
       created_at: knex.fn.now()
     };
 
