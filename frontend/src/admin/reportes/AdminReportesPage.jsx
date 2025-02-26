@@ -8,13 +8,21 @@ import {
 } from '../../utils';
 import TituloConRegreso from '../../components/TituloConRegreso/TituloConRegreso';
 import Pagination from '../../components/Pagination/Pagination';
+import MapModal from '../../components/Map/MapModal';
+
 
 // Icons
 import CleaningServicesIcon from '@mui/icons-material/CleaningServices';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import SearchIcon from '@mui/icons-material/Search';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
 
 const AdminReportesPage = () => {
+
+  //estados para el mapa
+  const [showMapModal, setShowMapModal] = useState(false);
+  const [selectedLocation, setSelectedLocation] = useState(null);
+
   const [reportes, setReportes] = useState([]);
   const [message, setMessage] = useState('');
 
@@ -29,6 +37,18 @@ const AdminReportesPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const limit = 6;
+
+  const handleShowLocation = (reporte) => {
+    if (reporte.latitud && reporte.longitud) {
+      setSelectedLocation({
+        latitud: parseFloat(reporte.latitud),
+        longitud: parseFloat(reporte.longitud)
+      });
+      setShowMapModal(true);
+    } else {
+      showErrorAlert('Error', 'No se encontró la ubicación del reporte.');
+    }
+  };
 
   useEffect(() => {
     fetchReportesBackend();
@@ -260,6 +280,18 @@ const AdminReportesPage = () => {
                   >
                     <VisibilityIcon fontSize="small" /> Ver Imagen
                   </button>
+
+                  <button
+                    className={`flex items-center gap-1 px-3 py-1.5 text-sm ${reporte.latitud && reporte.longitud
+                      ? 'text-green-600 border border-green-600 hover:bg-green-50'
+                      : 'text-gray-400 border border-gray-400 cursor-not-allowed'
+                      }`}
+                    onClick={() => handleShowLocation(reporte)}
+                    disabled={!reporte.latitud || !reporte.longitud}
+                  >
+                    <LocationOnIcon fontSize="small" /> Ver Ubicación
+                  </button>
+
                   <span
                     className={`px-2 py-1 text-sm rounded ${reporte.estado_reporte === 'pendiente'
                       ? 'bg-yellow-100 text-yellow-800'
@@ -369,6 +401,14 @@ const AdminReportesPage = () => {
           </div>
         </div>
       )}
+
+      {showMapModal && (
+        <MapModal
+          ubicacion={selectedLocation}
+          onClose={() => setShowMapModal(false)}
+        />
+      )}
+
     </div>
   );
 };
