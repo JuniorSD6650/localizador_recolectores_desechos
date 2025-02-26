@@ -39,11 +39,15 @@ const AdminReportesPage = () => {
   const limit = 6;
 
   const handleShowLocation = (reporte) => {
+
+
     if (reporte.latitud && reporte.longitud) {
-      setSelectedLocation({
+      const location = {
         latitud: parseFloat(reporte.latitud),
         longitud: parseFloat(reporte.longitud)
-      });
+      };
+
+      setSelectedLocation(location);
       setShowMapModal(true);
     } else {
       showErrorAlert('Error', 'No se encontró la ubicación del reporte.');

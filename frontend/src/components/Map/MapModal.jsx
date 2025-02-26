@@ -1,34 +1,71 @@
-import React from 'react';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import React, { useEffect, useRef } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
-// Importar los íconos manualmente
-import iconUrl from 'leaflet/dist/images/marker-icon.png';
-import iconShadowUrl from 'leaflet/dist/images/marker-shadow.png';
-import iconRetinaUrl from 'leaflet/dist/images/marker-icon-2x.png';
-
-// Configurar el ícono por defecto para la web
-const DefaultIcon = L.icon({
-    iconUrl,
-    iconRetinaUrl,
-    shadowUrl: iconShadowUrl,
-    iconSize: [25, 41],
-    iconAnchor: [12, 41],
-    popupAnchor: [1, -34],
-    shadowSize: [41, 41]
-});
-
-L.Marker.prototype.options.icon = DefaultIcon;
+// Importar íconos
+import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
+import markerIcon from 'leaflet/dist/images/marker-icon.png';
+import markerShadow from 'leaflet/dist/images/marker-shadow.png';
 
 const MapModal = ({ ubicacion, onClose }) => {
-    if (!ubicacion) return null;
+
+    const mapRef = useRef(null);
+    const mapInstanceRef = useRef(null);
+
+    useEffect(() => {
+
+
+        // Esperar a que el DOM esté listo
+        setTimeout(() => {
+            if (!mapRef.current || !ubicacion?.latitud || !ubicacion?.longitud) {
+
+                return;
+            }
+
+            try {
+                const lat = parseFloat(ubicacion.latitud);
+                const lng = parseFloat(ubicacion.longitud);
+
+
+
+                // Limpiar mapa existente
+                if (mapInstanceRef.current) {
+                    mapInstanceRef.current.remove();
+                    mapInstanceRef.current = null;
+                }
+
+                // Crear nueva instancia del mapa
+                const map = L.map(mapRef.current).setView([lat, lng], 15);
+
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                }).addTo(map);
+
+                // Añadir marcador
+                L.marker([lat, lng])
+                    .addTo(map)
+                    .bindPopup('Ubicación exacta del reporte')
+                    .openPopup();
+
+                mapInstanceRef.current = map;
+
+                // Forzar actualización del mapa
+                map.invalidateSize();
+            } catch (error) {
+                console.error('Error al inicializar el mapa:', error);
+            }
+        }, 100);
+
+        return () => {
+            if (mapInstanceRef.current) {
+                mapInstanceRef.current.remove();
+                mapInstanceRef.current = null;
+            }
+        };
+    }, [ubicacion]);
 
     return (
-        <div
-            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-            onClick={onClose}
-        >
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div
                 className="bg-white p-4 rounded-lg w-11/12 max-w-4xl max-h-[90vh]"
                 onClick={e => e.stopPropagation()}
@@ -42,24 +79,15 @@ const MapModal = ({ ubicacion, onClose }) => {
                         ✕
                     </button>
                 </div>
-                <div className="h-[60vh] w-full relative">
-                    <MapContainer
-                        center={[ubicacion.latitud, ubicacion.longitud]}
-                        zoom={16}
-                        style={{ height: '100%', width: '100%' }}
-                        scrollWheelZoom={true}
-                    >
-                        <TileLayer
-                            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-                        />
-                        <Marker position={[ubicacion.latitud, ubicacion.longitud]}>
-                            <Popup>
-                                Ubicación exacta del reporte
-                            </Popup>
-                        </Marker>
-                    </MapContainer>
-                </div>
+                <div
+                    ref={mapRef}
+                    style={{
+                        height: '500px',
+                        width: '100%',
+                        position: 'relative',
+                        zIndex: 1
+                    }}
+                />
             </div>
         </div>
     );
