@@ -16,6 +16,29 @@ const VehicleList = () => {
     const [selectedCategory, setSelectedCategory] = useState('Zonas');
     const [dropdownOpen, setDropdownOpen] = useState(false);
 
+
+    const [selectedZones, setSelectedZones] = useState(() => {
+        const saved = localStorage.getItem('selectedZones');
+        return saved ? JSON.parse(saved) : [];
+    });
+
+    const handleZoneToggle = (zonaId, zonaNombre) => {
+        setSelectedZones(prev => {
+            const isSelected = prev.includes(zonaId);
+            const newSelected = isSelected
+                ? prev.filter(id => id !== zonaId)
+                : [...prev, zonaId];
+
+            localStorage.setItem('selectedZones', JSON.stringify(newSelected));
+            return newSelected;
+        });
+    };
+
+    const clearSelectedZones = () => {
+        setSelectedZones([]);
+        localStorage.removeItem('selectedZones');
+    };
+
     // Fetch de vehículos
     useEffect(() => {
         const fetchVehicles = async () => {
@@ -38,6 +61,19 @@ const VehicleList = () => {
         fetchVehicles();
     }, []);
 
+    const filteredVehicles = Array.isArray(vehicles)
+        ? vehicles.filter((vehicle) => {
+            const matchesSearch = vehicle.nombre_recolector
+                .toLowerCase()
+                .includes(searchText.toLowerCase());
+            const matchesZones = selectedZones.length === 0 ||
+                vehicle.zonas_asignadas.some(zona =>
+                    selectedZones.includes(zona.id)
+                );
+            return matchesSearch && matchesZones;
+        })
+        : [];
+
     // Fetch de zonas
     useEffect(() => {
         const fetchZonas = async () => {
@@ -58,13 +94,7 @@ const VehicleList = () => {
         fetchZonas();
     }, []);
 
-    const filteredVehicles = Array.isArray(vehicles)
-        ? vehicles.filter((vehicle) => {
-            const matchesSearch = vehicle.nombre_recolector.toLowerCase().includes(searchText.toLowerCase());
-            const matchesCategory = selectedCategory === 'Zonas' || vehicle.zonas_asignadas.some(zona => zona.nombre === selectedCategory);
-            return matchesSearch && matchesCategory;
-        })
-        : [];
+
 
     const handleSearchChange = (e) => {
 
@@ -87,63 +117,62 @@ const VehicleList = () => {
 
     return (
         <div className="container mx-auto px-4 py-8 min-h-screen mt-16">
-
             <TituloConRegreso titulo="Vehículos recolectores" to="/" />
 
             <div className='min-h-screen pt-11'>
-                <form className="max-w-lg mx-auto mb-4" onSubmit={handleSearchSubmit}>
-                    <div className="flex relative">
-                        <button
-                            id="dropdown-button"
-                            type="button"
-                            className="items-center px-3 text-sm font-medium text-center text-gray-900 bg-gray-100 border border-gray-300 rounded-l-lg hover:bg-gray-200 focus:ring-4 focus:outline-none focus:ring-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 dark:focus:ring-gray-700 dark:text-white dark:border-gray-600"
-                            onClick={handleDropdownToggle}
-                            aria-expanded={dropdownOpen}
-                            aria-haspopup="true"
-                        >
-                            {selectedCategory}
-                            <ArrowDropDownIcon />
-                        </button>
-                        {dropdownOpen && (
-                            <div
-                                id="dropdown"
-                                className="absolute z-50 bg-white divide-y divide-gray-100 rounded-lg shadow-sm w-44 dark:bg-gray-700 top-full mt-1"
+                {/* Zonas Cards Section */}
+                <div className="mb-8">
+                    <div className="flex justify-between items-center mb-4">
+                        <h4 className="text- font-normal pr-4">Selecciona la zona en la que vives, para encontrar tu recolector:</h4>
+                        {selectedZones.length > 0 && (
+                            <button
+                                onClick={clearSelectedZones}
+                                className="px-4 py-2 text-sm text-red-600 border border-red-600 rounded-md hover:bg-red-50"
                             >
-                                <ul className="py-2 text-sm text-gray-700 dark:text-gray-200" aria-labelledby="dropdown-button">
-                                    <li>
-                                        <button type="button" className="w-full px-4 py-2" onClick={() => handleCategorySelect('Zonas')}>
-                                            Zonas
-                                        </button>
-                                    </li>
-                                    {zonas.map((zona) => (
-                                        <li key={zona.id}>
-                                            <button type="button" className="w-full px-4 py-2" onClick={() => handleCategorySelect(zona.nombre)}>
-                                                {zona.nombre}
-                                            </button>
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
+                                Limpiar selección
+                            </button>
                         )}
+                    </div>
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                        {zonas.map((zona) => (
+                            <div
+                                key={zona.id}
+                                onClick={() => handleZoneToggle(zona.id, zona.nombre)}
+                                className={`
+                                    cursor-pointer p-4 rounded-lg border-2 transition-all
+                                    ${selectedZones.includes(zona.id)
+                                        ? 'border-customGreen bg-green-50'
+                                        : 'border-gray-200 hover:border-green-200'}
+                                `}
+                            >
+
+                                <p className="text-sm text-customGray">
+                                    {zona.nombre || 'Sin descripción'}
+                                </p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Search Section */}
+                <div className="max-w-lg mx-auto mb-8">
+                    <div className="relative">
                         <input
                             type="search"
-                            id="search-dropdown"
-                            className="block p-2.5 w-full"
-                            placeholder="Buscar recolector"
+                            className="w-full p-4 pr-12 border rounded-lg"
+                            placeholder="Buscar recolector por nombre..."
                             value={searchText}
-                            onChange={handleSearchChange}
-                            required
+                            onChange={(e) => setSearchText(e.target.value)}
                         />
-                        <button type="submit" className="items-center p-2 text-white bg-blue-700">
-                            <SearchIcon className="w-5 h-5" />
-                        </button>
+                        <SearchIcon className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
                     </div>
-                </form>
+                </div>
 
+                {/* Vehicles List */}
                 {message && <p className="text-red-500">{message}</p>}
 
                 {filteredVehicles.length === 0 ? (
-                    <p>No se encontraron vehículos</p>
+                    <p className="text-center text-gray-500">No se encontraron vehículos</p>
                 ) : (
                     <div className="grid md:grid-cols-3 gap-4 mt-4">
                         {filteredVehicles.map((vehicle) => (
@@ -161,8 +190,6 @@ const VehicleList = () => {
                     </div>
                 )}
             </div>
-
-
         </div>
     );
 };
