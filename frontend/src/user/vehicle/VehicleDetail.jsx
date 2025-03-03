@@ -109,17 +109,7 @@ const VehicleDetail = () => {
                         </div>
                     )}
                 </div>
-                <div>
-                    <LoadScript googleMapsApiKey="AIzaSyD2nU5cvLIMyqzC7ZhwfdX1G1IplX1_Gkk">
-                        <GoogleMap
-                            mapContainerStyle={containerStyle}
-                            center={center}
-                            zoom={zoomLevel}
-                        >
-                            <></>
-                        </GoogleMap>
-                    </LoadScript>
-                </div>
+
             </div>
 
         </div>
