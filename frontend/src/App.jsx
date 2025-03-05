@@ -24,6 +24,7 @@ import Footer from './components/foot/Footer';
 import Navbar from './components/nav/Navbar';
 import ZoneList from './user/zone/ZoneList';
 import { AuthProvider } from './context/AuthContext';
+import ScrollToTop from './components/ScrollToTop/scrollToTop';
 
 function AnimatedRoutes() {
   const location = useLocation();
@@ -158,6 +159,7 @@ function App() {
   return (
     <AuthProvider>
       <Router>
+        <ScrollToTop />
         <Navbar />
         <div className="flex flex-col">
           <div className="flex-grow">

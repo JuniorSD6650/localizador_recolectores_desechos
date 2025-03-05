@@ -272,7 +272,7 @@ const Report = () => {
                     <h2 className='pb-12 text-3xl md:text-4xl font-bold text-customBlue  border-custom'>Realiza el reporte a la basura acumulada</h2>
 
                     <form onSubmit={handleSubmit} className="space-y-6">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label htmlFor="nombreReportante" className="block text-sm font-medium text-gray-700 text-left">
                                     Nombre del Reportante:
@@ -321,7 +321,7 @@ const Report = () => {
                                 onChange={(e) => setDireccion(e.target.value)}
                                 placeholder="Ingrese la dirección del reporte"
                             />
-                        </div>
+                        </div> */}
 
                         <div>
                             <label htmlFor="descripcion" className="block text-sm font-medium text-gray-700 text-left">
@@ -339,7 +339,7 @@ const Report = () => {
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700">Foto (opcional)</label>
+                            <label className="block text-sm font-medium text-gray-700">Foto </label>
                             <div className="flex p-4 gap-y-20  gap-2 justify-center items-center">
 
                                 <button

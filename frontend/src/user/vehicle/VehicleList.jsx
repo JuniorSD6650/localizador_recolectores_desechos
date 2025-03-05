@@ -19,23 +19,19 @@ const VehicleList = () => {
 
     const [selectedZones, setSelectedZones] = useState(() => {
         const saved = localStorage.getItem('selectedZones');
-        return saved ? JSON.parse(saved) : [];
+        return saved ? JSON.parse(saved) : null; // Cambiado de [] a null
     });
 
     const handleZoneToggle = (zonaId, zonaNombre) => {
         setSelectedZones(prev => {
-            const isSelected = prev.includes(zonaId);
-            const newSelected = isSelected
-                ? prev.filter(id => id !== zonaId)
-                : [...prev, zonaId];
-
+            const newSelected = prev === zonaId ? null : zonaId;
             localStorage.setItem('selectedZones', JSON.stringify(newSelected));
             return newSelected;
         });
     };
 
     const clearSelectedZones = () => {
-        setSelectedZones([]);
+        setSelectedZones(null);
         localStorage.removeItem('selectedZones');
     };
 
@@ -66,9 +62,9 @@ const VehicleList = () => {
             const matchesSearch = vehicle.nombre_recolector
                 .toLowerCase()
                 .includes(searchText.toLowerCase());
-            const matchesZones = selectedZones.length === 0 ||
+            const matchesZones = !selectedZones ||
                 vehicle.zonas_asignadas.some(zona =>
-                    selectedZones.includes(zona.id)
+                    zona.id === selectedZones
                 );
             return matchesSearch && matchesZones;
         })
@@ -124,7 +120,7 @@ const VehicleList = () => {
                 <div className="mb-8">
                     <div className="flex justify-between items-center mb-4">
                         <h4 className="text- font-normal pr-4">Selecciona la zona en la que vives, para encontrar tu recolector:</h4>
-                        {selectedZones.length > 0 && (
+                        {selectedZones && (
                             <button
                                 onClick={clearSelectedZones}
                                 className="px-4 py-2 text-sm text-red-600 border border-red-600 rounded-md hover:bg-red-50"
@@ -140,7 +136,7 @@ const VehicleList = () => {
                                 onClick={() => handleZoneToggle(zona.id, zona.nombre)}
                                 className={`
                                     cursor-pointer p-4 rounded-lg border-2 transition-all
-                                    ${selectedZones.includes(zona.id)
+                                    ${selectedZones === zona.id
                                         ? 'border-customGreen bg-green-50'
                                         : 'border-gray-200 hover:border-green-200'}
                                 `}

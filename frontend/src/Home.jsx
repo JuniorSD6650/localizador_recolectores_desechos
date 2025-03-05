@@ -6,6 +6,7 @@ import TituloConRegreso from './components/TituloConRegreso/TituloConRegreso';
 import { useNavigate } from 'react-router-dom';
 import { API_BASE_URL, BASE_URL } from './utils';
 
+
 const Home = () => {
 
     const [publicaciones, setPublicaciones] = useState([]);
@@ -68,7 +69,7 @@ const Home = () => {
                     <div className="flex space-x-4  justify-start">
                         <button className="px-6 py-3 bg-green-custom text-white rounded-3xl shadow-lg hover:bg-green2-custom"
                             onClick={handleRecolectoresClick}>
-                            Recolectores
+                            Mi recolector
                         </button>
                         <button className="px-6 py-3 bg-green-custom text-white rounded-3xl shadow-lg hover:green2-custom"
                             onClick={handleReportesClick}>
