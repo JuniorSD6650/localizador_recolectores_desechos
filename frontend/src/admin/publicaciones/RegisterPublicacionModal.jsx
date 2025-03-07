@@ -9,6 +9,17 @@ const RegisterPublicacionModal = ({ show, onClose, onRegister }) => {
   const [imagen, setImagen] = useState(null);
 
   const handleRegister = async () => {
+    // Validate required fields
+    if (!titulo.trim()) {
+      showErrorAlert('Error', 'El título es obligatorio');
+      return;
+    }
+
+    if (!imagen) {
+      showErrorAlert('Error', 'Debe seleccionar una imagen');
+      return;
+    }
+
     try {
       const formData = new FormData();
       formData.append('titulo', titulo);
@@ -28,7 +39,7 @@ const RegisterPublicacionModal = ({ show, onClose, onRegister }) => {
         const newPublicacion = await response.json();
         showSuccessAlert('Éxito', 'Publicación registrada correctamente');
         onRegister(newPublicacion);
-        onClose();
+        handleClose(); // Changed from onClose() to handleClose() to ensure form data is cleared
       } else {
         showErrorAlert('Error', 'No se pudo registrar la publicación');
       }
