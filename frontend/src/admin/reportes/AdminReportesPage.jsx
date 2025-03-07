@@ -198,6 +198,20 @@ const AdminReportesPage = () => {
     setCurrentPage(newPage);
   };
 
+  const formatDateTime = (isoString) => {
+    if (!isoString) return 'Fecha no disponible';
+
+    const date = new Date(isoString);
+    return date.toLocaleString('es-ES', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
+    });
+  };
+
   return (
     <div className="container mx-auto px-4 py-8 min-h-screen mt-16">
       <TituloConRegreso titulo="Gestión de Reportes" to="/admin" />
@@ -263,17 +277,17 @@ const AdminReportesPage = () => {
               <div className="space-y-2">
                 <strong className="text-lg block">{reporte.nombre_reportante}</strong>
                 <p className="text-gray-700">{reporte.descripcion}</p>
-                <p className="text-gray-700">
+                {/* <p className="text-gray-700">
                   <strong>Número de Contacto:</strong>{' '}
                   {reporte.numero_contacto ? reporte.numero_contacto : 'Sin número disponible'}
                 </p>
                 <p className="text-gray-700">
                   <strong>Dirección:</strong>{' '}
                   {reporte.direccion || 'Sin dirección disponible'}
-                </p>
+                </p> */}
                 <p className="text-gray-700">
                   <strong>Fecha - Hora:</strong>{' '}
-                  {reporte.created_at || 'Sin dirección disponible'}
+                  {formatDateTime(reporte.created_at)}
                 </p>
 
                 <div className="flex flex-wrap gap-2 items-center">
