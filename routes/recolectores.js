@@ -28,13 +28,16 @@ const applyFilters = (query, filters) => {
 router.get('/list', async (req, res) => {
   try {
     const recolectores = await knex('recolectores_desechos')
-      .select('id', 'nombre_recolector')
+      .select('id', 
+              knex.raw("CONCAT(nombre_recolector, ' - ', placa) as nombre_recolector"),
+              'placa')
       .orderBy('id', 'desc');
     res.status(200).json(recolectores);
   } catch (err) {
     res.status(500).json({ error: 'Error obteniendo la lista de recolectores', details: err.message || err });
   }
 });
+
 // Obtener recolectores con filtros, paginación y zonas asignadas
 router.get('/', async (req, res) => {
   let { nombre_recolector, placa, tipo_vehiculo, estado_operativo, page = 1, limit = 10 } = req.query;
