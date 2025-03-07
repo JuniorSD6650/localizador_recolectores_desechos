@@ -9,11 +9,8 @@ const path = require('path');
 const fs = require('fs');
 
 const applyFilters = (query, filters) => {
-  const { nombre_reportante, descripcion, numero_contacto, estado_reporte, direccion } = filters;
+  const { descripcion, numero_contacto, estado_reporte, fecha_desde, fecha_hasta } = filters;
 
-  if (nombre_reportante) {
-    query = query.where('nombre_reportante', 'like', `%${nombre_reportante}%`);
-  }
   if (descripcion) {
     query = query.where('descripcion', 'like', `%${descripcion}%`);
   }
@@ -23,8 +20,18 @@ const applyFilters = (query, filters) => {
   if (estado_reporte) {
     query = query.where('estado_reporte', estado_reporte);
   }
-  if (direccion) {
-    query = query.where('direccion', 'like', `%${direccion}%`);
+  
+  // Improved date filtering
+  if (fecha_desde) {
+    const fromDate = new Date(fecha_desde);
+    fromDate.setUTCHours(0, 0, 0, 0);
+    query = query.where('created_at', '>=', fromDate.toISOString());
+  }
+  
+  if (fecha_hasta) {
+    const toDate = new Date(fecha_hasta);
+    toDate.setUTCHours(23, 59, 59, 999);
+    query = query.where('created_at', '<=', toDate.toISOString());
   }
 
   return query;
@@ -49,7 +56,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 router.get('/', async (req, res) => {
-  let { nombre_reportante, descripcion, numero_contacto, estado_reporte, direccion, page = 1, limit = 10 } = req.query;
+  let { descripcion, numero_contacto, estado_reporte, fecha_desde, fecha_hasta, page = 1, limit = 10 } = req.query;
 
   page = parseInt(page, 10);
   if (isNaN(page) || page < 1) {
@@ -65,11 +72,11 @@ router.get('/', async (req, res) => {
 
   try {
     const filters = {
-      nombre_reportante,
       descripcion,
       numero_contacto,
       estado_reporte,
-      direccion,
+      fecha_desde,
+      fecha_hasta
     };
 
     let countQuery = knex('reportes').count('* as total');

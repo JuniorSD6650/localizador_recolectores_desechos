@@ -25,14 +25,15 @@ const AdminReportesPage = () => {
 
   const [reportes, setReportes] = useState([]);
   const [message, setMessage] = useState('');
+  const [dateError, setDateError] = useState('');
 
   const [showModal, setShowModal] = useState(false);
   const [selectedImage, setSelectedImage] = useState('');
 
   const [filterEstado, setFilterEstado] = useState('');
-  const [filterDireccion, setFilterDireccion] = useState('');
   const [filterDescripcion, setFilterDescripcion] = useState('');
-  const [filterNombre, setFilterNombre] = useState('');
+  const [filterFechaDesde, setFilterFechaDesde] = useState('');
+  const [filterFechaHasta, setFilterFechaHasta] = useState('');
 
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -63,14 +64,14 @@ const AdminReportesPage = () => {
     if (filterEstado) {
       params.append('estado_reporte', filterEstado);
     }
-    if (filterDireccion) {
-      params.append('direccion', filterDireccion);
-    }
     if (filterDescripcion) {
       params.append('descripcion', filterDescripcion);
     }
-    if (filterNombre) {
-      params.append('nombre_reportante', filterNombre);
+    if (filterFechaDesde) {
+      params.append('fecha_desde', filterFechaDesde);
+    }
+    if (filterFechaHasta) {
+      params.append('fecha_hasta', filterFechaHasta);
     }
     params.append('page', currentPage);
     params.append('limit', limit);
@@ -99,17 +100,47 @@ const AdminReportesPage = () => {
     }
   };
 
+  const validateDates = (desde, hasta) => {
+    if (desde && hasta) {
+      const desdeDate = new Date(desde);
+      const hastaDate = new Date(hasta);
+      
+      if (desdeDate > hastaDate) {
+        setDateError('La fecha "desde" no puede ser mayor que la fecha "hasta"');
+        return false;
+      }
+    }
+    setDateError('');
+    return true;
+  };
+
+  const handleFechaDesdeChange = (e) => {
+    const newFechaDesde = e.target.value;
+    setFilterFechaDesde(newFechaDesde);
+    validateDates(newFechaDesde, filterFechaHasta);
+  };
+
+  const handleFechaHastaChange = (e) => {
+    const newFechaHasta = e.target.value;
+    setFilterFechaHasta(newFechaHasta);
+    validateDates(filterFechaDesde, newFechaHasta);
+  };
+
   const handleSearch = () => {
+    if (!validateDates(filterFechaDesde, filterFechaHasta)) {
+      return;
+    }
     setCurrentPage(1);
     fetchReportesBackend();
   };
 
   const handleLimpiar = () => {
     setFilterEstado('');
-    setFilterDireccion('');
     setFilterDescripcion('');
-    setFilterNombre('');
+    setFilterFechaDesde('');
+    setFilterFechaHasta('');
     setMessage('');
+    setDateError('');
     setCurrentPage(1);
     fetchReportesBackend();
   };
@@ -232,30 +263,37 @@ const AdminReportesPage = () => {
 
           <input
             className="border p-2 rounded"
-            placeholder="Dirección"
-            value={filterDireccion}
-            onChange={(e) => setFilterDireccion(e.target.value)}
-          />
-
-          <input
-            className="border p-2 rounded"
             placeholder="Descripción"
             value={filterDescripcion}
             onChange={(e) => setFilterDescripcion(e.target.value)}
           />
 
           <input
-            className="border p-2 rounded"
-            placeholder="Reportante"
-            value={filterNombre}
-            onChange={(e) => setFilterNombre(e.target.value)}
+            type="date"
+            className={`border p-2 rounded ${dateError ? 'border-red-500' : ''}`}
+            placeholder="Fecha desde"
+            value={filterFechaDesde}
+            onChange={handleFechaDesdeChange}
+          />
+
+          <input
+            type="date"
+            className={`border p-2 rounded ${dateError ? 'border-red-500' : ''}`}
+            placeholder="Fecha hasta"
+            value={filterFechaHasta}
+            onChange={handleFechaHastaChange}
           />
         </div>
 
+        {dateError && (
+          <p className="text-red-500 mt-2">{dateError}</p>
+        )}
+
         <div className="flex justify-end items-center mt-4 space-x-4">
           <button
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className={`px-4 py-2 ${dateError ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'} text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500`}
             onClick={handleSearch}
+            disabled={!!dateError}
           >
             <SearchIcon /> Buscar
           </button>
