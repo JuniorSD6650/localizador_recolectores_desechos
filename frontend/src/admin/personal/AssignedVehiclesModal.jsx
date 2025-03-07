@@ -29,11 +29,7 @@ const AssignedVehiclesModal = ({ show, onClose, vehicles, userId = '', onUpdate 
     };
 
     const handleAssignVehicle = async () => {
-        // Validate vehicle selection
-        if (!selectedVehicle) {
-            showErrorAlert('Error', 'Tienes que seleccionar un vehículo a asignar');
-            return;
-        }
+        if (!selectedVehicle) return;
         
         try {
             const myHeaders = new Headers();
