@@ -184,14 +184,14 @@ const AdminJornadasPage = () => {
         </div>
       </div>
 
-      <div className="flex justify-end">
+      {/* <div className="flex justify-end">
         <button
           className="bg-blue-500 text-white text-sm p-2 rounded-md hover:bg-blue-600 mb-1 w-auto"
           onClick={() => setShowRegisterModal(true)}
         >
           Nueva Jornada
         </button>
-      </div>
+      </div> */}
 
       {jornadas.length === 0 ? (
         <p>No hay jornadas registradas</p>

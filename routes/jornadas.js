@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const knexConfig = require('../knexfile');
 const knex = require('knex')(knexConfig);
+const { format } = require('date-fns');
 
 const applyFilters = (query, filters) => {
   const { usuario_id, fecha_inicio, fecha_fin, observaciones } = filters;
@@ -59,8 +60,14 @@ router.get('/', async (req, res) => {
 
     const jornadas = await dataQuery;
 
+    const jornadasFormateadas = jornadas.map(jornada => ({
+      ...jornada,
+      fecha_inicio: jornada.fecha_inicio ? format(new Date(jornada.fecha_inicio), 'dd/MM/yyyy HH:mm:ss') : null,
+      fecha_fin: jornada.fecha_fin ? format(new Date(jornada.fecha_fin), 'dd/MM/yyyy HH:mm:ss') : null
+    }));
+
     res.json({
-      jornadas,
+      jornadas: jornadasFormateadas,
       pagination: {
         total,
         totalPages,
@@ -83,6 +90,14 @@ router.get('/:id', async (req, res) => {
     if (!jornada) {
       return res.status(404).json({ error: 'Jornada no encontrada' });
     }
+
+    if (jornada.fecha_inicio) {
+      jornada.fecha_inicio = format(new Date(jornada.fecha_inicio), 'dd/MM/yyyy HH:mm:ss');
+    }
+    if (jornada.fecha_fin) {
+      jornada.fecha_fin = format(new Date(jornada.fecha_fin), 'dd/MM/yyyy HH:mm:ss');
+    }
+
     res.json(jornada);
   } catch (err) {
     res.status(500).json({ error: 'Error obteniendo la jornada', details: err.message || err });
@@ -92,10 +107,13 @@ router.get('/:id', async (req, res) => {
 router.post('/', async (req, res) => {
   const { usuario_id, fecha_inicio, fecha_fin, observaciones } = req.body;
   try {
+    const fechaInicioFormateada = fecha_inicio ? format(new Date(fecha_inicio), 'yyyy-MM-dd HH:mm:ss') : null;
+    const fechaFinFormateada = fecha_fin ? format(new Date(fecha_fin), 'yyyy-MM-dd HH:mm:ss') : null;
+
     const result = await knex('historial_jornadas').insert({
       usuario_id,
-      fecha_inicio: fecha_inicio || knex.fn.now(),
-      fecha_fin,
+      fecha_inicio: fechaInicioFormateada || knex.fn.now(),
+      fecha_fin: fechaFinFormateada,
       observaciones,
     });
 
@@ -111,11 +129,14 @@ router.put('/:id', async (req, res) => {
   const { id } = req.params;
   const { fecha_inicio, fecha_fin, observaciones } = req.body;
   try {
+    const fechaInicioFormateada = fecha_inicio ? format(new Date(fecha_inicio), 'yyyy-MM-dd HH:mm:ss') : undefined;
+    const fechaFinFormateada = fecha_fin ? format(new Date(fecha_fin), 'yyyy-MM-dd HH:mm:ss') : undefined;
+
     const updatedJornada = await knex('historial_jornadas')
       .where('id', id)
       .update({
-        ...(fecha_inicio && { fecha_inicio }),
-        ...(fecha_fin && { fecha_fin }),
+        ...(fechaInicioFormateada && { fecha_inicio: fechaInicioFormateada }),
+        ...(fechaFinFormateada && { fecha_fin: fechaFinFormateada }),
         ...(observaciones && { observaciones }),
       });
 

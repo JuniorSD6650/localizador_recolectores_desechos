@@ -7,6 +7,7 @@ const path = require('path');
 const fs = require('fs');
 const util = require('util');
 const unlink = util.promisify(fs.unlink);
+const { format } = require('date-fns');
 
 const uploadDir = 'uploads/publicaciones';
 if (!fs.existsSync(uploadDir)) {
@@ -97,8 +98,14 @@ router.get('/', async (req, res) => {
 
     const publicaciones = await dataQuery;
 
+    const publicacionesFormateadas = publicaciones.map(publicacion => ({
+      ...publicacion,
+      created_at: publicacion.created_at ? format(new Date(publicacion.created_at), 'dd/MM/yyyy HH:mm:ss') : null,
+      updated_at: publicacion.updated_at ? format(new Date(publicacion.updated_at), 'dd/MM/yyyy HH:mm:ss') : null
+    }));
+
     res.json({
-      publicaciones,
+      publicaciones: publicacionesFormateadas,
       pagination: {
         total,
         totalPages,
@@ -121,6 +128,14 @@ router.get('/:id', async (req, res) => {
     if (!publicacion) {
       return res.status(404).json({ error: 'Publicación no encontrada' });
     }
+
+    if (publicacion.created_at) {
+      publicacion.created_at = format(new Date(publicacion.created_at), 'dd/MM/yyyy HH:mm:ss');
+    }
+    if (publicacion.updated_at) {
+      publicacion.updated_at = format(new Date(publicacion.updated_at), 'dd/MM/yyyy HH:mm:ss');
+    }
+
     res.json(publicacion);
   } catch (err) {
     res.status(500).json({ error: 'Error obteniendo la publicación', details: err.message || err });

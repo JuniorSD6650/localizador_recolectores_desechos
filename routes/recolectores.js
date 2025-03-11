@@ -2,7 +2,11 @@ const express = require('express');
 const router = express.Router();
 const knexConfig = require('../knexfile');
 const knex = require('knex')(knexConfig);
-const { format, subHours, addHours } = require('date-fns');
+const { format } = require('date-fns');
+const dateFormat = require('date-fns-tz');
+const utcToZonedTime = dateFormat.utcToZonedTime;
+
+
 
 // Función para aplicar filtros a las consultas
 const applyFilters = (query, filters) => {
@@ -28,9 +32,9 @@ const applyFilters = (query, filters) => {
 router.get('/list', async (req, res) => {
   try {
     const recolectores = await knex('recolectores_desechos')
-      .select('id', 
-              knex.raw("CONCAT(nombre_recolector, ' - ', placa) as nombre_recolector"),
-              'placa')
+      .select('id',
+        knex.raw("CONCAT(nombre_recolector, ' - ', placa) as nombre_recolector"),
+        'placa')
       .orderBy('id', 'desc');
     res.status(200).json(recolectores);
   } catch (err) {
@@ -106,9 +110,10 @@ router.get('/:id', async (req, res) => {
     const recolector = await knex('recolectores_desechos').where('id', req.params.id).first();
     if (!recolector) return res.status(404).json({ error: 'Recolector no encontrado' });
 
-    recolector.fecha_ubicacion_actualizada = recolector.fecha_ubicacion_actualizada
-      ? format(subHours(new Date(recolector.fecha_ubicacion_actualizada), 5), 'dd/MM/yyyy HH:mm:ss')
-      : null;
+    if (recolector.fecha_ubicacion_actualizada) {
+      const fecha = new Date(recolector.fecha_ubicacion_actualizada);
+      recolector.fecha_ubicacion_actualizada = format(fecha, 'dd/MM/yyyy HH:mm:ss');
+    }
 
     res.json(recolector);
   } catch (err) {
@@ -156,20 +161,32 @@ router.put('/:id', async (req, res) => {
     if (ubicacion_enlace !== undefined) {
       const linkRegex = /(https?:\/\/[^\s]+)/g;
       updates.ubicacion_enlace = ubicacion_enlace.match(linkRegex)?.[0] || null;
-      updates.fecha_ubicacion_actualizada = updates.ubicacion_enlace
-        ? format(new Date(), 'yyyy-MM-dd HH:mm:ss')
-        : recolector.fecha_ubicacion_actualizada;
+
+      // Formatear fecha en zona horaria de Perú
+      updates.fecha_ubicacion_actualizada = format(new Date(), 'yyyy-MM-dd HH:mm:ss');
     }
 
-    const filteredUpdates = Object.fromEntries(Object.entries(updates).filter(([_, value]) => value !== undefined));
+    const filteredUpdates = Object.fromEntries(
+      Object.entries(updates).filter(([_, value]) => value !== undefined)
+    );
 
-    await knex('recolectores_desechos').where('id', req.params.id).update(filteredUpdates);
+    await knex('recolectores_desechos')
+      .where('id', req.params.id)
+      .update(filteredUpdates);
 
-    const updatedRecolector = await knex('recolectores_desechos').where('id', req.params.id).first();
+    const updatedRecolector = await knex('recolectores_desechos')
+      .where('id', req.params.id)
+      .first();
 
-    res.json({ message: 'Recolector actualizado con éxito', recolector: updatedRecolector });
+    res.json({
+      message: 'Recolector actualizado con éxito',
+      recolector: updatedRecolector
+    });
   } catch (err) {
-    res.status(500).json({ error: 'Error actualizando el recolector', details: err.message || err });
+    res.status(500).json({
+      error: 'Error actualizando el recolector',
+      details: err.message || err
+    });
   }
 });
 
