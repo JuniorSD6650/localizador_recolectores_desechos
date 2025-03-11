@@ -190,8 +190,8 @@ const LocalizadorPage = ({ isLoading }) => {
     return (
         <div className="container mx-auto px-4 py-8 min-h-screen mt-16">
             <TituloConRegreso titulo="Vista de Localizador" />
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                <div className="p-4 rounded-xl">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="bg-white p-6 rounded-xl shadow-md border border-gray-200">
                     <div className="text-center mb-6">
                         <div className="w-20 h-20 bg-customBlue rounded-full mx-auto mb-3 flex items-center justify-center text-white text-2xl font-bold">
                             {personal.nombres[0]}
@@ -210,7 +210,7 @@ const LocalizadorPage = ({ isLoading }) => {
                     </div>
                 </div>
                 <div className="lg:col-span-2">
-                    <div className="p-4 rounded-xl mb-4 max-w-xl">
+                    <div className="bg-white p-6 rounded-xl shadow-md border border-gray-200 mb-6">
                         <h4 className="text-lg font-semibold mb-4">Marcar asistencia</h4>
                         {!isSameDayJornada ? (
                             <>
@@ -238,9 +238,9 @@ const LocalizadorPage = ({ isLoading }) => {
                             </button>
                         )}
                     </div>
-                    <div className="p-4 rounded-xl">
+                    <div className="bg-white p-6 rounded-xl shadow-md border border-gray-200">
                         {personal.recolectores && personal.recolectores.length > 0 && (
-                            <div className="mt-6">
+                            <div>
                                 <h4 className="text-lg font-semibold mb-4">Recolectores Asignados</h4>
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                     {personal.recolectores.map((recolector) => (
