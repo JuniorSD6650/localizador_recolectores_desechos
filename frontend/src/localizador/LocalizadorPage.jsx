@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { API_BASE_URL, calculateTimeAgo, showSuccessAlert, showErrorAlert } from '../utils';
 import TituloConRegreso from '../components/TituloConRegreso/TituloConRegreso';
-import { format, isSameDay } from 'date-fns';
+import { format, isSameDay, parse } from 'date-fns';
 import withLoading from '../components/Cargando/withLoading';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 
@@ -56,12 +56,40 @@ const LocalizadorPage = ({ isLoading }) => {
             const response = await fetch(`${API_BASE_URL}jornadas?usuario_id=${userId}&limit=1`);
             if (response.ok) {
                 const data = await response.json();
+                console.log('Jornadas response:', data);
+                
                 if (data.jornadas.length > 0) {
                     const lastJornada = data.jornadas[0];
-                    const lastJornadaDate = new Date(lastJornada.fecha_inicio);
+                    
+                    // Parse the date from DD/MM/YYYY format
+                    let lastJornadaDate;
+                    try {
+                        // Parse the date using date-fns parse function
+                        lastJornadaDate = parse(
+                            lastJornada.fecha_inicio, 
+                            'dd/MM/yyyy HH:mm:ss', 
+                            new Date()
+                        );
+                        console.log('Parsed jornada date:', lastJornadaDate);
+                    } catch (e) {
+                        console.error('Error parsing date:', e);
+                        // Fallback: try to manually parse the date
+                        const [datePart, timePart] = lastJornada.fecha_inicio.split(' ');
+                        const [day, month, year] = datePart.split('/');
+                        lastJornadaDate = new Date(`${year}-${month}-${day}T${timePart}`);
+                        console.log('Fallback parsed date:', lastJornadaDate);
+                    }
+                    
                     const today = new Date();
+                    console.log('Today:', today);
+                    
                     setJornadaId(lastJornada.id);
-                    setIsSameDayJornada(isSameDay(lastJornadaDate, today) && !lastJornada.fecha_fin);
+                    const isToday = isSameDay(lastJornadaDate, today);
+                    const hasNoEndDate = !lastJornada.fecha_fin;
+                    console.log('Is same day:', isToday);
+                    console.log('Has no end date:', hasNoEndDate);
+                    
+                    setIsSameDayJornada(isToday && hasNoEndDate);
                 }
             }
         } catch (error) {
@@ -89,7 +117,18 @@ const LocalizadorPage = ({ isLoading }) => {
             });
 
             if (response.ok) {
+                const data = await response.json();
+                console.log('Start jornada response:', data);
+                
                 showSuccessAlert('Éxito', 'Jornada iniciada correctamente.');
+                
+                // Manually set the state instead of waiting for fetchPersonal
+                if (data && data.jornada && data.jornada.id) {
+                    setJornadaId(data.jornada.id);
+                    setIsSameDayJornada(true);
+                    console.log('Manually setting jornada state:', data.jornada.id);
+                }
+                
                 fetchPersonal();
             } else {
                 const errorData = await response.json();
