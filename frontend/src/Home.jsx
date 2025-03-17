@@ -39,7 +39,31 @@ const Home = () => {
             <div className="container mx-auto flex flex-col md:flex-row items-center px-6 md:px-20 mt-16">
                 {/* Carousel Section */}
                 <div className="w-full md:w-1/2 md:order-2 mb-8 md:mb-0">
-                    <Carousel showThumbs={false} autoPlay infiniteLoop showArrows={false} swipeable emulateTouch>
+                    <Carousel showThumbs={false} autoPlay infiniteLoop showArrows={true} emulateTouch swipeable={false}
+                        renderArrowPrev={(onClickHandler, hasPrev, label) =>
+                            hasPrev && (
+                                <button
+                                    type="button"
+                                    onClick={onClickHandler}
+                                    title={label}
+                                    className="absolute left-2 top-1/2 z-10 -translate-y-1/2 bg-black/50 hover:bg-black/70 p-4 text-white text-2xl rounded-md w-12 h-12 flex items-center justify-center shadow-lg transition-all duration-200"
+                                >
+                                    &lt;
+                                </button>
+                            )
+                        }
+                        renderArrowNext={(onClickHandler, hasNext, label) =>
+                            hasNext && (
+                                <button
+                                    type="button"
+                                    onClick={onClickHandler}
+                                    title={label}
+                                    className="absolute right-2 top-1/2 z-10 -translate-y-1/2 bg-black/50 hover:bg-black/70 p-4 text-white text-2xl rounded-md w-12 h-12 flex items-center justify-center shadow-lg transition-all duration-200"
+                                >
+                                    &gt;
+                                </button>
+                            )
+                        }>
                         {publicaciones.map((publicacion) => (
                             <div key={publicacion.id}>
                                 <img
