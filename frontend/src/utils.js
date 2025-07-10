@@ -1,7 +1,7 @@
 import Swal from 'sweetalert2';
 
-export const BASE_URL = "http://localhost:5000/";
-export const API_BASE_URL = "http://localhost:5000/api/";
+export const BASE_URL = "https://recolector.sistemasudh.com/";
+export const API_BASE_URL = "https://recolector.sistemasudh.com/api/";
 
 function parseDate(dateString) {
     if (!dateString) return null;
