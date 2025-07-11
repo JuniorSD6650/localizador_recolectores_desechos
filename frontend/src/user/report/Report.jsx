@@ -29,6 +29,12 @@ const Report = () => {
 
         setObteniendoUbicacion(true);
 
+        const options = {
+            enableHighAccuracy: false, // Cambiado a false para iOS
+            timeout: 15000, // Aumentado a 15 segundos
+            maximumAge: 300000 // 5 minutos de cache
+        };
+
         return new Promise((resolve, reject) => {
             navigator.geolocation.getCurrentPosition(
                 (position) => {
@@ -58,11 +64,7 @@ const Report = () => {
                     setObteniendoUbicacion(false);
                     reject(mensaje);
                 },
-                {
-                    enableHighAccuracy: true,
-                    timeout: 5000,
-                    maximumAge: 0
-                }
+                options
             );
         });
     };
