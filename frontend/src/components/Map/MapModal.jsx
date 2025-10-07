@@ -22,19 +22,15 @@ const MapModal = ({ ubicacion, onClose }) => {
 
     useEffect(() => {
 
-
         // Esperar a que el DOM esté listo
         setTimeout(() => {
             if (!mapRef.current || !ubicacion?.latitud || !ubicacion?.longitud) {
-
                 return;
             }
 
             try {
                 const lat = parseFloat(ubicacion.latitud);
                 const lng = parseFloat(ubicacion.longitud);
-
-
 
                 // Limpiar mapa existente
                 if (mapInstanceRef.current) {
@@ -45,15 +41,37 @@ const MapModal = ({ ubicacion, onClose }) => {
                 // Crear nueva instancia del mapa
                 const map = L.map(mapRef.current).setView([lat, lng], 15);
 
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                // Capa base estándar
+                const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                }).addTo(map);
+                });
+
+                // Capa satélite Esri
+                const esriSat = L.tileLayer(
+                    'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+                    {
+                        attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+                    }
+                );
+
+                // Añadir capa base por defecto
+                osm.addTo(map);
 
                 // Añadir marcador
                 L.marker([lat, lng])
                     .addTo(map)
-                    .bindPopup('Ubicación exacta del reporte')
+                    .bindPopup(
+                        `Ubicación exacta del reporte<br/>Lat: ${lat}<br/>Long: ${lng}`
+                    )
                     .openPopup();
+
+                // Control de capas
+                L.control.layers(
+                    {
+                        'Mapa estándar': osm,
+                        'Satélite': esriSat
+                    }
+                ).addTo(map);
 
                 mapInstanceRef.current = map;
 
@@ -78,14 +96,21 @@ const MapModal = ({ ubicacion, onClose }) => {
                 className="bg-white p-4 rounded-lg w-11/12 max-w-4xl max-h-[90vh]"
                 onClick={e => e.stopPropagation()}
             >
-                <div className="flex justify-between items-center mb-4">
+                <div className="flex items-center gap-2 mb-2">
                     <h3 className="text-lg font-semibold">Ubicación del Reporte</h3>
-                    <button
-                        onClick={onClose}
-                        className="text-gray-500 hover:text-gray-700"
-                    >
-                        ✕
-                    </button>
+                    {ubicacion && ubicacion.latitud && ubicacion.longitud && (
+                        <button
+                            type="button"
+                            className="px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
+                            onClick={() => {
+                                const url = `https://www.google.com/maps?q=${ubicacion.latitud},${ubicacion.longitud}`;
+                                window.open(url, '_blank');
+                            }}
+                            title="Abrir en Google Maps"
+                        >
+                            Ver en Google Maps
+                        </button>
+                    )}
                 </div>
                 <div
                     ref={mapRef}
