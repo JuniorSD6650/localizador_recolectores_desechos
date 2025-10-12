@@ -3,18 +3,22 @@ import Swal from 'sweetalert2';
 export const BASE_URL = "http://localhost:3000";
 export const API_BASE_URL = "http://localhost:3000/api/";
 
-function parseDate(dateString) {
-    if (!dateString) return null;
-    const [day, month, yearAndTime] = dateString.split('/');
-    const [year, time] = yearAndTime.split(' ');
-    return new Date(`${year}-${month}-${day}T${time}`);
-}
+export const parseDate = (dateString) => {
+  if (!dateString) return null;
+  try {
+    const [datePart, timePart] = dateString.split(' ');
+    const [day, month, year] = datePart.split('/');
+    return new Date(`${year}-${month}-${day}T${timePart}`);
+  } catch (error) {
+    console.warn('Error parsing date:', dateString);
+    return null;
+  }
+};
 
 export function calculateTimeAgo(dateString) {
+    if (!dateString) return 'Sin actualización';
     const date = parseDate(dateString);
-    if (!date || isNaN(date)) {
-        return 'Sin fecha de actualización';
-    }
+    if (!date) return 'Fecha inválida';
 
     const now = new Date();
     const seconds = Math.floor((now - date) / 1000);

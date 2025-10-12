@@ -177,7 +177,7 @@ const VehicleDetail = () => {
             </div>
           )}
 
-          {ubicacion?.fecha_ubicacion_actualizada && (
+          {ubicacion?.fecha_ubicacion_actualizada ? (
             <div className="flex flex-col items-center p-4 bg-white rounded shadow">
               <UpdateIcon className="text-blue-500 mb-2" />
               <div className="text-center">
@@ -187,7 +187,7 @@ const VehicleDetail = () => {
                 </span>
               </div>
             </div>
-          )}
+          ) : null}
         </div>
 
         {/* 🗺️ Mapa */}
