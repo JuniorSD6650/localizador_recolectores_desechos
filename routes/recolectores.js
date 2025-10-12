@@ -225,4 +225,39 @@ router.get('/:id/ubicacion', async (req, res) => {
   }
 });
 
+// Actualizar la ubicación de un recolector
+router.put('/:id/ubicacion', async (req, res) => {
+  const { latitud, longitud } = req.body;
+  
+  try {
+    // Verificar que el recolector existe
+    const recolector = await knex('recolectores_desechos')
+      .where('id', req.params.id)
+      .first();
+
+    if (!recolector) {
+      return res.status(404).json({ error: 'Recolector no encontrado' });
+    }
+
+    // Actualizar ubicación y fecha
+    await knex('recolectores_desechos')
+      .where('id', req.params.id)
+      .update({
+        latitud,
+        longitud,
+        fecha_ubicacion_actualizada: format(new Date(), 'yyyy-MM-dd HH:mm:ss')
+      });
+
+    res.json({
+      message: 'Ubicación actualizada con éxito',
+      ubicacion: { latitud, longitud }
+    });
+  } catch (err) {
+    res.status(500).json({
+      error: 'Error actualizando la ubicación',
+      details: err.message || err
+    });
+  }
+});
+
 module.exports = router;

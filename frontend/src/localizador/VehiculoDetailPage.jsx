@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { API_BASE_URL, showSuccessAlert, showErrorAlert } from '../utils';
 import TituloConRegreso from '../components/TituloConRegreso/TituloConRegreso';
@@ -19,6 +19,9 @@ const VehiculoDetailPage = () => {
     const [recolector, setRecolector] = useState(null);
     const [ubicacionEnlace, setUbicacionEnlace] = useState('');
     const [estadoOperativo, setEstadoOperativo] = useState('');
+    const [isSharing, setIsSharing] = useState(false);
+    const [errorGeo, setErrorGeo] = useState(null);
+    const watchPositionRef = useRef(null);
 
     useEffect(() => {
         const fetchRecolector = async () => {
@@ -104,6 +107,105 @@ const VehiculoDetailPage = () => {
         }
     };
 
+    // Verificar soporte de geolocalización
+    const checkGeolocationSupport = () => {
+        if (!("geolocation" in navigator)) {
+            showErrorAlert('Error', 'Tu dispositivo no soporta geolocalización');
+            return false;
+        }
+        return true;
+    };
+
+    // Manejar errores de geolocalización
+    const handleGeolocationError = (error) => {
+        let mensaje = 'Error desconocido al obtener ubicación';
+        switch (error.code) {
+            case error.PERMISSION_DENIED:
+                mensaje = 'Necesitamos permiso para acceder a tu ubicación';
+                break;
+            case error.POSITION_UNAVAILABLE:
+                mensaje = 'La información de ubicación no está disponible';
+                break;
+            case error.TIMEOUT:
+                mensaje = 'Se agotó el tiempo para obtener la ubicación';
+                break;
+        }
+        setErrorGeo(mensaje);
+        setIsSharing(false);
+        showErrorAlert('Error', mensaje);
+        if (watchPositionRef.current) {
+            navigator.geolocation.clearWatch(watchPositionRef.current);
+            watchPositionRef.current = null;
+        }
+    };
+
+    // Limpiar al desmontar
+    useEffect(() => {
+        return () => {
+            if (watchPositionRef.current) {
+                navigator.geolocation.clearWatch(watchPositionRef.current);
+                watchPositionRef.current = null;
+            }
+        };
+    }, []);
+
+    const handleShareLocation = async () => {
+        if (!isSharing) {
+            setErrorGeo(null);
+            if (!checkGeolocationSupport()) return;
+
+            try {
+                // Opciones de geolocalización
+                const options = {
+                    enableHighAccuracy: true,
+                    timeout: 5000,
+                    maximumAge: 0
+                };
+
+                // Iniciar seguimiento de ubicación
+                watchPositionRef.current = navigator.geolocation.watchPosition(
+                    async (position) => {
+                        try {
+                            const response = await fetch(`${API_BASE_URL}recolectores/${recolectorId}/ubicacion`, {
+                                method: 'PUT',
+                                headers: {
+                                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({
+                                    latitud: position.coords.latitude.toString(),
+                                    longitud: position.coords.longitude.toString()
+                                })
+                            });
+
+                            if (!response.ok) throw new Error('Error al actualizar ubicación');
+
+                            // Solo mostrar alerta la primera vez
+                            if (!isSharing) {
+                                showSuccessAlert('Éxito', 'Compartiendo ubicación en tiempo real');
+                                setIsSharing(true);
+                            }
+                        } catch (error) {
+                            handleGeolocationError(error);
+                        }
+                    },
+                    handleGeolocationError,
+                    options
+                );
+            } catch (error) {
+                handleGeolocationError(error);
+            }
+        } else {
+            // Detener seguimiento
+            if (watchPositionRef.current) {
+                navigator.geolocation.clearWatch(watchPositionRef.current);
+                watchPositionRef.current = null;
+            }
+            setIsSharing(false);
+            showSuccessAlert('Éxito', 'Se ha detenido de compartir la ubicación');
+        }
+    };
+
     if (!recolector) {
         return (
             <Cargando />
@@ -152,10 +254,25 @@ const VehiculoDetailPage = () => {
                         </div>
                         <button
                             type="submit"
-                            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-full"
+                            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-full mb-4"
                         >
                             Actualizar Ubicación
                         </button>
+                        <button
+                            type="button"
+                            onClick={handleShareLocation}
+                            className={`${
+                                isSharing 
+                                    ? 'bg-green-500 hover:bg-green-600' 
+                                    : 'bg-red-500 hover:bg-red-600'
+                            } text-white px-4 py-2 rounded w-full transition-colors duration-300`}
+                            disabled={!!errorGeo}
+                        >
+                            {isSharing ? 'Dejar de Compartir Ubicación' : 'Compartir Ubicación'}
+                        </button>
+                        {errorGeo && (
+                            <p className="mt-2 text-red-500 text-sm">{errorGeo}</p>
+                        )}
                     </form>
 
                 </div>
