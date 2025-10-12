@@ -6,8 +6,18 @@ const mysql = require('mysql2');
 const path = require('path');
 const cors = require('cors');
 const routes = require('./routes');
+const http = require('http');
 
 const app = express();
+const server = http.createServer(app);
+const { Server } = require('socket.io');
+const io = new Server(server, {
+  cors: {
+    origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  }
+});
 
 app.use(cors({
   origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
@@ -45,9 +55,18 @@ db.connect((err) => {
   console.log('Conectado a la base de datos MySQL');
 });
 
+// Manejador de conexiones de socket
+io.on('connection', (socket) => {
+  // Escuchar actualizaciones de ubicación de un recolector
+  socket.on('actualizar_ubicacion', ({ recolectorId, latitud, longitud }) => {
+    // Emitir a todos los clientes la nueva ubicación de ese recolector
+    io.emit(`ubicacion_recolector_${recolectorId}`, { recolectorId, latitud, longitud, timestamp: Date.now() });
+  });
+});
+
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`Servidor backend y frontend corriendo en el puerto ${PORT}`);
 }).on('error', (err) => {
   if (err.code === 'EADDRINUSE') {

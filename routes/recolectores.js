@@ -202,4 +202,27 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
+// Obtener la ubicación actual (latitud y longitud) de un recolector por ID
+router.get('/:id/ubicacion', async (req, res) => {
+  try {
+    const recolector = await knex('recolectores_desechos')
+      .select('id', 'latitud', 'longitud', 'fecha_ubicacion_actualizada')
+      .where('id', req.params.id)
+      .first();
+
+    if (!recolector) {
+      return res.status(404).json({ error: 'Recolector no encontrado' });
+    }
+
+    res.json({
+      id: recolector.id,
+      latitud: recolector.latitud,
+      longitud: recolector.longitud,
+      fecha_ubicacion_actualizada: recolector.fecha_ubicacion_actualizada
+    });
+  } catch (err) {
+    res.status(500).json({ error: 'Error obteniendo la ubicación', details: err.message || err });
+  }
+});
+
 module.exports = router;
