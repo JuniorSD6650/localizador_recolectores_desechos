@@ -209,16 +209,30 @@ router.get('/:id/ubicacion', async (req, res) => {
       .select('id', 'latitud', 'longitud', 'fecha_ubicacion_actualizada')
       .where('id', req.params.id)
       .first();
-
+    
     if (!recolector) {
       return res.status(404).json({ error: 'Recolector no encontrado' });
+    }
+
+    // Formatear la fecha al formato esperado: DD/MM/AAAA HH:mm:ss
+    let fechaFormateada = null;
+    if (recolector.fecha_ubicacion_actualizada) {
+      const fecha = new Date(recolector.fecha_ubicacion_actualizada);
+      const dia = String(fecha.getDate()).padStart(2, '0');
+      const mes = String(fecha.getMonth() + 1).padStart(2, '0');
+      const anio = fecha.getFullYear();
+      const horas = String(fecha.getHours()).padStart(2, '0');
+      const minutos = String(fecha.getMinutes()).padStart(2, '0');
+      const segundos = String(fecha.getSeconds()).padStart(2, '0');
+      
+      fechaFormateada = `${dia}/${mes}/${anio} ${horas}:${minutos}:${segundos}`;
     }
 
     res.json({
       id: recolector.id,
       latitud: recolector.latitud,
       longitud: recolector.longitud,
-      fecha_ubicacion_actualizada: recolector.fecha_ubicacion_actualizada
+      fecha_ubicacion_actualizada: fechaFormateada
     });
   } catch (err) {
     res.status(500).json({ error: 'Error obteniendo la ubicación', details: err.message || err });

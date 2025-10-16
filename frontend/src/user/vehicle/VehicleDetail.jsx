@@ -1,17 +1,18 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
-import { API_BASE_URL, calculateTimeAgo } from '../../utils';
+import { API_BASE_URL, calculateTimeAgo } from '../../utils'; 
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import UpdateIcon from '@mui/icons-material/Update';
 import TituloConRegreso from '../../components/TituloConRegreso/TituloConRegreso';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import { parseDate } from '../../utils'; 
 
 // Fix íconos Leaflet
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
-import markerShadow from 'leaflet/dist/images/marker-shadow.png';
+import markerShadow from 'leaflet/dist/images/marker-shadow.png'; 
 
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -19,6 +20,72 @@ L.Icon.Default.mergeOptions({
   iconUrl: markerIcon,
   shadowUrl: markerShadow,
 });
+
+// CÓDIGO DEL ÍCONO PERSONALIZADO (LocalShippingIcon) (sin cambios)
+const truckIconSvg = `<svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1g8w9s8" focusable="false" aria-hidden="true" viewBox="0 0 24 24" data-testid="LocalShippingIcon">
+  <path d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zM6 18c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm13.5-8.5 2.5 3.5h-4V9h1.5v.5zM18 18c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zM4 6h10v2H4V6zm11 1.5h1.5v-2H15v2z"/>
+</svg>`;
+
+const truckIconStyle = `
+  width: 32px;
+  height: 32px;
+  background-color: white;
+  border-radius: 50%;
+  border: 2px solid #1976D2;
+  box-shadow: 0 0 5px rgba(0,0,0,0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transform: translate(-50%, -50%);
+`;
+
+const truckLeafletIcon = L.divIcon({
+    className: 'custom-truck-marker',
+    html: `<div style="${truckIconStyle}">${truckIconSvg}</div>`,
+    iconSize: [32, 32],
+    iconAnchor: [16, 32], 
+    popupAnchor: [0, -32],
+});
+
+// ----------------------------------------------------
+// ✨ FUNCIÓN AUXILIAR PARA FORMATEAR FECHA DD/MM/AAAA HH:mm:ss
+// ----------------------------------------------------
+const formatRelativeOrAbsoluteTime = (dateString) => {
+    if (!dateString) return 'Sin datos de ubicación';
+
+    console.log('Fecha recibida:', dateString); // Para debug
+    
+    // Usar parseDate de utils.js para formato DD/MM/AAAA HH:mm:ss
+    const date = parseDate(dateString);
+    
+    // Validar que la fecha sea válida
+    if (!date || isNaN(date.getTime())) {
+        console.error('Fecha inválida:', dateString); // Para debug
+        return 'Fecha no disponible';
+    }
+    
+    console.log('Fecha construida:', date); // Para debug
+    
+    const now = new Date();
+    // Definir el umbral como 24 horas
+    const twentyFourHours = 24 * 60 * 60 * 1000;
+    
+    // Si la diferencia es menor a 24 horas
+    if (now - date < twentyFourHours) {
+        // Pasamos el string original que calculateTimeAgo espera
+        return calculateTimeAgo(dateString); 
+    } else {
+        // Si es más de 24 horas, mostramos la fecha y hora completa de forma entendible.
+        return date.toLocaleDateString('es-ES', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+        });
+    }
+};
+// ----------------------------------------------------
 
 const VehicleDetail = () => {
   const { id } = useParams();
@@ -31,7 +98,7 @@ const VehicleDetail = () => {
   const markerRef = useRef(null);
   const mapInstanceRef = useRef(null);
 
-  // 🔹 Inicializar mapa solo una vez
+  // 🔹 Inicializar mapa solo una vez (sin cambios)
   useEffect(() => {
     if (!ubicacion?.latitud || !ubicacion?.longitud || mapInstanceRef.current) return;
 
@@ -55,7 +122,6 @@ const VehicleDetail = () => {
       }
     );
     
-    // **MODIFICACIÓN AÑADIDA:**
     // Añadir la capa base OpenStreetMap por defecto
     osm.addTo(map);
 
@@ -63,11 +129,13 @@ const VehicleDetail = () => {
     L.control.layers(
       {
         'Mapa Estándar': osm,
-        'Satélite / Relieve': esriSat, // Opción de relieve
+        'Satélite / Relieve': esriSat, 
       }
     ).addTo(map);
 
-    const marker = L.marker([lat, lng])
+    const marker = L.marker([lat, lng], { 
+        icon: truckLeafletIcon 
+      })
       .addTo(map)
       .bindPopup(`Ubicación actual del vehículo<br/>Lat: ${lat}<br/>Long: ${lng}`)
       .openPopup();
@@ -83,7 +151,7 @@ const VehicleDetail = () => {
     setTimeout(() => map.invalidateSize(), 200);
   }, [ubicacion]);
 
-  // 🔹 Actualizar marcador y vista cuando cambie la ubicación
+  // 🔹 Actualizar marcador y vista cuando cambie la ubicación (sin cambios)
   useEffect(() => {
     if (!mapInstanceRef.current || !markerRef.current || !ubicacion) return;
 
@@ -93,12 +161,11 @@ const VehicleDetail = () => {
       .setPopupContent(
         `Ubicación actual del vehículo<br/>Lat: ${latitud}<br/>Long: ${longitud}`
       );
-
-    // No reinicia el zoom, solo mueve el centro suavemente
+      
     mapInstanceRef.current.panTo([latitud, longitud], { animate: true, duration: 0.5 });
   }, [ubicacion]);
 
-  // 🚚 Obtener detalles del vehículo
+  // 🚚 Obtener detalles del vehículo (sin cambios)
   useEffect(() => {
     const fetchVehicle = async () => {
       try {
@@ -113,7 +180,7 @@ const VehicleDetail = () => {
     fetchVehicle();
   }, [id]);
 
-  // 📍 Obtener ubicación periódicamente
+  // 📍 Obtener ubicación periódicamente (sin cambios)
   useEffect(() => {
     const fetchUbicacion = async () => {
       try {
@@ -134,7 +201,7 @@ const VehicleDetail = () => {
     return () => clearInterval(interval);
   }, [id]);
 
-  // ⚠️ Estados de carga / error
+  // ⚠️ Estados de carga / error (sin cambios)
   if (message) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -174,7 +241,7 @@ const VehicleDetail = () => {
               }`}
             >
               {vehicle.estado_operativo === 'operativo' ? 'Operativo' : 'Inoperativo'}
-            </span>
+            </span >
           </div>
           <div>
             <h1 className="text-2xl font-bold">{vehicle.nombre_recolector}</h1>
@@ -194,7 +261,7 @@ const VehicleDetail = () => {
                 className="text-blue-500 hover:underline"
               >
                 Localizar Vehículo
-              </a>
+                </a>
             </div>
           )}
 
@@ -204,7 +271,8 @@ const VehicleDetail = () => {
               <div className="text-center">
                 <span className="block text-gray-600">Última actualización</span>
                 <span className="block text-gray-800">
-                  {calculateTimeAgo(ubicacion.fecha_ubicacion_actualizada)}
+                  {/* Uso de la función de formato condicional con la corrección */}
+                  {formatRelativeOrAbsoluteTime(ubicacion.fecha_ubicacion_actualizada)} 
                 </span>
               </div>
             </div>
