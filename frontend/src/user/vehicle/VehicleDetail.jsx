@@ -41,10 +41,31 @@ const VehicleDetail = () => {
     // Crear mapa una sola vez
     const map = L.map(mapRef.current).setView([lat, lng], userZoom);
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    // Definición de las capas del mapa
+    const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution:
-        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-    }).addTo(map);
+        '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    });
+
+    // Capa satélite/relieve de Esri (Similar a la usada en MapModal)
+    const esriSat = L.tileLayer(
+      'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+      {
+        attribution: 'Tiles © Esri — Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+      }
+    );
+    
+    // **MODIFICACIÓN AÑADIDA:**
+    // Añadir la capa base OpenStreetMap por defecto
+    osm.addTo(map);
+
+    // Añadir el control de capas para poder cambiar entre OSM y Satélite
+    L.control.layers(
+      {
+        'Mapa Estándar': osm,
+        'Satélite / Relieve': esriSat, // Opción de relieve
+      }
+    ).addTo(map);
 
     const marker = L.marker([lat, lng])
       .addTo(map)
