@@ -105,8 +105,14 @@ const VehicleDetail = () => {
     const lat = parseFloat(ubicacion.latitud);
     const lng = parseFloat(ubicacion.longitud);
 
-    // Crear mapa una sola vez
-    const map = L.map(mapRef.current).setView([lat, lng], userZoom);
+  // Crear mapa una sola vez
+  const map = L.map(mapRef.current).setView([lat, lng], userZoom);
+
+  // Aplicar desde el inicio un límite seguro de zoom para evitar requests a tiles inexistentes.
+  // Se usa un límite global que aplica a todas las capas para evitar el problema de
+  // quedar en un zoom demasiado alto y no poder cambiar de capa.
+  const MAX_ALLOWED_ZOOM = 17;
+  map.setMaxZoom(MAX_ALLOWED_ZOOM);
 
     // Definición de las capas del mapa
     const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -115,9 +121,11 @@ const VehicleDetail = () => {
     });
 
     // Capa satélite/relieve de Esri (Similar a la usada en MapModal)
+    // Declaramos el mismo maxZoom que aplicamos globalmente
     const esriSat = L.tileLayer(
       'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
       {
+        maxZoom: MAX_ALLOWED_ZOOM,
         attribution: 'Tiles © Esri — Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
       }
     );
@@ -132,6 +140,19 @@ const VehicleDetail = () => {
         'Satélite / Relieve': esriSat, 
       }
     ).addTo(map);
+
+    // Asegurar que el maxZoom se mantiene en el límite seguro al cambiar de capa.
+    // Como aplicamos el límite global desde el inicio, simplemente reforzamos el mismo valor.
+    map.on('baselayerchange', (e) => {
+      try {
+        if (!e) return;
+        map.setMaxZoom(MAX_ALLOWED_ZOOM);
+        if (map.getZoom() > MAX_ALLOWED_ZOOM) map.setZoom(MAX_ALLOWED_ZOOM);
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.error('Error manejando baselayerchange:', err);
+      }
+    });
 
     const marker = L.marker([lat, lng], { 
         icon: truckLeafletIcon 

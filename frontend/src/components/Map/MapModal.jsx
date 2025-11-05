@@ -41,6 +41,10 @@ const MapModal = ({ ubicacion, onClose }) => {
                 // Crear nueva instancia del mapa
                 const map = L.map(mapRef.current).setView([lat, lng], 15);
 
+                // Aplicar desde el inicio un límite seguro de zoom para evitar requests a tiles inexistentes.
+                const MAX_ALLOWED_ZOOM = 17;
+                map.setMaxZoom(MAX_ALLOWED_ZOOM);
+
                 // Capa base estándar
                 const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -50,6 +54,7 @@ const MapModal = ({ ubicacion, onClose }) => {
                 const esriSat = L.tileLayer(
                     'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
                     {
+                        maxZoom: MAX_ALLOWED_ZOOM,
                         attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
                     }
                 );
@@ -72,6 +77,18 @@ const MapModal = ({ ubicacion, onClose }) => {
                         'Satélite': esriSat
                     }
                 ).addTo(map);
+
+                // Asegurar que el maxZoom se mantiene en el límite seguro al cambiar de capa
+                map.on('baselayerchange', (e) => {
+                    try {
+                        if (!e) return;
+                        map.setMaxZoom(MAX_ALLOWED_ZOOM);
+                        if (map.getZoom() > MAX_ALLOWED_ZOOM) map.setZoom(MAX_ALLOWED_ZOOM);
+                    } catch (err) {
+                        // eslint-disable-next-line no-console
+                        console.error('Error manejando baselayerchange en MapModal:', err);
+                    }
+                });
 
                 mapInstanceRef.current = map;
 
