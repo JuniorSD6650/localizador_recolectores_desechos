@@ -1,11 +1,11 @@
 const bcrypt = require('bcryptjs');
 
 exports.seed = async function (knex) {
-    // Deletes ALL existing entries
+    await knex.raw('SET FOREIGN_KEY_CHECKS = 0');
     await knex('usuarios').del();
     await knex('credenciales').del();
+    await knex.raw('SET FOREIGN_KEY_CHECKS = 1');
 
-    // Insert admin user
     const [userId] = await knex('usuarios').insert({
         id: 1,
         role: 'admin',
@@ -16,7 +16,6 @@ exports.seed = async function (knex) {
         telefono: '123456789',
     });
 
-    // Insert admin credentials
     const hashedPassword = await bcrypt.hash('adminpassword', 10);
     await knex('credenciales').insert({
         username: 'admin',
