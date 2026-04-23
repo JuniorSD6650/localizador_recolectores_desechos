@@ -4,288 +4,183 @@ import { API_BASE_URL, showSuccessAlert, showErrorAlert } from '../utils';
 import TituloConRegreso from '../components/TituloConRegreso/TituloConRegreso';
 import Cargando from '../components/Cargando/carga';
 import withLoading from '../components/Cargando/withLoading';
-
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 
-const formatDate = (dateString) => {
-    if (!dateString) return 'Sin fecha de actualización';
-    const [datePart, timePart] = dateString.split(' ');
-    const [day, month, year] = datePart.split('/');
-    return new Date(`${year}-${month}-${day}T${timePart}`).toLocaleString();
-};
-
 const VehiculoDetailPage = () => {
-    const { recolectorId } = useParams();
-    const [recolector, setRecolector] = useState(null);
-    const [ubicacionEnlace, setUbicacionEnlace] = useState('');
-    const [estadoOperativo, setEstadoOperativo] = useState('');
-    const [isSharing, setIsSharing] = useState(false);
-    const [errorGeo, setErrorGeo] = useState(null);
-    // Estado para controlar si la alerta de inicio de compartición ya se mostró
-    const [isFirstShareSuccessful, setIsFirstShareSuccessful] = useState(false); // 👈 **NUEVO ESTADO**
-    const watchPositionRef = useRef(null);
+    const { recolectorId } = useParams();
+    const [recolector, setRecolector] = useState(null);
+    const [ubicacionEnlace, setUbicacionEnlace] = useState('');
+    const [estadoOperativo, setEstadoOperativo] = useState('');
+    const [isSharing, setIsSharing] = useState(false);
 
-    useEffect(() => {
-        const fetchRecolector = async () => {
-            try {
-                const response = await fetch(`${API_BASE_URL}recolectores/${recolectorId}`, {
-                    method: 'GET',
-                    headers: {
-                        Authorization: `Bearer ${localStorage.getItem('token')}`,
-                        'Content-Type': 'application/json',
-                    },
-                });
+    const watchIdRef = useRef(null);
+    const lastCoordsRef = useRef({ lat: null, lng: null });
+    const transmissionIntervalRef = useRef(null);
 
-                if (response.ok) {
-                    const data = await response.json();
-                    setRecolector(data);
-                    setUbicacionEnlace(data.ubicacion_enlace || '');
-                    setEstadoOperativo(data.estado_operativo || '');
-                } else {
-                    const errorData = await response.json();
-                    showErrorAlert('Error', errorData.message || 'No se pudo cargar la información del recolector.');
-                }
-            } catch (error) {
-                showErrorAlert('Error', 'Hubo un problema al conectar con la API.');
-                console.error('Error:', error);
-            }
-        };
+    const apiRequest = async (end, meth = 'GET', body = null) => {
+        try {
+            const res = await fetch(`${API_BASE_URL}${end}`, {
+                method: meth,
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                    'Content-Type': 'application/json'
+                },
+                body: body ? JSON.stringify(body) : null
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.message || 'Error en el servidor');
+            return data;
+        } catch (err) {
+            showErrorAlert('Error', err.message);
+            return null;
+        }
+    };
 
-        fetchRecolector();
-    }, [recolectorId]);
+    useEffect(() => {
+        (async () => {
+            const d = await apiRequest(`recolectores/${recolectorId}`);
+            if (d) {
+                setRecolector(d);
+                setUbicacionEnlace(d.ubicacion_enlace || '');
+                setEstadoOperativo(d.estado_operativo || '');
+            }
+        })();
+        return () => stopTracking();
+    }, [recolectorId]);
 
-    const handleUpdateEnlace = async (e) => {
-        e.preventDefault();
+    const stopTracking = () => {
+        if (watchIdRef.current) navigator.geolocation.clearWatch(watchIdRef.current);
+        if (transmissionIntervalRef.current) clearInterval(transmissionIntervalRef.current);
+        watchIdRef.current = null;
+        transmissionIntervalRef.current = null;
+        setIsSharing(false);
+    };
 
-        if (!ubicacionEnlace.trim()) {
-            showErrorAlert('Error', 'El enlace de ubicación no puede estar vacío.');
-            return;
-        }
+    // Actualización de enlace con sincronización de respuesta del servidor
+    const handleUpdateEnlace = async () => {
+        const valorOriginal = recolector.ubicacion_enlace || '';
+        const valorEnviado = ubicacionEnlace.trim() === '' ? null : ubicacionEnlace.trim();
 
-        try {
-            const response = await fetch(`${API_BASE_URL}recolectores/${recolectorId}`, {
-                method: 'PUT',
-                headers: {
-                    Authorization: `Bearer ${localStorage.getItem('token')}`,
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ ubicacion_enlace: ubicacionEnlace.trim() }),
-            });
+        const data = await apiRequest(`recolectores/${recolectorId}`, 'PUT', {
+            ubicacion_enlace: valorEnviado
+        });
 
-            if (response.ok) {
-                showSuccessAlert('Éxito', 'El enlace de ubicación ha sido actualizado.');
-            } else {
-                const errorData = await response.json();
-                showErrorAlert('Error', errorData.message || 'No se pudo actualizar el enlace de ubicación.');
-            }
-        } catch (error) {
-            showErrorAlert('Error', 'Hubo un problema al conectar con la API.');
-            console.error('Error:', error);
-        }
-    };
+        if (data && data.recolector) {
+            // ÉXITO: Actualizamos ambos estados con la verdad del servidor
+            setRecolector(data.recolector);
+            setUbicacionEnlace(data.recolector.ubicacion_enlace || '');
+            showSuccessAlert('Éxito', data.message);
+        } else {
+            // ERROR: El backend falló, regresamos el input a su valor anterior
+            setUbicacionEnlace(valorOriginal);
+            // El showErrorAlert ya se dispara dentro de apiRequest
+        }
+    };
 
-    const handleToggleEstadoOperativo = async () => {
-        try {
-            const newEstadoOperativo = estadoOperativo === 'operativo' ? 'inoperativo' : 'operativo';
-            const response = await fetch(`${API_BASE_URL}recolectores/${recolectorId}`, {
-                method: 'PUT',
-                headers: {
-                    Authorization: `Bearer ${localStorage.getItem('token')}`,
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ estado_operativo: newEstadoOperativo }),
-            });
+    const startTracking = () => {
+        if (isSharing) {
+            stopTracking();
+            showSuccessAlert('GPS', 'Transmisión detenida');
+            return;
+        }
 
-            if (response.ok) {
-                setEstadoOperativo(newEstadoOperativo);
-                showSuccessAlert('Éxito', `El estado operativo ha sido cambiado a ${newEstadoOperativo}.`);
-            } else {
-                const errorData = await response.json();
-                showErrorAlert('Error', errorData.message || 'No se pudo cambiar el estado operativo.');
-            }
-        } catch (error) {
-            showErrorAlert('Error', 'Hubo un problema al conectar con la API.');
-            console.error('Error:', error);
-        }
-    };
+        if (!("geolocation" in navigator)) return showErrorAlert('Error', 'GPS no disponible');
 
-    // Verificar soporte de geolocalización
-    const checkGeolocationSupport = () => {
-        if (!("geolocation" in navigator)) {
-            showErrorAlert('Error', 'Tu dispositivo no soporta geolocalización');
-            return false;
-        }
-        return true;
-    };
+        watchIdRef.current = navigator.geolocation.watchPosition(
+            (pos) => {
+                lastCoordsRef.current = {
+                    lat: pos.coords.latitude.toString(),
+                    lng: pos.coords.longitude.toString()
+                };
+            },
+            (err) => {
+                stopTracking();
+                const msg = err.code === 1 ? "Permiso GPS denegado" : "Error al obtener ubicación";
+                showErrorAlert('GPS Error', msg);
+            },
+            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+        );
 
-    // Manejar errores de geolocalización
-    const handleGeolocationError = (error) => {
-        let mensaje = 'Error desconocido al obtener ubicación';
-        switch (error.code) {
-            case error.PERMISSION_DENIED:
-                mensaje = 'Necesitamos permiso para acceder a tu ubicación';
-                break;
-            case error.POSITION_UNAVAILABLE:
-                mensaje = 'La información de ubicación no está disponible';
-                break;
-            case error.TIMEOUT:
-                mensaje = 'Se agotó el tiempo para obtener la ubicación';
-                break;
-        }
-        setErrorGeo(mensaje);
-        setIsSharing(false);
-        setIsFirstShareSuccessful(false); // Reiniciar estado
-        showErrorAlert('Error', mensaje);
-        if (watchPositionRef.current) {
-            navigator.geolocation.clearWatch(watchPositionRef.current);
-            watchPositionRef.current = null;
-        }
-    };
+        setIsSharing(true);
+        showSuccessAlert('En vivo', 'Transmitiendo coordenadas cada 2s');
 
-    // Limpiar al desmontar
-    useEffect(() => {
-        return () => {
-            if (watchPositionRef.current) {
-                navigator.geolocation.clearWatch(watchPositionRef.current);
-                watchPositionRef.current = null;
-            }
-        };
-    }, []);
+        transmissionIntervalRef.current = setInterval(async () => {
+            const { lat, lng } = lastCoordsRef.current;
+            if (!lat || !lng) return;
 
-    const handleShareLocation = async () => {
-        if (!isSharing) {
-            // Lógica para INICIAR el compartimiento de ubicación
-            setErrorGeo(null);
-            if (!checkGeolocationSupport()) return;
+            try {
+                await fetch(`${API_BASE_URL}recolectores/${recolectorId}/ubicacion`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ latitud: lat, longitud: lng })
+                });
+            } catch (e) { console.error("Error envío GPS:", e); }
+        }, 2000);
+    };
 
-            try {
-                // Opciones de geolocalización
-                const options = {
-                    enableHighAccuracy: true,
-                    timeout: 5000,
-                    maximumAge: 0
-                };
+    if (!recolector) return <Cargando />;
 
-                // Iniciar seguimiento de ubicación
-                watchPositionRef.current = navigator.geolocation.watchPosition(
-                    async (position) => {
-                        try {
-                            const response = await fetch(`${API_BASE_URL}recolectores/${recolectorId}/ubicacion`, {
-                                method: 'PUT',
-                                headers: {
-                                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
-                                    'Content-Type': 'application/json',
-                                },
-                                body: JSON.stringify({
-                                    latitud: position.coords.latitude.toString(),
-                                    longitud: position.coords.longitude.toString()
-                                })
-                            });
+    return (
+        <div className="container mx-auto px-4 py-8 mt-16 min-h-screen">
+            <TituloConRegreso titulo="Gestión de Unidad" to="/localizador" />
+            <div className="flex justify-center">
+                <div className="bg-white shadow-xl rounded-2xl p-6 max-w-4xl w-full border border-gray-100 flex flex-wrap md:flex-nowrap gap-8">
 
-                            if (!response.ok) throw new Error('Error al actualizar ubicación');
+                    <div className="w-full md:w-1/2 border-b md:border-b-0 md:border-r border-gray-100 pb-6 md:pb-0 md:pr-8">
+                        <div className="space-y-1 mb-6">
+                            <h1 className="text-2xl font-black text-gray-800 uppercase tracking-tight">{recolector.nombre_recolector}</h1>
+                            <p className="text-blue-600 font-bold text-lg">{recolector.placa}</p>
+                        </div>
 
-                            // ✅ **MODIFICACIÓN CLAVE:**                             // Solo mostrar alerta la primera vez y marcar el estado de compartir como true
-                            if (!isFirstShareSuccessful) { // 👈 Usamos el nuevo estado
-                                showSuccessAlert('Éxito', 'Compartiendo ubicación en tiempo real');
-                                setIsSharing(true);
-                                setIsFirstShareSuccessful(true); // 👈 Marcamos que la alerta ya salió
-                            }
-                        } catch (error) {
-                            // En caso de error en la API, detenemos el seguimiento
-                            handleGeolocationError(error);
-                        }
-                    },
-                    handleGeolocationError,
-                    options
-                );
-            } catch (error) {
-                handleGeolocationError(error);
-            }
-        } else {
-            // Lógica para DETENER el compartimiento de ubicación
-            if (watchPositionRef.current) {
-                navigator.geolocation.clearWatch(watchPositionRef.current);
-                watchPositionRef.current = null;
-            }
-            setIsSharing(false);
-            setIsFirstShareSuccessful(false); // 👈 Reiniciar el estado al detener
-            showSuccessAlert('Éxito', 'Se ha detenido de compartir la ubicación');
-        }
-    };
+                        <div className="bg-gray-50 rounded-xl p-4 flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <LocalShippingIcon sx={{ fontSize: 40, color: estadoOperativo === 'operativo' ? '#10b981' : '#ef4444' }} />
+                                <span className={`text-sm font-bold uppercase ${estadoOperativo === 'operativo' ? 'text-green-600' : 'text-red-600'}`}>{estadoOperativo}</span>
+                            </div>
+                            <button onClick={async () => {
+                                const n = estadoOperativo === 'operativo' ? 'inoperativo' : 'operativo';
+                                const res = await apiRequest(`recolectores/${recolectorId}`, 'PUT', { estado_operativo: n });
+                                if (res) setEstadoOperativo(n);
+                            }} className="bg-white border border-gray-200 text-gray-700 text-xs font-bold px-3 py-2 rounded-lg hover:bg-gray-100 transition shadow-sm">
+                                CAMBIAR
+                            </button>
+                        </div>
+                    </div>
 
-    if (!recolector) {
-        return (
-            <Cargando />
-        );
-    }
+                    <div className="w-full md:w-1/2 flex flex-col justify-center space-y-4">
+                        <div>
+                            <label className="text-xs font-bold text-gray-500 mb-1 block uppercase">Enlace de rastreo (Maps/Externo)</label>
+                            <div className="flex gap-2">
+                                <input
+                                    type="text"
+                                    className="flex-1 bg-gray-50 border-none rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+                                    placeholder="Vacío para eliminar enlace"
+                                    value={ubicacionEnlace}
+                                    onChange={(e) => setUbicacionEnlace(e.target.value)}
+                                />
+                                <button onClick={handleUpdateEnlace} className="bg-blue-600 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-blue-700 transition-colors">OK</button>
+                            </div>
+                        </div>
 
-    return (
-        <div className="container mx-auto px-4 py-8 min-h-screen mt-16">
-            <TituloConRegreso titulo="Detalles del Vehículo" to="/localizador" />
-            <div className='flex justify-center items-center'>
-                <div className="bg-white shadow-md rounded-lg p-6 max-w-2xl w-full">
-                    <div className="text-center mb-6">
-                        <h1 className="text-2xl font-bold mb-2">Vehículo: {recolector.nombre_recolector}</h1>
-                        <h2 className="text-xl mb-2">Placa: {recolector.placa}</h2>
-                        <h3 className="text-lg mb-2">Tipo de Vehículo: {recolector.tipo_vehiculo}</h3>
-                        <h3 className="text-lg mb-2">Estado Operativo: {estadoOperativo}</h3>
-                        <h3 className="text-lg mb-2">Fecha de Última Actualización: {formatDate(recolector.fecha_ubicacion_actualizada)}</h3>
-                    </div>
-                    <div className="mt-4 text-center mb-6">
-                        <h4 className="text-lg font-semibold mb-2">Estado Operativo</h4>
-                        <span className={`inline-block px-2 py-1 text-sm font-medium rounded-full mb-2 `}>
-                            <div className="flex flex-col items-center">
-                                <LocalShippingIcon
-                                    style={{ fontSize: '35px', color: estadoOperativo === 'operativo' ? 'green' : 'red' }}
-                                />
-                                <span>{estadoOperativo === 'operativo' ? 'Operativo' : 'Inoperativo'}</span>
-                            </div>
-                        </span>
-                        <button
-                            className="bg-customOrange text-white px-4 py-2 rounded hover:bg-customOrangeHover w-auto ml-2 mb-2"
-                            onClick={handleToggleEstadoOperativo}
-                        >
-                            Cambiar Estado
-                        </button>
-                    </div>
-                    <form onSubmit={handleUpdateEnlace} className="mb-6 text-center">
-                        <div className="mb-4">
-                            <h4 className="text-lg font-semibold mb-2"> Enlace de Ubicación</h4>
-                            <input
-                                type="text"
-                                id="ubicacionEnlace"
-                                className="mt-1 block w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                                value={ubicacionEnlace}
-                                onChange={(e) => setUbicacionEnlace(e.target.value)}
-                            />
-                        </div>
-                        <button
-                            type="submit"
-                            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-full mb-4"
-                        >
-                            Actualizar Ubicación
-                        </button>
-                        <button
-                            type="button"
-                            onClick={handleShareLocation}
-                            className={`${
-                                isSharing 
-                                    ? 'bg-green-500 hover:bg-green-600' 
-                                    : 'bg-red-500 hover:bg-red-600'
-                            } text-white px-4 py-2 rounded w-full transition-colors duration-300`}
-                            disabled={!!errorGeo}
-                        >
-                            {isSharing ? 'Dejar de Compartir Ubicación' : 'Compartir Ubicación'}
-                        </button>
-                        {errorGeo && (
-                            <p className="mt-2 text-red-500 text-sm">{errorGeo}</p>
-                        )}
-                    </form>
+                        <button onClick={startTracking}
+                            className={`w-full py-4 rounded-xl font-black text-sm tracking-widest uppercase transition-all shadow-lg ${isSharing ? 'bg-green-500 text-white border-b-4 border-green-700' : 'bg-red-600 text-white hover:bg-red-700'}`}>
+                            {isSharing ? '📡 Transmitiendo en vivo' : 'Iniciar GPS Integrado'}
+                        </button>
 
-                </div>
-            </div>
-        </div>
-    );
+                        {isSharing && (
+                            <p className="text-[10px] text-center text-green-600 font-bold animate-pulse uppercase">
+                                Actualizando coordenadas cada 2 segundos...
+                            </p>
+                        )}
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    );
 };
 
 export default withLoading(VehiculoDetailPage);
