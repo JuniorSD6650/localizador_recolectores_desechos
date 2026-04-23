@@ -53,12 +53,10 @@ router.get('/', async (req, res) => {
   try {
     const filters = { nombre_recolector, placa, tipo_vehiculo, estado_operativo };
 
-    // Obtener el total de recolectores filtrados
     const total = await applyFilters(knex('recolectores_desechos').count('* as total'), filters).first();
     const totalPages = Math.ceil(total.total / limit);
 
-    // Consultar recolectores y realizar el JOIN para enlazar las zonas asignadas
-    const recolectores = await applyFilters(
+    const recolectoresRaw = await applyFilters(
       knex('recolectores_desechos as r')
         .select(
           'r.id',
@@ -84,7 +82,7 @@ router.get('/', async (req, res) => {
                 LEFT JOIN zonas z ON azr.zona_id = z.id
                 WHERE azr.recolector_id = r.id
               ),
-              JSON_ARRAY()
+              '[]'
             ) AS zonas_asignadas
           `)
         )
@@ -94,6 +92,16 @@ router.get('/', async (req, res) => {
         .offset(offset),
       filters
     );
+
+    // --- ESTA ES LA CORRECCIÓN CLAVE ---
+    // Convertimos el String JSON que devuelve la DB en un Array real de JS
+    const recolectores = recolectoresRaw.map(recolector => ({
+      ...recolector,
+      zonas_asignadas: typeof recolector.zonas_asignadas === 'string'
+        ? JSON.parse(recolector.zonas_asignadas)
+        : recolector.zonas_asignadas
+    }));
+    // ------------------------------------
 
     res.json({
       recolectores,
@@ -143,7 +151,6 @@ router.post('/', async (req, res) => {
   }
 });
 
-// Actualizar recolector por ID
 router.put('/:id', async (req, res) => {
   const { nombre_recolector, ubicacion_enlace, placa, tipo_vehiculo, estado_operativo } = req.body;
 
@@ -158,11 +165,17 @@ router.put('/:id', async (req, res) => {
       estado_operativo,
     };
 
+    // Validación mejorada
     if (ubicacion_enlace !== undefined) {
-      const linkRegex = /(https?:\/\/[^\s]+)/g;
-      updates.ubicacion_enlace = ubicacion_enlace.match(linkRegex)?.[0] || null;
+      if (ubicacion_enlace === null || ubicacion_enlace.trim() === "") {
+        updates.ubicacion_enlace = null;
+      } else {
+        const linkRegex = /(https?:\/\/[^\s]+)/g;
+        const match = ubicacion_enlace.match(linkRegex);
+        updates.ubicacion_enlace = match ? match[0] : null;
+      }
 
-      // Formatear fecha en zona horaria de Perú
+      // Solo actualizamos la fecha si realmente se intentó tocar el enlace
       updates.fecha_ubicacion_actualizada = format(new Date(), 'yyyy-MM-dd HH:mm:ss');
     }
 
@@ -183,9 +196,10 @@ router.put('/:id', async (req, res) => {
       recolector: updatedRecolector
     });
   } catch (err) {
+    console.error(err); // Para que veas el error real en tu consola de Node
     res.status(500).json({
       error: 'Error actualizando el recolector',
-      details: err.message || err
+      details: err.message
     });
   }
 });
@@ -209,7 +223,7 @@ router.get('/:id/ubicacion', async (req, res) => {
       .select('id', 'latitud', 'longitud', 'fecha_ubicacion_actualizada')
       .where('id', req.params.id)
       .first();
-    
+
     if (!recolector) {
       return res.status(404).json({ error: 'Recolector no encontrado' });
     }
@@ -224,7 +238,7 @@ router.get('/:id/ubicacion', async (req, res) => {
       const horas = String(fecha.getHours()).padStart(2, '0');
       const minutos = String(fecha.getMinutes()).padStart(2, '0');
       const segundos = String(fecha.getSeconds()).padStart(2, '0');
-      
+
       fechaFormateada = `${dia}/${mes}/${anio} ${horas}:${minutos}:${segundos}`;
     }
 
@@ -242,7 +256,7 @@ router.get('/:id/ubicacion', async (req, res) => {
 // Actualizar la ubicación de un recolector
 router.put('/:id/ubicacion', async (req, res) => {
   const { latitud, longitud } = req.body;
-  
+
   try {
     // Verificar que el recolector existe
     const recolector = await knex('recolectores_desechos')
