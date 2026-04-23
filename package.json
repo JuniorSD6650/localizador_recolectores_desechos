@@ -4,9 +4,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "migrate-seed": "node .\\createDatabase.js & npx knex migrate:latest & npx knex seed:run"
+    "migrate-seed": "node createDatabase.js && npx knex migrate:latest && npx knex seed:run"
   },
-  "keywords": [],
   "author": "",
   "license": "ISC",
   "description": "",
