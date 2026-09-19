@@ -75,7 +75,9 @@ router.get('/', async (req, res) => {
                     'nombre', z.nombre,
                     'descripcion', z.descripcion,
                     'imagen', z.imagen,
-                    'organizacion_id', z.organizacion_id
+                    'organizacion_id', z.organizacion_id,
+                    'coordenadas_ruta', z.coordenadas_ruta,
+                    'color_ruta', z.color_ruta
                   )
                 )
                 FROM asignaciones_zonas_recolectores azr
@@ -93,15 +95,30 @@ router.get('/', async (req, res) => {
       filters
     );
 
-    // --- ESTA ES LA CORRECCIÓN CLAVE ---
     // Convertimos el String JSON que devuelve la DB en un Array real de JS
-    const recolectores = recolectoresRaw.map(recolector => ({
-      ...recolector,
-      zonas_asignadas: typeof recolector.zonas_asignadas === 'string'
+    const recolectores = recolectoresRaw.map(recolector => {
+      let zonas = typeof recolector.zonas_asignadas === 'string'
         ? JSON.parse(recolector.zonas_asignadas)
-        : recolector.zonas_asignadas
-    }));
-    // ------------------------------------
+        : recolector.zonas_asignadas;
+
+      if (Array.isArray(zonas)) {
+        zonas = zonas.map(z => {
+          let coords = z.coordenadas_ruta;
+          if (typeof coords === 'string') {
+            try { coords = JSON.parse(coords); } catch { coords = []; }
+          }
+          return {
+            ...z,
+            coordenadas_ruta: Array.isArray(coords) ? coords : []
+          };
+        });
+      }
+
+      return {
+        ...recolector,
+        zonas_asignadas: zonas || []
+      };
+    });
 
     res.json({
       recolectores,
@@ -122,6 +139,22 @@ router.get('/:id', async (req, res) => {
       const fecha = new Date(recolector.fecha_ubicacion_actualizada);
       recolector.fecha_ubicacion_actualizada = format(fecha, 'dd/MM/yyyy HH:mm:ss');
     }
+
+    const zonasAsignadas = await knex('asignaciones_zonas_recolectores as azr')
+      .join('zonas as z', 'azr.zona_id', 'z.id')
+      .where('azr.recolector_id', req.params.id)
+      .select('z.id', 'z.nombre', 'z.descripcion', 'z.imagen', 'z.coordenadas_ruta', 'z.color_ruta');
+
+    recolector.zonas_asignadas = (zonasAsignadas || []).map(z => {
+      let coords = z.coordenadas_ruta;
+      if (typeof coords === 'string') {
+        try { coords = JSON.parse(coords); } catch { coords = []; }
+      }
+      return {
+        ...z,
+        coordenadas_ruta: Array.isArray(coords) ? coords : []
+      };
+    });
 
     res.json(recolector);
   } catch (err) {

@@ -41,13 +41,29 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
+const parseZonaRuta = (zona) => {
+  if (!zona) return zona;
+  let coordenadas = zona.coordenadas_ruta;
+  if (typeof coordenadas === 'string') {
+    try {
+      coordenadas = JSON.parse(coordenadas);
+    } catch {
+      coordenadas = [];
+    }
+  }
+  return {
+    ...zona,
+    coordenadas_ruta: Array.isArray(coordenadas) ? coordenadas : []
+  };
+};
+
 router.get('/list', async (req, res) => {
   try {
     const zonas = await knex('zonas')
-      .select('id', 'nombre')
+      .select('id', 'nombre', 'coordenadas_ruta', 'color_ruta')
       .orderBy('id', 'desc');
 
-    res.status(200).json(zonas);
+    res.status(200).json(zonas.map(parseZonaRuta));
   } catch (err) {
     res.status(500).json({
       error: 'Error obteniendo la lista de zonas',
@@ -90,7 +106,8 @@ router.get('/', async (req, res) => {
     dataQuery = applyFilters(dataQuery, filters);
     dataQuery = dataQuery.limit(limit).offset(offset);
 
-    const zonas = await dataQuery;
+    const zonasRaw = await dataQuery;
+    const zonas = zonasRaw.map(parseZonaRuta);
 
     res.json({
       zonas,
@@ -116,7 +133,7 @@ router.get('/:id', async (req, res) => {
     if (!zona) {
       return res.status(404).json({ error: 'Zona no encontrada' });
     }
-    res.json(zona);
+    res.json(parseZonaRuta(zona));
   } catch (err) {
     res.status(500).json({
       error: 'Error obteniendo la zona',
@@ -126,19 +143,32 @@ router.get('/:id', async (req, res) => {
 });
 
 router.post('/', upload.single('imagen'), async (req, res) => {
-  const { nombre, descripcion, organizacion_id } = req.body;
+  const { nombre, descripcion, organizacion_id, coordenadas_ruta, color_ruta } = req.body;
   const ruta_imagen = req.file ? `uploads/zonas/${req.file.filename}` : null;
+
+  let parsedCoordenadas = null;
+  if (coordenadas_ruta) {
+    try {
+      parsedCoordenadas = typeof coordenadas_ruta === 'string'
+        ? JSON.parse(coordenadas_ruta)
+        : coordenadas_ruta;
+    } catch {
+      parsedCoordenadas = null;
+    }
+  }
 
   try {
     const result = await knex('zonas').insert({
       nombre,
       descripcion,
       imagen: ruta_imagen,
-      organizacion_id,
+      organizacion_id: organizacion_id || null,
+      coordenadas_ruta: parsedCoordenadas ? JSON.stringify(parsedCoordenadas) : null,
+      color_ruta: color_ruta || '#1976D2',
     });
 
     const newZona = await knex('zonas').where('id', result[0]).first();
-    res.status(201).json({ message: 'Zona creada con éxito', id: newZona.id });
+    res.status(201).json({ message: 'Zona creada con éxito', id: newZona.id, zona: parseZonaRuta(newZona) });
   } catch (err) {
     res.status(500).json({
       error: 'Error creando la zona',
@@ -149,7 +179,7 @@ router.post('/', upload.single('imagen'), async (req, res) => {
 
 router.put('/:id', upload.single('imagen'), async (req, res) => {
   const { id } = req.params;
-  const { nombre, descripcion, organizacion_id } = req.body;
+  const { nombre, descripcion, organizacion_id, coordenadas_ruta, color_ruta } = req.body;
   const ruta_imagen = req.file ? `uploads/zonas/${req.file.filename}` : null;
 
   try {
@@ -169,11 +199,28 @@ router.put('/:id', upload.single('imagen'), async (req, res) => {
       }
     }
 
+    let parsedCoordenadas = undefined;
+    if (coordenadas_ruta !== undefined) {
+      if (coordenadas_ruta === null || coordenadas_ruta === '' || coordenadas_ruta === 'null') {
+        parsedCoordenadas = null;
+      } else {
+        try {
+          parsedCoordenadas = typeof coordenadas_ruta === 'string'
+            ? JSON.parse(coordenadas_ruta)
+            : coordenadas_ruta;
+        } catch {
+          parsedCoordenadas = null;
+        }
+      }
+    }
+
     const updateFields = {
-      ...(nombre && { nombre }),
-      ...(descripcion && { descripcion }),
-      ...(organizacion_id && { organizacion_id }),
+      ...(nombre !== undefined && { nombre }),
+      ...(descripcion !== undefined && { descripcion }),
+      ...(organizacion_id !== undefined && { organizacion_id }),
       ...(ruta_imagen && { imagen: ruta_imagen }),
+      ...(parsedCoordenadas !== undefined && { coordenadas_ruta: parsedCoordenadas ? JSON.stringify(parsedCoordenadas) : null }),
+      ...(color_ruta !== undefined && { color_ruta }),
     };
 
     const updatedZona = await knex('zonas').where('id', id).update(updateFields);

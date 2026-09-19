@@ -12,6 +12,8 @@ import AssignedZonesModal from './AssignedZonesModal';
 import Pagination from '../../components/Pagination/Pagination';
 import SearchIcon from '@mui/icons-material/Search';
 import CleaningServicesIcon from '@mui/icons-material/CleaningServices';
+import MapIcon from '@mui/icons-material/Map';
+import RoutePreviewModal from '../../components/Map/RoutePreviewModal';
 
 const AdminVehiculosPage = () => {
     const [vehicles, setVehicles] = useState([]);
@@ -19,6 +21,9 @@ const AdminVehiculosPage = () => {
     const [showRegisterModal, setShowRegisterModal] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
     const [selectedVehicle, setSelectedVehicle] = useState(null);
+
+    const [showRouteModal, setShowRouteModal] = useState(false);
+    const [routeModalData, setRouteModalData] = useState({ routes: [], vehicleLocation: null, title: '', subtitle: '' });
 
     const [showZonesModal, setShowZonesModal] = useState(false);
     const [zonesToShow, setZonesToShow] = useState([]);
@@ -96,6 +101,24 @@ const AdminVehiculosPage = () => {
 
     const handleUpdate = (updatedVehicle) => {
         obtenerVehiculos(currentPage);
+    };
+
+    const handleViewVehicleRoute = (vehicle) => {
+        const routes = vehicle.zonas_asignadas || [];
+        setRouteModalData({
+            routes,
+            vehicleLocation: vehicle.latitud && vehicle.longitud ? {
+                latitud: vehicle.latitud,
+                longitud: vehicle.longitud,
+                nombre_recolector: vehicle.nombre_recolector,
+                placa: vehicle.placa,
+            } : null,
+            title: `Recorrido Asignado - ${vehicle.nombre_recolector} (${vehicle.placa})`,
+            subtitle: routes.length > 0
+                ? `${routes.length} zona(s) asignadas con recorrido planificado`
+                : 'Este vehículo aún no tiene zonas con recorrido planificado'
+        });
+        setShowRouteModal(true);
     };
 
     const handleDelete = async (id) => {
@@ -252,12 +275,22 @@ const AdminVehiculosPage = () => {
                                     </td>
 
                                     <td className="px-6 py-4 border-b">
-                                        <button
-                                            className="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600"
-                                            onClick={() => handleShowZones(vehicle)}
-                                        >
-                                            Ver Zonas ({vehicle.zonas ? vehicle.zonas.length : 0})
-                                        </button>
+                                        <div className="flex flex-col gap-1.5 items-start">
+                                            <button
+                                                className="bg-green-600 text-white text-xs px-3 py-1.5 rounded-md hover:bg-green-700 font-medium"
+                                                onClick={() => handleShowZones(vehicle)}
+                                            >
+                                                Gestionar Zonas ({vehicle.zonas ? vehicle.zonas.length : 0})
+                                            </button>
+                                            <button
+                                                className="bg-blue-50 text-blue-700 border border-blue-200 text-xs px-3 py-1.5 rounded-md hover:bg-blue-100 font-medium inline-flex items-center gap-1"
+                                                onClick={() => handleViewVehicleRoute(vehicle)}
+                                                title="Ver mapa de recorrido del vehículo"
+                                            >
+                                                <MapIcon style={{ fontSize: 16 }} />
+                                                <span>Ver Recorrido</span>
+                                            </button>
+                                        </div>
                                     </td>
                                     <td className="px-6 py-4 border-b">
                                         <div className="flex space-x-2">
@@ -302,6 +335,15 @@ const AdminVehiculosPage = () => {
                 onClose={() => setShowEditModal(false)}
                 onUpdate={handleUpdate}
                 vehicle={selectedVehicle}
+            />
+
+            <RoutePreviewModal
+                show={showRouteModal}
+                onClose={() => setShowRouteModal(false)}
+                title={routeModalData.title}
+                subtitle={routeModalData.subtitle}
+                routes={routeModalData.routes}
+                vehicleLocation={routeModalData.vehicleLocation}
             />
 
             {currentVehicleId && (

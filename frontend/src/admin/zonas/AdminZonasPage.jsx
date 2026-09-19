@@ -10,6 +10,8 @@ import TituloConRegreso from '../../components/TituloConRegreso/TituloConRegreso
 import RegisterZonaModal from './RegisterZonaModal';
 import EditZonaModal from './EditZonaModal';
 import Pagination from '../../components/Pagination/Pagination';
+import RoutePreviewModal from '../../components/Map/RoutePreviewModal';
+import MapIcon from '@mui/icons-material/Map';
 
 const AdminZonasPage = () => {
     const [zonas, setZonas] = useState([]);
@@ -17,6 +19,9 @@ const AdminZonasPage = () => {
     const [showRegisterModal, setShowRegisterModal] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
     const [selectedZona, setSelectedZona] = useState(null);
+
+    const [showRouteModal, setShowRouteModal] = useState(false);
+    const [routeModalData, setRouteModalData] = useState({ routes: [], title: '', subtitle: '' });
 
     const [showImageModal, setShowImageModal] = useState(false);
     const [selectedImageUrl, setSelectedImageUrl] = useState('');
@@ -71,44 +76,40 @@ const AdminZonasPage = () => {
         obtenerZonas(1);
     };
 
-    const handleRegister = (newZona) => {
-        setZonas((prev) => [...prev, newZona]);
+    const handleRegister = () => {
         obtenerZonas();
     };
 
-    const handleUpdate = (updatedZona) => {
-        setZonas((prev) =>
-            prev.map((zona) =>
-                zona.id === updatedZona.id ? updatedZona : zona
-            )
-        );
+    const handleUpdate = () => {
         obtenerZonas();
     };
 
     const handleDelete = async (id) => {
-        const confirmed = await showCustomAlert({
+        const result = await showCustomAlert({
             title: '¿Estás seguro?',
-            text: 'Esta acción no se puede deshacer. ¿Deseas eliminar esta zona?',
+            text: 'Esta acción eliminará la zona permanentemente.',
             icon: 'warning',
             showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
             confirmButtonText: 'Sí, eliminar',
             cancelButtonText: 'Cancelar',
         });
 
-        if (confirmed.isConfirmed) {
+        if (result.isConfirmed) {
             try {
                 const response = await fetch(`${API_BASE_URL}zonas/${id}`, {
                     method: 'DELETE',
                 });
 
                 if (response.ok) {
-                    setZonas((prev) => prev.filter((zona) => zona.id !== id));
-                    showSuccessAlert('Eliminado', 'La zona se eliminó con éxito.');
+                    showSuccessAlert('Eliminada', 'La zona ha sido eliminada.');
+                    obtenerZonas();
                 } else {
                     showErrorAlert('Error', 'No se pudo eliminar la zona.');
                 }
             } catch (error) {
-                showErrorAlert('Error', 'No se pudo eliminar la zona.');
+                showErrorAlert('Error', 'Error al conectar con la API.');
             }
         }
     };
@@ -124,31 +125,44 @@ const AdminZonasPage = () => {
     };
 
     const handlePageChange = (newPage) => {
-        setCurrentPage(newPage);
+        if (newPage >= 1 && newPage <= totalPages) {
+            setCurrentPage(newPage);
+        }
+    };
+
+    const handleViewRoute = (zona) => {
+        setRouteModalData({
+            routes: [zona],
+            title: `Recorrido de Zona: ${zona.nombre}`,
+            subtitle: zona.descripcion || 'Trazado planificado del camión recolector'
+        });
+        setShowRouteModal(true);
     };
 
     return (
-        <div className="container mx-auto px-4 py-8 min-h-screen mt-16">
-            <TituloConRegreso titulo="Gestión de Zonas" to="/admin" />
+        <div className="p-6 bg-gray-100 min-h-screen">
+            <TituloConRegreso title="Gestión de Zonas y Rutas" />
 
-            {message && <p className="text-red-500">{message}</p>}
+            {message && <p className="text-red-500 mb-4">{message}</p>}
 
-            <div className="bg-gray-50 p-6 rounded-lg shadow-md mb-6">
+            <div className="bg-white p-4 rounded-lg shadow-md mb-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <input
+                        type="text"
                         className="border p-2 rounded"
-                        placeholder="Nombre"
+                        placeholder="Filtrar por nombre"
                         value={filterNombre}
                         onChange={(e) => setFilterNombre(e.target.value)}
                     />
                     <input
+                        type="text"
                         className="border p-2 rounded"
-                        placeholder="Descripción"
+                        placeholder="Filtrar por descripción"
                         value={filterDescripcion}
                         onChange={(e) => setFilterDescripcion(e.target.value)}
                     />
                 </div>
-                <div className="flex justify-end items-center mt-4 space-x-4">
+                <div className="flex justify-end space-x-4 mt-4">
                     <button
                         className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
                         onClick={handleSearch}
@@ -164,71 +178,106 @@ const AdminZonasPage = () => {
                 </div>
             </div>
 
-            <div className="flex justify-end">
+            <div className="flex justify-end mb-4">
                 <button
-                    className="bg-blue-500 text-white text-sm p-2 rounded-md hover:bg-blue-600 mb-1"
-                    style={{ width: 'auto' }}
+                    className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 font-medium shadow-sm flex items-center gap-1.5 text-sm"
                     onClick={() => setShowRegisterModal(true)}
                 >
-                    Nueva Zona
+                    <span>+</span> Nueva Zona y Ruta
                 </button>
             </div>
 
             {zonas.length === 0 ? (
-                <p>No hay zonas registradas</p>
+                <div className="bg-white p-8 rounded-lg text-center text-gray-500 shadow-sm">
+                    No se encontraron zonas registradas.
+                </div>
             ) : (
-                <div className="overflow-x-auto">
-                    <table className="min-w-full bg-white border border-gray-200">
+                <div className="overflow-x-auto bg-white rounded-lg shadow-md">
+                    <table className="min-w-full border border-gray-200">
                         <thead className="bg-gray-50">
                             <tr>
-                                <th className="px-6 py-3 border-b">Nombre</th>
-                                <th className="px-6 py-3 border-b">Descripción</th>
-                                <th className="px-6 py-3 border-b">Imagen</th>
-                                <th className="px-6 py-3 border-b">Acciones</th>
+                                <th className="px-6 py-3 border-b text-left text-xs font-semibold text-gray-600 uppercase">Nombre</th>
+                                <th className="px-6 py-3 border-b text-left text-xs font-semibold text-gray-600 uppercase">Descripción</th>
+                                <th className="px-6 py-3 border-b text-center text-xs font-semibold text-gray-600 uppercase">Ruta Geográfica</th>
+                                <th className="px-6 py-3 border-b text-center text-xs font-semibold text-gray-600 uppercase">Imagen</th>
+                                <th className="px-6 py-3 border-b text-center text-xs font-semibold text-gray-600 uppercase">Acciones</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            {zonas.map((zona) => (
-                                <tr key={zona.id} className="hover:bg-gray-50">
-                                    <td className="px-6 py-4 border-b">
-                                        {zona.nombre}
-                                    </td>
-                                    <td className="px-6 py-4 border-b">
-                                        {zona.descripcion || '---'}
-                                    </td>
-                                    <td className="px-6 py-4 border-b">
-                                        {zona.imagen ? (
-                                            <img
-                                                src={`${BASE_URL}${zona.imagen}`}
-                                                alt={zona.nombre}
-                                                className="h-16 object-cover mx-auto cursor-pointer"
-                                                onClick={() => handleImageClick(zona.imagen)}
-                                            />
-                                        ) : (
-                                            '---'
-                                        )}
-                                    </td>
-                                    <td className="px-6 py-4 border-b">
-                                        <div className="flex space-x-2">
-                                            <button
-                                                className="bg-yellow-400 text-white px-4 py-2 rounded-md hover:bg-yellow-500"
-                                                onClick={() => {
-                                                    setSelectedZona(zona);
-                                                    setShowEditModal(true);
-                                                }}
-                                            >
-                                                Editar
-                                            </button>
-                                            <button
-                                                className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600"
-                                                onClick={() => handleDelete(zona.id)}
-                                            >
-                                                Eliminar
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
+                        <tbody className="divide-y divide-gray-200">
+                            {zonas.map((zona) => {
+                                const hasRoute = Array.isArray(zona.coordenadas_ruta) && zona.coordenadas_ruta.length > 0;
+                                return (
+                                    <tr key={zona.id} className="hover:bg-gray-50 transition-colors">
+                                        <td className="px-6 py-4 font-medium text-gray-900">
+                                            <div className="flex items-center gap-2">
+                                                <span
+                                                    className="w-3 h-3 rounded-full flex-shrink-0"
+                                                    style={{ backgroundColor: zona.color_ruta || '#1976D2' }}
+                                                />
+                                                {zona.nombre}
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4 text-gray-600 text-sm max-w-xs truncate">
+                                            {zona.descripcion || '---'}
+                                        </td>
+                                        <td className="px-6 py-4 text-center">
+                                            {hasRoute ? (
+                                                <button
+                                                    onClick={() => handleViewRoute(zona)}
+                                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors"
+                                                >
+                                                    <MapIcon fontSize="small" />
+                                                    <span>Ver Ruta ({zona.coordenadas_ruta.length} pts)</span>
+                                                </button>
+                                            ) : (
+                                                <span className="text-xs text-gray-400 bg-gray-100 px-2.5 py-1 rounded-full">
+                                                    Sin ruta trazada
+                                                </span>
+                                            )}
+                                        </td>
+                                        <td className="px-6 py-4 text-center">
+                                            {zona.imagen ? (
+                                                <img
+                                                    src={`${BASE_URL}${zona.imagen}`}
+                                                    alt={zona.nombre}
+                                                    className="h-12 w-16 object-cover rounded mx-auto cursor-pointer shadow-xs hover:opacity-80 transition-opacity"
+                                                    onClick={() => handleImageClick(zona.imagen)}
+                                                />
+                                            ) : (
+                                                <span className="text-xs text-gray-400">Sin imagen</span>
+                                            )}
+                                        </td>
+                                        <td className="px-6 py-4 text-center">
+                                            <div className="flex items-center justify-center space-x-2">
+                                                {hasRoute && (
+                                                    <button
+                                                        className="bg-indigo-50 text-indigo-700 border border-indigo-200 px-3 py-1.5 text-xs font-medium rounded-md hover:bg-indigo-100"
+                                                        onClick={() => handleViewRoute(zona)}
+                                                        title="Ver recorrido en mapa"
+                                                    >
+                                                        Mapa
+                                                    </button>
+                                                )}
+                                                <button
+                                                    className="bg-amber-500 text-white px-3 py-1.5 text-xs font-medium rounded-md hover:bg-amber-600"
+                                                    onClick={() => {
+                                                        setSelectedZona(zona);
+                                                        setShowEditModal(true);
+                                                    }}
+                                                >
+                                                    Editar
+                                                </button>
+                                                <button
+                                                    className="bg-red-500 text-white px-3 py-1.5 text-xs font-medium rounded-md hover:bg-red-600"
+                                                    onClick={() => handleDelete(zona.id)}
+                                                >
+                                                    Eliminar
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                );
+                            })}
                         </tbody>
                     </table>
                 </div>
@@ -251,6 +300,14 @@ const AdminZonasPage = () => {
                 onClose={() => setShowEditModal(false)}
                 onUpdate={handleUpdate}
                 zona={selectedZona}
+            />
+
+            <RoutePreviewModal
+                show={showRouteModal}
+                onClose={() => setShowRouteModal(false)}
+                title={routeModalData.title}
+                subtitle={routeModalData.subtitle}
+                routes={routeModalData.routes}
             />
 
             {showImageModal && (
