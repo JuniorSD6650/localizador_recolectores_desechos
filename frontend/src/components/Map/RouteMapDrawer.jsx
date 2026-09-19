@@ -24,11 +24,10 @@ export const calculateRouteDistance = (coords) => {
 
 const COLOR_PRESETS = [
     { label: 'Azul', value: '#1976D2' },
+    { label: 'Azul Oscuro', value: '#04548C' },
     { label: 'Verde', value: '#049434' },
-    { label: 'Naranja', value: '#FC640C' },
-    { label: 'Púrpura', value: '#8B5CF6' },
-    { label: 'Cian', value: '#06B6D4' },
-    { label: 'Rojo', value: '#DC2626' }
+    { label: 'Verde Eco', value: '#5FBB01' },
+    { label: 'Naranja', value: '#FC640C' }
 ];
 
 const RouteMapDrawer = ({

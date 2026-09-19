@@ -53,7 +53,7 @@ exports.seed = async function (knex) {
       descripcion: 'Zona ubicada en San Luis S1, S2 y S3, esta es la zona 4 de recolección.',
       imagen: 'uploads/zonas/ZONA_4_San_Luis_1_2_3.jpg',
       organizacion_id: 1,
-      color_ruta: '#8b5cf6',
+      color_ruta: '#1976D2',
       coordenadas_ruta: JSON.stringify([
         { lat: -9.9220, lng: -76.2360 },
         { lat: -9.9235, lng: -76.2375 },
@@ -67,7 +67,7 @@ exports.seed = async function (knex) {
       descripcion: 'Zona ubicada en San Luis S4 y S5, esta es la zona 5 de recolección.',
       imagen: 'uploads/zonas/ZONA_5_San_Luis_4_5.jpg',
       organizacion_id: 1,
-      color_ruta: '#06b6d4',
+      color_ruta: '#049434',
       coordenadas_ruta: JSON.stringify([
         { lat: -9.9265, lng: -76.2372 },
         { lat: -9.9280, lng: -76.2360 },

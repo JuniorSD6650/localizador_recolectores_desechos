@@ -1,18 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { API_BASE_URL, BASE_URL } from '../../utils';
+import {
+    API_BASE_URL,
+    BASE_URL,
+    showSuccessAlert,
+    showErrorAlert,
+    showCustomAlert
+} from '../../utils';
 import TituloConRegreso from '../../components/TituloConRegreso/TituloConRegreso';
 import Pagination from '../../components/Pagination/Pagination';
-import RoutePreviewModal from '../../components/Map/RoutePreviewModal';
-import MapIcon from '@mui/icons-material/Map';
 
 const ZoneList = () => {
     const [zonas, setZonas] = useState([]);
     const [message, setMessage] = useState('');
     const [showImageModal, setShowImageModal] = useState(false);
     const [selectedImageUrl, setSelectedImageUrl] = useState('');
-
-    const [showRouteModal, setShowRouteModal] = useState(false);
-    const [selectedRouteData, setSelectedRouteData] = useState({ routes: [], title: '', subtitle: '' });
 
     const [filterNombre, setFilterNombre] = useState('');
     const [filterDescripcion, setFilterDescripcion] = useState('');
@@ -28,8 +29,8 @@ const ZoneList = () => {
             const data = await response.json();
 
             if (response.ok) {
-                setZonas(data.zonas || []);
-                setTotalPages(data.pagination?.totalPages || 1);
+                setZonas(data.zonas);
+                setTotalPages(data.pagination.totalPages);
             } else {
                 setMessage('No se pudieron cargar las zonas');
             }
@@ -75,131 +76,94 @@ const ZoneList = () => {
     };
 
     const handlePageChange = (newPage) => {
-        if (newPage >= 1 && newPage <= totalPages) {
-            setCurrentPage(newPage);
-        }
-    };
-
-    const handleViewRoute = (zona) => {
-        setSelectedRouteData({
-            routes: [zona],
-            title: `Recorrido: ${zona.nombre}`,
-            subtitle: zona.descripcion || 'Ruta programada para recolección de residuos en este sector'
-        });
-        setShowRouteModal(true);
+        setCurrentPage(newPage);
     };
 
     return (
-        <div className="container mx-auto px-4 py-8 min-h-screen mt-16 max-w-6xl">
-            <TituloConRegreso titulo="Zonas y Recorridos de Recolección" to="/" />
+        <div className="container mx-auto px-4 py-8 min-h-screen mt-16">
+            <TituloConRegreso titulo="Lista de Zonas" to="/" />
 
-            {message && <p className="text-red-500 mb-4">{message}</p>}
-
-            {/* Filtros de búsqueda */}
-            <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 mb-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <input
-                        type="text"
-                        className="border border-gray-300 p-2.5 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                        placeholder="Buscar por nombre de zona..."
-                        value={filterNombre}
-                        onChange={(e) => setFilterNombre(e.target.value)}
-                    />
-                    <input
-                        type="text"
-                        className="border border-gray-300 p-2.5 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                        placeholder="Buscar por descripción o referencia..."
-                        value={filterDescripcion}
-                        onChange={(e) => setFilterDescripcion(e.target.value)}
-                    />
+            {/* Filtros */}
+            <div className="bg-white p-4 rounded-lg shadow mb-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
+                        <input
+                            type="text"
+                            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="Buscar por nombre..."
+                            value={filterNombre}
+                            onChange={(e) => setFilterNombre(e.target.value)}
+                            onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+                        <input
+                            type="text"
+                            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="Buscar por descripción..."
+                            value={filterDescripcion}
+                            onChange={(e) => setFilterDescripcion(e.target.value)}
+                            onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                        />
+                    </div>
                 </div>
-                <div className="flex justify-end space-x-3 mt-4">
+                <div className="flex gap-2">
                     <button
-                        className="px-4 py-2 bg-blue-600 text-white rounded-xl text-sm font-medium hover:bg-blue-700 shadow-xs transition-colors"
                         onClick={handleSearch}
+                        className="px-4 py-2 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700 transition"
                     >
                         Buscar
                     </button>
                     <button
-                        className="px-4 py-2 bg-gray-100 text-gray-700 rounded-xl text-sm font-medium hover:bg-gray-200 transition-colors"
                         onClick={handleLimpiar}
+                        className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md text-sm hover:bg-gray-300 transition"
                     >
                         Limpiar
                     </button>
                 </div>
             </div>
 
-            {/* Lista de Zonas */}
+            {message && <p className="text-red-500 mb-4">{message}</p>}
+
             {zonas.length === 0 ? (
-                <div className="bg-white p-8 rounded-2xl text-center text-gray-500 shadow-sm">
-                    No se encontraron zonas disponibles.
-                </div>
+                <p>No hay zonas registradas</p>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {zonas.map((zona) => {
-                        const coords = Array.isArray(zona.coordenadas_ruta) ? zona.coordenadas_ruta : [];
-                        const hasRoute = coords.length > 0;
-
-                        return (
-                            <div
-                                key={zona.id}
-                                className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow flex flex-col justify-between"
-                            >
-                                {zona.imagen ? (
-                                    <div
-                                        className="h-44 w-full overflow-hidden bg-gray-100 cursor-pointer relative group"
-                                        onClick={() => handleImageClick(zona.imagen)}
-                                    >
-                                        <img
-                                            src={`${BASE_URL}${zona.imagen}`}
-                                            alt={zona.nombre}
-                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                                        />
-                                        <span className="absolute bottom-2 right-2 bg-black/60 text-white text-[11px] px-2 py-0.5 rounded backdrop-blur-xs">
-                                            Ver foto
-                                        </span>
-                                    </div>
-                                ) : (
-                                    <div className="h-32 w-full bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center text-blue-300">
-                                        <MapIcon style={{ fontSize: 48 }} />
-                                    </div>
-                                )}
-
-                                <div className="p-5 flex-1 flex flex-col justify-between">
-                                    <div>
-                                        <div className="flex items-center gap-2 mb-1.5">
-                                            <span
-                                                className="w-3.5 h-3.5 rounded-full flex-shrink-0"
-                                                style={{ backgroundColor: zona.color_ruta || '#1976D2' }}
+                <div className="overflow-x-auto bg-white rounded-lg shadow">
+                    <table className="min-w-full bg-white border border-gray-200">
+                        <thead className="bg-gray-50">
+                            <tr>
+                                <th className="px-6 py-3 border-b text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nombre</th>
+                                <th className="px-6 py-3 border-b text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Descripción</th>
+                                <th className="px-6 py-3 border-b text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Imagen</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-200">
+                            {zonas.map((zona) => (
+                                <tr key={zona.id} className="hover:bg-gray-50">
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                        {zona.nombre}
+                                    </td>
+                                    <td className="px-6 py-4 text-sm text-gray-500">
+                                        {zona.descripcion || '---'}
+                                    </td>
+                                    <td className="px-6 py-4 text-center">
+                                        {zona.imagen ? (
+                                            <img
+                                                src={`${BASE_URL}${zona.imagen}`}
+                                                alt={zona.nombre}
+                                                className="h-16 object-cover mx-auto cursor-pointer rounded"
+                                                onClick={() => handleImageClick(zona.imagen)}
                                             />
-                                            <h3 className="font-bold text-gray-900 text-base">
-                                                {zona.nombre}
-                                            </h3>
-                                        </div>
-                                        <p className="text-xs text-gray-600 line-clamp-3 mb-4">
-                                            {zona.descripcion || 'Sin descripción disponible.'}
-                                        </p>
-                                    </div>
-
-                                    <div className="pt-3 border-t border-gray-100 flex items-center justify-between">
-                                        {hasRoute ? (
-                                            <button
-                                                onClick={() => handleViewRoute(zona)}
-                                                className="w-full inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 rounded-xl text-xs font-semibold transition-colors"
-                                            >
-                                                <MapIcon fontSize="small" />
-                                                <span>Ver Recorrido en Mapa ({coords.length} pts)</span>
-                                            </button>
                                         ) : (
-                                            <span className="text-xs text-gray-400 italic">
-                                                Recorrido en planificación
-                                            </span>
+                                            '---'
                                         )}
-                                    </div>
-                                </div>
-                            </div>
-                        );
-                    })}
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
                 </div>
             )}
 
@@ -209,37 +173,25 @@ const ZoneList = () => {
                 onPageChange={handlePageChange}
             />
 
-            {/* Modal de Imagen */}
             {showImageModal && (
                 <div
-                    className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4"
+                    className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50"
                     onClick={closeImageModal}
                 >
-                    <div className="relative max-w-2xl max-h-[85vh] bg-white rounded-xl overflow-hidden shadow-2xl">
-                        <img
-                            src={`${BASE_URL}${selectedImageUrl}`}
-                            alt="Zona"
-                            className="object-contain max-h-[80vh] w-auto"
-                            onClick={(e) => e.stopPropagation()}
-                        />
-                        <button
-                            className="absolute top-3 right-3 text-white bg-black/70 hover:bg-black p-1.5 rounded-full"
-                            onClick={closeImageModal}
-                        >
-                            ✕
-                        </button>
-                    </div>
+                    <img
+                        src={`${BASE_URL}${selectedImageUrl}`}
+                        alt="Zona"
+                        className="object-cover h-96 rounded"
+                        onClick={(e) => e.stopPropagation()}
+                    />
+                    <button
+                        className="absolute top-5 right-5 text-white text-2xl bg-gray-800 bg-opacity-50 rounded-full px-2 py-1"
+                        onClick={closeImageModal}
+                    >
+                        ✕
+                    </button>
                 </div>
             )}
-
-            {/* Modal de Previsualización de Ruta */}
-            <RoutePreviewModal
-                show={showRouteModal}
-                onClose={() => setShowRouteModal(false)}
-                title={selectedRouteData.title}
-                subtitle={selectedRouteData.subtitle}
-                routes={selectedRouteData.routes}
-            />
         </div>
     );
 };
