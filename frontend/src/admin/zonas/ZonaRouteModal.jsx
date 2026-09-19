@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import PropTypes from 'prop-types';
 import { API_BASE_URL, showSuccessAlert, showErrorAlert } from '../../utils';
@@ -7,29 +7,39 @@ import MapIcon from '@mui/icons-material/Map';
 import CloseIcon from '@mui/icons-material/Close';
 
 const ZonaRouteModal = ({ show = false, onClose = () => { }, onUpdate = () => { }, zona = null }) => {
-    const [routeData, setRouteData] = useState({ coordenadas: [], color: '#1976D2' });
+    // Extraer coordenadas iniciales de la zona de forma segura
+    const initialCoords = useMemo(() => {
+        if (!zona) return [];
+        let coords = [];
+        if (Array.isArray(zona.coordenadas_ruta)) {
+            coords = zona.coordenadas_ruta;
+        } else if (typeof zona.coordenadas_ruta === 'string') {
+            try {
+                coords = JSON.parse(zona.coordenadas_ruta || '[]');
+            } catch {
+                coords = [];
+            }
+        }
+        return Array.isArray(coords) ? coords : [];
+    }, [zona?.id, zona?.coordenadas_ruta]);
+
+    const initialColor = zona?.color_ruta || '#1976D2';
+
+    const [routeData, setRouteData] = useState({
+        coordenadas: initialCoords,
+        color: initialColor
+    });
     const [saving, setSaving] = useState(false);
 
-    // Inicializar coordenadas y color al abrir la zona seleccionada
+    // Reinicializar al abrir para una zona distinta
     useEffect(() => {
         if (zona) {
-            let coords = [];
-            if (Array.isArray(zona.coordenadas_ruta)) {
-                coords = zona.coordenadas_ruta;
-            } else if (typeof zona.coordenadas_ruta === 'string') {
-                try {
-                    coords = JSON.parse(zona.coordenadas_ruta || '[]');
-                } catch {
-                    coords = [];
-                }
-            }
-
             setRouteData({
-                coordenadas: Array.isArray(coords) ? coords : [],
-                color: zona.color_ruta || '#1976D2'
+                coordenadas: initialCoords,
+                color: initialColor
             });
         }
-    }, [zona, show]);
+    }, [zona?.id, initialCoords, initialColor]);
 
     // Bloquear scroll en body mientras el modal esté activo
     useEffect(() => {
@@ -79,30 +89,30 @@ const ZonaRouteModal = ({ show = false, onClose = () => { }, onUpdate = () => { 
 
     return createPortal(
         <div
-            className="fixed inset-0 bg-black/70 flex items-center justify-center p-3 md:p-6"
+            className="fixed inset-0 bg-black/75 flex items-center justify-center p-3 md:p-6"
             style={{ zIndex: 999999 }}
             onClick={onClose}
         >
             <div
-                className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl overflow-hidden flex flex-col max-h-[92vh] border border-gray-100 relative"
+                className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl overflow-hidden flex flex-col max-h-[94vh] border border-gray-100 relative"
                 style={{ zIndex: 1000000 }}
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Header */}
-                <div className="flex items-center justify-between px-6 py-4 border-b bg-gray-50">
+                <div className="flex items-center justify-between px-6 py-4 border-b bg-gray-50/80">
                     <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center">
+                        <div className="w-10 h-10 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center shadow-xs">
                             <MapIcon fontSize="small" />
                         </div>
                         <div>
                             <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
-                                <span>Ruta Geográfica:</span>
+                                <span>Trazado de Ruta:</span>
                                 <span className="text-blue-700">{zona.nombre}</span>
                             </h2>
                             <p className="text-xs text-gray-500">
                                 {hasPoints
-                                    ? `Recorrido actual con ${routeData.coordenadas.length} puntos (~${distance} km). Puedes hacer clic para modificarlo.`
-                                    : 'Sin recorrido previo. Haz clic secuencialmente sobre el mapa para trazar la ruta de recolección.'}
+                                    ? `Recorrido cargado con ${routeData.coordenadas.length} nodos (~${distance} km). Puedes mover nodos arrastrándolos o añadir nuevos.`
+                                    : 'Sin trazado previo. Haz clic sobre las calles para definir el circuito de recolección.'}
                             </p>
                         </div>
                     </div>
@@ -116,12 +126,12 @@ const ZonaRouteModal = ({ show = false, onClose = () => { }, onUpdate = () => { 
                     </button>
                 </div>
 
-                {/* Body con el trazador de mapa */}
-                <div className="p-6 overflow-y-auto flex-1">
+                {/* Body con el editor de mapa */}
+                <div className="p-5 md:p-6 overflow-y-auto flex-1 bg-white">
                     <RouteMapDrawer
-                        key={`${zona.id}-${show}`}
-                        initialCoords={routeData.coordenadas}
-                        initialColor={routeData.color}
+                        key={`drawer-zona-${zona.id}`}
+                        initialCoords={initialCoords}
+                        initialColor={initialColor}
                         onChange={setRouteData}
                     />
                 </div>
@@ -129,14 +139,14 @@ const ZonaRouteModal = ({ show = false, onClose = () => { }, onUpdate = () => { 
                 {/* Footer con resumen y acciones */}
                 <div className="px-6 py-4 border-t bg-gray-50 flex flex-wrap items-center justify-between gap-3">
                     <div className="flex items-center gap-2 text-xs">
-                        <span className="font-semibold text-gray-700">Estado:</span>
+                        <span className="font-semibold text-gray-700">Resumen:</span>
                         {hasPoints ? (
-                            <span className="inline-flex items-center gap-1 text-green-700 bg-green-50 border border-green-200 px-2.5 py-1 rounded-full font-medium">
-                                <span className="w-2 h-2 rounded-full bg-green-500" />
-                                {routeData.coordenadas.length} puntos trazados (~{distance} km)
+                            <span className="inline-flex items-center gap-1.5 text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full font-semibold">
+                                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                                {routeData.coordenadas.length} puntos (~{distance} km)
                             </span>
                         ) : (
-                            <span className="text-amber-700 bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-full font-medium">
+                            <span className="text-amber-700 bg-amber-50 border border-amber-200 px-3 py-1 rounded-full font-medium">
                                 ⚠️ Sin puntos trazados aún
                             </span>
                         )}
@@ -155,7 +165,7 @@ const ZonaRouteModal = ({ show = false, onClose = () => { }, onUpdate = () => { 
                             type="button"
                             disabled={saving}
                             onClick={handleSave}
-                            className="inline-flex items-center gap-2 px-5 py-2 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 rounded-lg shadow-sm transition disabled:opacity-50 cursor-pointer"
+                            className="inline-flex items-center gap-2 px-6 py-2 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 rounded-lg shadow-sm transition disabled:opacity-50 cursor-pointer"
                         >
                             {saving ? (
                                 <>

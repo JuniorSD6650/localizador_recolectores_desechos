@@ -11,9 +11,7 @@ import RegisterZonaModal from './RegisterZonaModal';
 import EditZonaModal from './EditZonaModal';
 import ZonaRouteModal from './ZonaRouteModal';
 import Pagination from '../../components/Pagination/Pagination';
-import RoutePreviewModal from '../../components/Map/RoutePreviewModal';
 import MapIcon from '@mui/icons-material/Map';
-import AddLocationAltIcon from '@mui/icons-material/AddLocationAlt';
 
 const AdminZonasPage = () => {
     const [zonas, setZonas] = useState([]);
@@ -21,9 +19,6 @@ const AdminZonasPage = () => {
     const [showRegisterModal, setShowRegisterModal] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
     const [selectedZona, setSelectedZona] = useState(null);
-
-    const [showRouteModal, setShowRouteModal] = useState(false);
-    const [routeModalData, setRouteModalData] = useState({ routes: [], title: '', subtitle: '' });
 
     const [showRouteEditorModal, setShowRouteEditorModal] = useState(false);
     const [selectedRouteZona, setSelectedRouteZona] = useState(null);
@@ -135,15 +130,6 @@ const AdminZonasPage = () => {
         }
     };
 
-    const handleViewRoute = (zona) => {
-        setRouteModalData({
-            routes: [zona],
-            title: `Recorrido de Zona: ${zona.nombre}`,
-            subtitle: zona.descripcion || 'Trazado planificado del camión recolector'
-        });
-        setShowRouteModal(true);
-    };
-
     const handleOpenRouteEditor = (zona) => {
         setSelectedRouteZona(zona);
         setShowRouteEditorModal(true);
@@ -174,13 +160,13 @@ const AdminZonasPage = () => {
                 </div>
                 <div className="flex justify-end space-x-4 mt-4">
                     <button
-                        className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                        className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 cursor-pointer"
                         onClick={handleSearch}
                     >
                         Buscar
                     </button>
                     <button
-                        className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
+                        className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 cursor-pointer"
                         onClick={handleLimpiar}
                     >
                         Limpiar
@@ -190,10 +176,10 @@ const AdminZonasPage = () => {
 
             <div className="flex justify-end mb-4">
                 <button
-                    className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 font-medium shadow-sm flex items-center gap-1.5 text-sm"
+                    className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 font-medium shadow-sm flex items-center gap-1.5 text-sm cursor-pointer"
                     onClick={() => setShowRegisterModal(true)}
                 >
-                    <span>+</span> Nueva Zona y Ruta
+                    <span>+</span> Nueva Zona
                 </button>
             </div>
 
@@ -241,29 +227,24 @@ const AdminZonasPage = () => {
                                         <td className="px-6 py-4 text-gray-600 text-sm max-w-xs truncate">
                                             {zona.descripcion || '---'}
                                         </td>
+
+                                        {/* Columna única para gestión y edición de ruta */}
                                         <td className="px-6 py-4 text-center">
-                                            {hasRoute ? (
-                                                <button
-                                                    type="button"
-                                                    onClick={() => handleOpenRouteEditor(zona)}
-                                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-blue-700 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors cursor-pointer shadow-xs"
-                                                    title="Ver y editar el trazado de la ruta en el mapa"
-                                                >
-                                                    <MapIcon style={{ fontSize: '16px' }} />
-                                                    <span>Ver / Editar ({coords.length} pts)</span>
-                                                </button>
-                                            ) : (
-                                                <button
-                                                    type="button"
-                                                    onClick={() => handleOpenRouteEditor(zona)}
-                                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-300 rounded-lg hover:bg-emerald-100 transition-colors cursor-pointer shadow-xs"
-                                                    title="Trazar ruta de recolección para esta zona"
-                                                >
-                                                    <AddLocationAltIcon style={{ fontSize: '16px' }} />
-                                                    <span>Crear Ruta</span>
-                                                </button>
-                                            )}
+                                            <button
+                                                type="button"
+                                                onClick={() => handleOpenRouteEditor(zona)}
+                                                className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer shadow-xs ${
+                                                    hasRoute
+                                                        ? 'text-blue-700 bg-blue-50 border border-blue-200 hover:bg-blue-100 hover:border-blue-300'
+                                                        : 'text-emerald-700 bg-emerald-50 border border-emerald-300 hover:bg-emerald-100 hover:border-emerald-400'
+                                                }`}
+                                                title={hasRoute ? "Modificar o ver trazado de la ruta" : "Trazar ruta de recolección"}
+                                            >
+                                                <MapIcon style={{ fontSize: '16px' }} />
+                                                <span>{hasRoute ? `Ruta (${coords.length} pts)` : '+ Trazar Ruta'}</span>
+                                            </button>
                                         </td>
+
                                         <td className="px-6 py-4 text-center">
                                             {zona.imagen ? (
                                                 <img
@@ -276,28 +257,24 @@ const AdminZonasPage = () => {
                                                 <span className="text-xs text-gray-400">Sin imagen</span>
                                             )}
                                         </td>
+
+                                        {/* Columna Acciones: Solo editar datos básicos y eliminar (sin botón de ruta duplicado) */}
                                         <td className="px-6 py-4 text-center">
                                             <div className="flex items-center justify-center space-x-2">
                                                 <button
-                                                    type="button"
-                                                    className="bg-indigo-50 text-indigo-700 border border-indigo-200 px-3 py-1.5 text-xs font-medium rounded-md hover:bg-indigo-100 cursor-pointer"
-                                                    onClick={() => handleOpenRouteEditor(zona)}
-                                                    title={hasRoute ? "Ver y editar ruta" : "Crear ruta"}
-                                                >
-                                                    {hasRoute ? "Ruta" : "+ Ruta"}
-                                                </button>
-                                                <button
-                                                    className="bg-amber-500 text-white px-3 py-1.5 text-xs font-medium rounded-md hover:bg-amber-600"
+                                                    className="bg-amber-500 text-white px-3 py-1.5 text-xs font-medium rounded-md hover:bg-amber-600 cursor-pointer"
                                                     onClick={() => {
                                                         setSelectedZona(zona);
                                                         setShowEditModal(true);
                                                     }}
+                                                    title="Editar nombre, descripción o imagen"
                                                 >
                                                     Editar
                                                 </button>
                                                 <button
-                                                    className="bg-red-500 text-white px-3 py-1.5 text-xs font-medium rounded-md hover:bg-red-600"
+                                                    className="bg-red-500 text-white px-3 py-1.5 text-xs font-medium rounded-md hover:bg-red-600 cursor-pointer"
                                                     onClick={() => handleDelete(zona.id)}
+                                                    title="Eliminar zona"
                                                 >
                                                     Eliminar
                                                 </button>
@@ -330,23 +307,19 @@ const AdminZonasPage = () => {
                 zona={selectedZona}
             />
 
-            <RoutePreviewModal
-                show={showRouteModal}
-                onClose={() => setShowRouteModal(false)}
-                title={routeModalData.title}
-                subtitle={routeModalData.subtitle}
-                routes={routeModalData.routes}
-            />
-
-            <ZonaRouteModal
-                show={showRouteEditorModal}
-                onClose={() => {
-                    setShowRouteEditorModal(false);
-                    setSelectedRouteZona(null);
-                }}
-                onUpdate={obtenerZonas}
-                zona={selectedRouteZona}
-            />
+            {/* Modal de Trazado y Edición de Ruta: Instanciado exclusivamente con key por ID de zona */}
+            {showRouteEditorModal && selectedRouteZona && (
+                <ZonaRouteModal
+                    key={`zona-route-modal-${selectedRouteZona.id}`}
+                    show={showRouteEditorModal}
+                    onClose={() => {
+                        setShowRouteEditorModal(false);
+                        setSelectedRouteZona(null);
+                    }}
+                    onUpdate={obtenerZonas}
+                    zona={selectedRouteZona}
+                />
+            )}
 
             {showImageModal && (
                 <div
@@ -360,7 +333,7 @@ const AdminZonasPage = () => {
                         onClick={(e) => e.stopPropagation()}
                     />
                     <button
-                        className="absolute top-5 right-5 text-white text-2xl bg-gray-800 bg-opacity-50 rounded-full px-2 py-1"
+                        className="absolute top-5 right-5 text-white text-2xl bg-gray-800 bg-opacity-50 rounded-full px-2 py-1 cursor-pointer"
                         onClick={closeImageModal}
                     >
                         X
