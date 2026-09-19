@@ -38,12 +38,26 @@ const distanceBetweenMeters = (p1, p2) => {
 };
 
 const COLOR_PRESETS = [
-    { label: 'Azul', value: '#1976D2' },
-    { label: 'Azul Oscuro', value: '#04548C' },
-    { label: 'Verde', value: '#049434' },
-    { label: 'Verde Eco', value: '#5FBB01' },
-    { label: 'Naranja', value: '#FC640C' },
-    { label: 'Púrpura', value: '#7C3AED' }
+    { label: 'Azul Institucional', value: '#1976D2' },
+    { label: 'Azul Marino', value: '#0D3B66' },
+    { label: 'Cian Océano', value: '#0284C7' },
+    { label: 'Celeste Cielo', value: '#06B6D4' },
+    { label: 'Verde Bosque', value: '#047857' },
+    { label: 'Verde Esmeralda', value: '#059669' },
+    { label: 'Verde Eco Lima', value: '#65A30D' },
+    { label: 'Verde Menta', value: '#10B981' },
+    { label: 'Ámbar Dorado', value: '#D97706' },
+    { label: 'Naranja Fuego', value: '#EA580C' },
+    { label: 'Naranja Mandarina', value: '#F97316' },
+    { label: 'Rojo Carmesí', value: '#DC2626' },
+    { label: 'Rojo Rubí Intenso', value: '#991B1B' },
+    { label: 'Fucsia Magenta', value: '#C026D3' },
+    { label: 'Rosa Neón', value: '#DB2777' },
+    { label: 'Violeta Eléctrico', value: '#7C3AED' },
+    { label: 'Púrpura Profundo', value: '#581C87' },
+    { label: 'Café / Marrón', value: '#78350F' },
+    { label: 'Gris Pizarra', value: '#475569' },
+    { label: 'Negro Azabache', value: '#0F172A' }
 ];
 
 const RouteMapDrawer = ({
@@ -504,21 +518,38 @@ const RouteMapDrawer = ({
             )}
 
             {/* Barra de herramientas y controles */}
-            <div className="flex flex-wrap items-center justify-between gap-2">
-                {/* Selector de color */}
-                <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center justify-between gap-2.5">
+                {/* Selector de color ampliado y personalizado */}
+                <div className="flex flex-wrap items-center gap-2">
                     <label className="text-xs font-semibold text-gray-700">Color:</label>
-                    <div className="flex gap-1.5">
+                    <div className="flex flex-wrap items-center gap-1.5 max-w-sm sm:max-w-md">
                         {COLOR_PRESETS.map((p) => (
                             <button
                                 key={p.value}
                                 type="button"
                                 title={p.label}
-                                className={`w-5 h-5 rounded-full border-2 transition-transform ${color === p.value ? 'scale-125 border-gray-900 shadow-md' : 'border-white hover:scale-110'}`}
+                                className={`w-5 h-5 rounded-full border-2 transition-transform cursor-pointer ${
+                                    color.toLowerCase() === p.value.toLowerCase()
+                                        ? 'scale-125 border-gray-900 shadow-md ring-2 ring-blue-400'
+                                        : 'border-white hover:scale-110 shadow-sm'
+                                }`}
                                 style={{ backgroundColor: p.value }}
                                 onClick={() => setColor(p.value)}
                             />
                         ))}
+                        {/* Selector de color personalizado nativo */}
+                        <label
+                            title="Seleccionar cualquier color personalizado"
+                            className="flex items-center gap-1 px-2 py-0.5 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 cursor-pointer shadow-sm text-xs font-semibold text-gray-700"
+                        >
+                            <input
+                                type="color"
+                                value={color}
+                                onChange={(e) => setColor(e.target.value)}
+                                className="w-4 h-4 rounded cursor-pointer border-0 p-0 bg-transparent"
+                            />
+                            <span className="text-[10px] font-mono">{color.toUpperCase()}</span>
+                        </label>
                     </div>
                 </div>
 

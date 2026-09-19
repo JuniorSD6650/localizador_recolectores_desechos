@@ -81,12 +81,14 @@ const VehicleDetail = () => {
     const [message, setMessage] = useState('');
     const [ubicacion, setUbicacion] = useState(null);
     const [userZoom, setUserZoom] = useState(15);
-    const [selectedRouteFilter, setSelectedRouteFilter] = useState('ALL');
+    const [selectedRouteIds, setSelectedRouteIds] = useState([]);
+    const [showRouteDropdown, setShowRouteDropdown] = useState(false);
 
     const mapRef = useRef(null);
     const markerRef = useRef(null);
     const mapInstanceRef = useRef(null);
     const routesLayerRef = useRef(null);
+    const dropdownRef = useRef(null);
 
     // 🚚 Obtener detalles del vehículo
     useEffect(() => {
@@ -294,7 +296,45 @@ const VehicleDetail = () => {
             : [];
     }, [vehicle?.zonas_asignadas]);
 
-    // 🛣️ Dibuja automáticamente la ruta o rutas asignadas en el mapa, respetando el filtro
+    // Sincronizar selectedRouteIds con todas las rutas válidas por defecto
+    useEffect(() => {
+        if (validRoutes && validRoutes.length > 0) {
+            setSelectedRouteIds(validRoutes.map((r) => String(r.id)));
+        } else {
+            setSelectedRouteIds([]);
+        }
+    }, [validRoutes]);
+
+    // Cerrar dropdown al hacer clic fuera
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                setShowRouteDropdown(false);
+            }
+        };
+        if (showRouteDropdown) {
+            document.addEventListener('mousedown', handleClickOutside);
+        }
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [showRouteDropdown]);
+
+    const handleToggleAll = () => {
+        if (selectedRouteIds.length === validRoutes.length) {
+            setSelectedRouteIds([]);
+        } else {
+            setSelectedRouteIds(validRoutes.map((r) => String(r.id)));
+        }
+    };
+
+    const handleToggleRoute = (id) => {
+        setSelectedRouteIds((prev) =>
+            prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+        );
+    };
+
+    // 🛣️ Dibuja automáticamente la ruta o rutas asignadas en el mapa, respetando la selección por checkbox
     useEffect(() => {
         const map = mapInstanceRef.current;
         const routesLayer = routesLayerRef.current;
@@ -302,11 +342,9 @@ const VehicleDetail = () => {
 
         routesLayer.clearLayers();
 
-        if (!validRoutes || validRoutes.length === 0) return;
+        if (!validRoutes || validRoutes.length === 0 || selectedRouteIds.length === 0) return;
 
-        const routesToDraw = selectedRouteFilter === 'ALL'
-            ? validRoutes
-            : validRoutes.filter((r) => String(r.id) === String(selectedRouteFilter));
+        const routesToDraw = validRoutes.filter((r) => selectedRouteIds.includes(String(r.id)));
 
         routesToDraw.forEach((zona) => {
             let coords = zona.coordenadas_ruta;
@@ -333,7 +371,7 @@ const VehicleDetail = () => {
                 }
             }
         });
-    }, [validRoutes, selectedRouteFilter]);
+    }, [validRoutes, selectedRouteIds]);
 
     const hasRoute = validRoutes.length > 0;
 
@@ -438,23 +476,95 @@ const VehicleDetail = () => {
                     </div>
 
                     {validRoutes.length > 1 && (
-                        <div className="flex items-center gap-2">
-                            <label htmlFor="routeFilterSelect" className="text-xs font-medium text-gray-600">
-                                Filtrar ruta:
-                            </label>
-                            <select
-                                id="routeFilterSelect"
-                                value={selectedRouteFilter}
-                                onChange={(e) => setSelectedRouteFilter(e.target.value)}
-                                className="text-xs border border-gray-300 rounded-lg px-2.5 py-1.5 bg-white text-gray-800 font-semibold focus:ring-2 focus:ring-blue-500 focus:outline-none cursor-pointer shadow-xs"
+                        <div className="relative" ref={dropdownRef}>
+                            <button
+                                type="button"
+                                onClick={() => setShowRouteDropdown(!showRouteDropdown)}
+                                className="inline-flex items-center gap-2 px-3 py-1.5 bg-white border border-gray-300 rounded-lg text-xs font-semibold text-gray-700 hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:outline-none shadow-sm cursor-pointer"
                             >
-                                <option value="ALL">Todas las rutas ({validRoutes.length})</option>
-                                {validRoutes.map((r, idx) => (
-                                    <option key={r.id || idx} value={String(r.id)}>
-                                        {r.nombre || `Ruta ${idx + 1}`}
-                                    </option>
-                                ))}
-                            </select>
+                                <MapIcon style={{ fontSize: '16px' }} className="text-blue-600" />
+                                <span>
+                                    {selectedRouteIds.length === validRoutes.length
+                                        ? `Todas las rutas (${validRoutes.length})`
+                                        : selectedRouteIds.length === 0
+                                        ? 'Ninguna ruta visible'
+                                        : `${selectedRouteIds.length} de ${validRoutes.length} rutas`}
+                                </span>
+                                <span className="text-[10px] text-gray-500">▼</span>
+                            </button>
+
+                            {showRouteDropdown && (
+                                <div
+                                    className="absolute right-0 mt-1.5 w-64 bg-white rounded-xl shadow-xl border border-gray-200 py-2 z-50"
+                                    style={{ zIndex: 1000 }}
+                                >
+                                    {/* Checkbox Mostrar todas las rutas */}
+                                    <div className="px-3 py-1.5 border-b border-gray-100 flex items-center justify-between">
+                                        <label className="flex items-center gap-2 text-xs font-bold text-gray-800 cursor-pointer select-none">
+                                            <input
+                                                type="checkbox"
+                                                className="rounded text-blue-600 focus:ring-blue-500 cursor-pointer h-4 w-4"
+                                                checked={validRoutes.length > 0 && selectedRouteIds.length === validRoutes.length}
+                                                onChange={handleToggleAll}
+                                            />
+                                            <span>Mostrar todas las rutas</span>
+                                        </label>
+                                        <span className="text-[10px] text-gray-400 font-mono">
+                                            {selectedRouteIds.length}/{validRoutes.length}
+                                        </span>
+                                    </div>
+
+                                    {/* Lista de rutas individuales con checkbox */}
+                                    <div className="max-h-56 overflow-y-auto divide-y divide-gray-50 py-1">
+                                        {validRoutes.map((r, idx) => {
+                                            const isChecked = selectedRouteIds.includes(String(r.id));
+                                            return (
+                                                <label
+                                                    key={r.id || idx}
+                                                    className="flex items-center justify-between px-3 py-2 hover:bg-blue-50 cursor-pointer transition-colors text-xs text-gray-700 select-none"
+                                                >
+                                                    <div className="flex items-center gap-2 overflow-hidden mr-2">
+                                                        <input
+                                                            type="checkbox"
+                                                            className="rounded text-blue-600 focus:ring-blue-500 cursor-pointer h-4 w-4 flex-shrink-0"
+                                                            checked={isChecked}
+                                                            onChange={() => handleToggleRoute(String(r.id))}
+                                                        />
+                                                        <span
+                                                            className="w-3 h-3 rounded-full flex-shrink-0"
+                                                            style={{ backgroundColor: r.color_ruta || '#1976D2' }}
+                                                        />
+                                                        <span className="font-medium truncate text-gray-900">
+                                                            {r.nombre || `Ruta ${idx + 1}`}
+                                                        </span>
+                                                    </div>
+                                                    <span className="text-[10px] text-gray-400 flex-shrink-0">
+                                                        {Array.isArray(r.coordenadas_ruta) ? `${r.coordenadas_ruta.length} pts` : ''}
+                                                    </span>
+                                                </label>
+                                            );
+                                        })}
+                                    </div>
+
+                                    {/* Acciones rápidas en el pie */}
+                                    <div className="px-3 pt-2 border-t border-gray-100 flex items-center justify-between text-[11px]">
+                                        <button
+                                            type="button"
+                                            onClick={() => setSelectedRouteIds(validRoutes.map((r) => String(r.id)))}
+                                            className="text-blue-600 hover:text-blue-800 font-semibold cursor-pointer"
+                                        >
+                                            Marcar todas
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setSelectedRouteIds([])}
+                                            className="text-gray-500 hover:text-gray-700 font-semibold cursor-pointer"
+                                        >
+                                            Desmarcar
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     )}
 
