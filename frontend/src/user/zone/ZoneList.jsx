@@ -8,12 +8,17 @@ import {
 } from '../../utils';
 import TituloConRegreso from '../../components/TituloConRegreso/TituloConRegreso';
 import Pagination from '../../components/Pagination/Pagination';
+import RoutePreviewModal from '../../components/Map/RoutePreviewModal';
+import MapIcon from '@mui/icons-material/Map';
 
 const ZoneList = () => {
     const [zonas, setZonas] = useState([]);
     const [message, setMessage] = useState('');
     const [showImageModal, setShowImageModal] = useState(false);
     const [selectedImageUrl, setSelectedImageUrl] = useState('');
+
+    const [showRouteModal, setShowRouteModal] = useState(false);
+    const [selectedRouteZona, setSelectedRouteZona] = useState(null);
 
     const [filterNombre, setFilterNombre] = useState('');
     const [filterDescripcion, setFilterDescripcion] = useState('');
@@ -79,6 +84,11 @@ const ZoneList = () => {
         setCurrentPage(newPage);
     };
 
+    const handleViewRoute = (zona) => {
+        setSelectedRouteZona(zona);
+        setShowRouteModal(true);
+    };
+
     return (
         <div className="container mx-auto px-4 py-8 min-h-screen mt-16">
             <TituloConRegreso titulo="Lista de Zonas" to="/" />
@@ -136,32 +146,70 @@ const ZoneList = () => {
                             <tr>
                                 <th className="px-6 py-3 border-b text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nombre</th>
                                 <th className="px-6 py-3 border-b text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Descripción</th>
+                                <th className="px-6 py-3 border-b text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Ruta en Mapa</th>
                                 <th className="px-6 py-3 border-b text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Imagen</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-200">
-                            {zonas.map((zona) => (
-                                <tr key={zona.id} className="hover:bg-gray-50">
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                        {zona.nombre}
-                                    </td>
-                                    <td className="px-6 py-4 text-sm text-gray-500">
-                                        {zona.descripcion || '---'}
-                                    </td>
-                                    <td className="px-6 py-4 text-center">
-                                        {zona.imagen ? (
-                                            <img
-                                                src={`${BASE_URL}${zona.imagen}`}
-                                                alt={zona.nombre}
-                                                className="h-16 object-cover mx-auto cursor-pointer rounded"
-                                                onClick={() => handleImageClick(zona.imagen)}
-                                            />
-                                        ) : (
-                                            '---'
-                                        )}
-                                    </td>
-                                </tr>
-                            ))}
+                            {zonas.map((zona) => {
+                                let coords = [];
+                                if (Array.isArray(zona.coordenadas_ruta)) {
+                                    coords = zona.coordenadas_ruta;
+                                } else if (typeof zona.coordenadas_ruta === 'string') {
+                                    try {
+                                        coords = JSON.parse(zona.coordenadas_ruta || '[]');
+                                    } catch {
+                                        coords = [];
+                                    }
+                                }
+                                const hasRoute = Array.isArray(coords) && coords.length > 0;
+
+                                return (
+                                    <tr key={zona.id} className="hover:bg-gray-50 transition-colors">
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                            <div className="flex items-center gap-2">
+                                                <span
+                                                    className="w-2.5 h-2.5 rounded-full inline-block flex-shrink-0"
+                                                    style={{ backgroundColor: zona.color_ruta || '#1976D2' }}
+                                                />
+                                                <span>{zona.nombre}</span>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4 text-sm text-gray-500 max-w-xs">
+                                            {zona.descripcion || '---'}
+                                        </td>
+                                        <td className="px-6 py-4 text-center whitespace-nowrap">
+                                            {hasRoute ? (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleViewRoute(zona)}
+                                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-blue-700 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors cursor-pointer shadow-xs"
+                                                    title="Ver recorrido completo en el mapa"
+                                                >
+                                                    <MapIcon style={{ fontSize: '16px' }} />
+                                                    <span>Ver Ruta ({coords.length} pts)</span>
+                                                </button>
+                                            ) : (
+                                                <span className="text-xs text-gray-400 bg-gray-50 px-2.5 py-1 rounded-full border border-gray-200">
+                                                    Sin ruta
+                                                </span>
+                                            )}
+                                        </td>
+                                        <td className="px-6 py-4 text-center">
+                                            {zona.imagen ? (
+                                                <img
+                                                    src={`${BASE_URL}${zona.imagen}`}
+                                                    alt={zona.nombre}
+                                                    className="h-16 object-cover mx-auto cursor-pointer rounded"
+                                                    onClick={() => handleImageClick(zona.imagen)}
+                                                />
+                                            ) : (
+                                                '---'
+                                            )}
+                                        </td>
+                                    </tr>
+                                );
+                            })}
                         </tbody>
                     </table>
                 </div>
@@ -192,6 +240,19 @@ const ZoneList = () => {
                     </button>
                 </div>
             )}
+
+            {/* Modal para ver la ruta completa trazada en el mapa sin el vehículo */}
+            <RoutePreviewModal
+                show={showRouteModal}
+                onClose={() => {
+                    setShowRouteModal(false);
+                    setSelectedRouteZona(null);
+                }}
+                title={`Ruta Completa - ${selectedRouteZona?.nombre || 'Zona'}`}
+                subtitle={selectedRouteZona?.descripcion || 'Trazado planificado del recorrido de recolección'}
+                routes={selectedRouteZona ? [selectedRouteZona] : []}
+                vehicleLocation={null}
+            />
         </div>
     );
 };

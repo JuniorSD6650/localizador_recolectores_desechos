@@ -6,7 +6,6 @@ import LocationOnIcon from '@mui/icons-material/LocationOn';
 import UpdateIcon from '@mui/icons-material/Update';
 import MapIcon from '@mui/icons-material/Map';
 import TituloConRegreso from '../../components/TituloConRegreso/TituloConRegreso';
-import RoutePreviewModal from '../../components/Map/RoutePreviewModal';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
@@ -82,11 +81,12 @@ const VehicleDetail = () => {
     const [message, setMessage] = useState('');
     const [ubicacion, setUbicacion] = useState(null);
     const [userZoom, setUserZoom] = useState(15);
-    const [showRouteModal, setShowRouteModal] = useState(false);
+    const [selectedRouteFilter, setSelectedRouteFilter] = useState('ALL');
 
     const mapRef = useRef(null);
     const markerRef = useRef(null);
     const mapInstanceRef = useRef(null);
+    const routesLayerRef = useRef(null);
 
     // 🚚 Obtener detalles del vehículo
     useEffect(() => {
@@ -228,6 +228,9 @@ const VehicleDetail = () => {
 
             mapInstanceRef.current = map;
 
+            const routesLayer = L.layerGroup().addTo(map);
+            routesLayerRef.current = routesLayer;
+
             setTimeout(() => {
                 if (mapInstanceRef.current) {
                     mapInstanceRef.current.invalidateSize();
@@ -242,6 +245,7 @@ const VehicleDetail = () => {
                 mapInstanceRef.current.remove();
                 mapInstanceRef.current = null;
                 markerRef.current = null;
+                routesLayerRef.current = null;
             }
         };
     }, [vehicle]);
@@ -277,7 +281,7 @@ const VehicleDetail = () => {
         }
     }, [ubicacion]);
 
-    // Rutas válidas para el modal de visualización completa (Hooks siempre antes de returns condicionales)
+    // Rutas válidas con coordenadas trazadas
     const validRoutes = useMemo(() => {
         return Array.isArray(vehicle?.zonas_asignadas)
             ? vehicle.zonas_asignadas.filter((z) => {
@@ -289,6 +293,47 @@ const VehicleDetail = () => {
             })
             : [];
     }, [vehicle?.zonas_asignadas]);
+
+    // 🛣️ Dibuja automáticamente la ruta o rutas asignadas en el mapa, respetando el filtro
+    useEffect(() => {
+        const map = mapInstanceRef.current;
+        const routesLayer = routesLayerRef.current;
+        if (!map || !routesLayer) return;
+
+        routesLayer.clearLayers();
+
+        if (!validRoutes || validRoutes.length === 0) return;
+
+        const routesToDraw = selectedRouteFilter === 'ALL'
+            ? validRoutes
+            : validRoutes.filter((r) => String(r.id) === String(selectedRouteFilter));
+
+        routesToDraw.forEach((zona) => {
+            let coords = zona.coordenadas_ruta;
+            if (typeof coords === 'string') {
+                try { coords = JSON.parse(coords || '[]'); } catch { coords = []; }
+            }
+
+            if (Array.isArray(coords) && coords.length > 1) {
+                const latlngs = coords
+                    .filter((c) => c && typeof c.lat === 'number' && typeof c.lng === 'number')
+                    .map((c) => [c.lat, c.lng]);
+
+                if (latlngs.length > 1) {
+                    const color = zona.color_ruta || '#1976D2';
+
+                    L.polyline(latlngs, {
+                        color: color,
+                        weight: 5,
+                        opacity: 0.85,
+                        lineJoin: 'round',
+                    })
+                        .addTo(routesLayer)
+                        .bindPopup(`<b>Zona: ${zona.nombre || 'Ruta'}</b><br/>${zona.descripcion || ''}`);
+                }
+            }
+        });
+    }, [validRoutes, selectedRouteFilter]);
 
     const hasRoute = validRoutes.length > 0;
 
@@ -383,8 +428,8 @@ const VehicleDetail = () => {
                     ) : null}
                 </div>
 
-                {/* Encabezado del mapa con UN SOLO botón para Ver Ruta Completa en otro mapa */}
-                <div className="flex items-center justify-between mb-3 px-1">
+                {/* Encabezado del mapa con seguimiento en vivo y filtro de ruta si existen varias */}
+                <div className="flex flex-wrap items-center justify-between gap-3 mb-3 px-1">
                     <div className="flex items-center gap-2">
                         <span className="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse inline-block" />
                         <span className="text-xs font-semibold text-gray-600 uppercase tracking-wider">
@@ -392,15 +437,35 @@ const VehicleDetail = () => {
                         </span>
                     </div>
 
-                    {hasRoute && (
-                        <button
-                            type="button"
-                            onClick={() => setShowRouteModal(true)}
-                            className="inline-flex items-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white rounded-lg text-xs font-bold transition shadow-sm cursor-pointer"
-                        >
-                            <MapIcon style={{ fontSize: '17px' }} />
-                            <span>Ver Ruta Completa</span>
-                        </button>
+                    {validRoutes.length > 1 && (
+                        <div className="flex items-center gap-2">
+                            <label htmlFor="routeFilterSelect" className="text-xs font-medium text-gray-600">
+                                Filtrar ruta:
+                            </label>
+                            <select
+                                id="routeFilterSelect"
+                                value={selectedRouteFilter}
+                                onChange={(e) => setSelectedRouteFilter(e.target.value)}
+                                className="text-xs border border-gray-300 rounded-lg px-2.5 py-1.5 bg-white text-gray-800 font-semibold focus:ring-2 focus:ring-blue-500 focus:outline-none cursor-pointer shadow-xs"
+                            >
+                                <option value="ALL">Todas las rutas ({validRoutes.length})</option>
+                                {validRoutes.map((r, idx) => (
+                                    <option key={r.id || idx} value={String(r.id)}>
+                                        {r.nombre || `Ruta ${idx + 1}`}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                    )}
+
+                    {validRoutes.length === 1 && (
+                        <div className="flex items-center gap-1.5 bg-blue-50 border border-blue-200 px-3 py-1 rounded-full text-xs text-blue-700 font-medium">
+                            <span
+                                className="w-2.5 h-2.5 rounded-full inline-block"
+                                style={{ backgroundColor: validRoutes[0].color_ruta || '#1976D2' }}
+                            />
+                            <span>Ruta activa: {validRoutes[0].nombre}</span>
+                        </div>
                     )}
                 </div>
 
@@ -413,16 +478,6 @@ const VehicleDetail = () => {
                     />
                 </div>
             </div>
-
-            {/* 🗺️ Modal dedicado para observar ÚNICAMENTE el mapa y la ruta completa (sin el camión en tiempo real) */}
-            <RoutePreviewModal
-                show={showRouteModal}
-                onClose={() => setShowRouteModal(false)}
-                title={`Ruta Completa - ${vehicle?.nombre_recolector || 'Recolector'}`}
-                subtitle={zonasTexto ? `Zonas asignadas: ${zonasTexto}` : ''}
-                routes={validRoutes}
-                vehicleLocation={null}
-            />
         </div>
     );
 };
