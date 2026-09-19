@@ -20,7 +20,7 @@ L.Icon.Default.mergeOptions({
     shadowUrl: markerShadow,
 });
 
-// CÓDIGO DEL ÍCONO PERSONALIZADO (LocalShippingIcon) (sin cambios)
+// CÓDIGO DEL ÍCONO PERSONALIZADO (LocalShippingIcon)
 const truckIconSvg = `<svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1g8w9s8" focusable="false" aria-hidden="true" viewBox="0 0 24 24" data-testid="LocalShippingIcon">
   <path d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zM6 18c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm13.5-8.5 2.5 3.5h-4V9h1.5v.5zM18 18c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zM4 6h10v2H4V6zm11 1.5h1.5v-2H15v2z"/>
 </svg>`;
@@ -86,7 +86,7 @@ const VehicleDetail = () => {
     const mapInstanceRef = useRef(null);
     const routesLayerRef = useRef(null);
 
-    // Dibuja el trazo de la ruta ÚNICAMENTE si la zona tiene coordenadas de recorrido
+    // 🛣️ Dibuja el trazo de la ruta ÚNICAMENTE si la zona tiene coordenadas válidas
     const drawRoutesIfAny = (map, zonasAsignadas) => {
         if (!map) return;
 
@@ -111,111 +111,218 @@ const VehicleDetail = () => {
             }
 
             // Si no tiene ruta o tiene menos de 2 coordenadas, no se dibuja ningún trazo
-            if (coords && coords.length > 1) {
-                const latlngs = coords.map((c) => [c.lat, c.lng]);
-                const color = zona.color_ruta || '#1976D2';
+            if (Array.isArray(coords) && coords.length > 1) {
+                const latlngs = coords
+                    .filter((c) => c && typeof c.lat === 'number' && typeof c.lng === 'number')
+                    .map((c) => [c.lat, c.lng]);
 
-                L.polyline(latlngs, {
-                    color: color,
-                    weight: 5,
-                    opacity: 0.85,
-                }).addTo(routesLayerRef.current);
+                if (latlngs.length > 1) {
+                    const color = zona.color_ruta || '#1976D2';
+
+                    L.polyline(latlngs, {
+                        color: color,
+                        weight: 5,
+                        opacity: 0.85,
+                    }).addTo(routesLayerRef.current);
+                }
             }
         });
     };
 
-    // 🔹 Inicializar mapa solo una vez (exactamente como estaba antes de los commits)
+    // 🚚 Obtener detalles del vehículo
     useEffect(() => {
-        if (!ubicacion?.latitud || !ubicacion?.longitud || mapInstanceRef.current) return;
+        let isMounted = true;
 
-        const lat = parseFloat(ubicacion.latitud);
-        const lng = parseFloat(ubicacion.longitud);
-
-        // Crear mapa una sola vez
-        const map = L.map(mapRef.current).setView([lat, lng], userZoom);
-
-        // Aplicar desde el inicio un límite seguro de zoom
-        const MAX_ALLOWED_ZOOM = 17;
-        map.setMaxZoom(MAX_ALLOWED_ZOOM);
-
-        // Definición de las capas del mapa
-        const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution:
-                '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-        });
-
-        // Capa satélite/relieve de Esri
-        const esriSat = L.tileLayer(
-            'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-            {
-                maxZoom: MAX_ALLOWED_ZOOM,
-                attribution: 'Tiles © Esri — Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
-            }
-        );
-
-        // Añadir la capa base OpenStreetMap por defecto
-        osm.addTo(map);
-
-        // Añadir el control de capas para poder cambiar entre OSM y Satélite
-        L.control.layers(
-            {
-                'Mapa Estándar': osm,
-                'Satélite / Relieve': esriSat,
-            }
-        ).addTo(map);
-
-        map.on('baselayerchange', (e) => {
+        const fetchVehicle = async () => {
             try {
-                if (!e) return;
-                map.setMaxZoom(MAX_ALLOWED_ZOOM);
-                if (map.getZoom() > MAX_ALLOWED_ZOOM) map.setZoom(MAX_ALLOWED_ZOOM);
-            } catch (err) {
-                console.error('Error manejando baselayerchange:', err);
+                const response = await fetch(API_BASE_URL + `recolectores/${id}`);
+                const data = await response.json();
+                if (!isMounted) return;
+
+                if (response.ok && data) {
+                    setVehicle(data);
+                    if (data.latitud && data.longitud && !isNaN(parseFloat(data.latitud)) && !isNaN(parseFloat(data.longitud))) {
+                        setUbicacion({
+                            latitud: parseFloat(data.latitud),
+                            longitud: parseFloat(data.longitud),
+                            fecha_ubicacion_actualizada: data.fecha_ubicacion_actualizada || null,
+                        });
+                    }
+                } else {
+                    setMessage(data?.error || data?.message || 'No se pudo obtener los detalles del recolector');
+                }
+            } catch {
+                if (isMounted) setMessage('Error al conectar con la API');
             }
-        });
+        };
 
-        const marker = L.marker([lat, lng], {
-            icon: truckLeafletIcon
-        })
-            .addTo(map)
-            .bindPopup(`Ubicación actual del vehículo<br/>Lat: ${lat}<br/>Long: ${lng}`)
-            .openPopup();
+        fetchVehicle();
 
-        map.on('zoomend', () => {
-            setUserZoom(map.getZoom());
-        });
+        return () => {
+            isMounted = false;
+        };
+    }, [id]);
 
-        mapInstanceRef.current = map;
-        markerRef.current = marker;
+    // 📍 Obtener ubicación periódicamente en tiempo real
+    useEffect(() => {
+        let isMounted = true;
 
-        // Si el vehículo ya tenía zonas cargadas, dibujar rutas si las tiene
-        if (vehicle?.zonas_asignadas) {
-            drawRoutesIfAny(map, vehicle.zonas_asignadas);
+        const fetchUbicacion = async () => {
+            try {
+                const response = await fetch(API_BASE_URL + `recolectores/${id}/ubicacion`);
+                const data = await response.json();
+                if (!isMounted) return;
+
+                if (response.ok && data && data.latitud && data.longitud && !isNaN(parseFloat(data.latitud)) && !isNaN(parseFloat(data.longitud))) {
+                    setUbicacion({
+                        latitud: parseFloat(data.latitud),
+                        longitud: parseFloat(data.longitud),
+                        fecha_ubicacion_actualizada: data.fecha_ubicacion_actualizada || null,
+                    });
+                }
+            } catch { }
+        };
+
+        fetchUbicacion();
+        const interval = setInterval(fetchUbicacion, 2000);
+
+        return () => {
+            isMounted = false;
+            clearInterval(interval);
+        };
+    }, [id]);
+
+    // 🔹 Inicializar mapa de Leaflet de forma segura una vez montado el contenedor en el DOM
+    useEffect(() => {
+        // Evitar el error "Map container not found" validando que mapRef.current exista
+        if (!mapRef.current || mapInstanceRef.current) return;
+        if (mapRef.current._leaflet_id) return;
+
+        try {
+            // Validar coordenadas de ubicación o usar coordenadas por defecto seguras (Amarilis, Huánuco)
+            const hasValidCoords =
+                ubicacion?.latitud &&
+                ubicacion?.longitud &&
+                !isNaN(parseFloat(ubicacion.latitud)) &&
+                !isNaN(parseFloat(ubicacion.longitud));
+
+            const lat = hasValidCoords ? parseFloat(ubicacion.latitud) : -9.9306;
+            const lng = hasValidCoords ? parseFloat(ubicacion.longitud) : -76.2422;
+
+            // Crear mapa una sola vez
+            const map = L.map(mapRef.current).setView([lat, lng], userZoom);
+
+            // Aplicar límite seguro de zoom
+            const MAX_ALLOWED_ZOOM = 17;
+            map.setMaxZoom(MAX_ALLOWED_ZOOM);
+
+            // Capa base estándar
+            const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution:
+                    '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            });
+
+            // Capa satélite/relieve de Esri
+            const esriSat = L.tileLayer(
+                'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+                {
+                    maxZoom: MAX_ALLOWED_ZOOM,
+                    attribution:
+                        'Tiles © Esri — Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
+                }
+            );
+
+            osm.addTo(map);
+
+            L.control.layers(
+                {
+                    'Mapa Estándar': osm,
+                    'Satélite / Relieve': esriSat,
+                }
+            ).addTo(map);
+
+            map.on('baselayerchange', (e) => {
+                try {
+                    if (!e) return;
+                    map.setMaxZoom(MAX_ALLOWED_ZOOM);
+                    if (map.getZoom() > MAX_ALLOWED_ZOOM) map.setZoom(MAX_ALLOWED_ZOOM);
+                } catch (err) {
+                    console.error('Error manejando baselayerchange:', err);
+                }
+            });
+
+            map.on('zoomend', () => {
+                setUserZoom(map.getZoom());
+            });
+
+            // Si hay coordenadas válidas, añadir el marcador del camión
+            if (hasValidCoords) {
+                const marker = L.marker([lat, lng], {
+                    icon: truckLeafletIcon,
+                })
+                    .addTo(map)
+                    .bindPopup(`Ubicación actual del vehículo<br/>Lat: ${lat}<br/>Long: ${lng}`)
+                    .openPopup();
+
+                markerRef.current = marker;
+            }
+
+            mapInstanceRef.current = map;
+
+            // Dibujar rutas si las tiene asignadas
+            if (vehicle?.zonas_asignadas) {
+                drawRoutesIfAny(map, vehicle.zonas_asignadas);
+            }
+
+            // Forzar actualización del tamaño para evitar recuadros grises
+            setTimeout(() => {
+                if (mapInstanceRef.current) {
+                    mapInstanceRef.current.invalidateSize();
+                }
+            }, 250);
+        } catch (error) {
+            console.error('Error al inicializar el mapa:', error);
         }
-
-        // Ajustar tamaño al renderizar
-        setTimeout(() => map.invalidateSize(), 200);
 
         return () => {
             if (mapInstanceRef.current) {
                 mapInstanceRef.current.remove();
                 mapInstanceRef.current = null;
+                markerRef.current = null;
+                routesLayerRef.current = null;
             }
         };
-    }, [ubicacion]);
+    }, [vehicle]); // Se dispara cuando vehicle está listo y el contenedor está en el DOM
 
-    // 🔹 Actualizar marcador y vista cuando cambie la ubicación (exactamente como estaba)
+    // 🔹 Actualizar o crear marcador cuando cambie la ubicación en tiempo real
     useEffect(() => {
-        if (!mapInstanceRef.current || !markerRef.current || !ubicacion) return;
+        const map = mapInstanceRef.current;
+        if (!map || !ubicacion?.latitud || !ubicacion?.longitud) return;
 
-        const { latitud, longitud } = ubicacion;
-        markerRef.current
-            .setLatLng([latitud, longitud])
-            .setPopupContent(
-                `Ubicación actual del vehículo<br/>Lat: ${latitud}<br/>Long: ${longitud}`
-            );
+        const lat = parseFloat(ubicacion.latitud);
+        const lng = parseFloat(ubicacion.longitud);
+        if (isNaN(lat) || isNaN(lng)) return;
 
-        mapInstanceRef.current.panTo([latitud, longitud], { animate: true, duration: 0.5 });
+        if (!markerRef.current) {
+            // Si el mapa ya existía sin marcador, crearlo ahora
+            const marker = L.marker([lat, lng], {
+                icon: truckLeafletIcon,
+            })
+                .addTo(map)
+                .bindPopup(`Ubicación actual del vehículo<br/>Lat: ${lat}<br/>Long: ${lng}`)
+                .openPopup();
+
+            markerRef.current = marker;
+            map.panTo([lat, lng], { animate: true, duration: 0.5 });
+        } else {
+            markerRef.current
+                .setLatLng([lat, lng])
+                .setPopupContent(
+                    `Ubicación actual del vehículo<br/>Lat: ${lat}<br/>Long: ${lng}`
+                );
+
+            map.panTo([lat, lng], { animate: true, duration: 0.5 });
+        }
     }, [ubicacion]);
 
     // 🛣️ Si se cargan o actualizan las zonas del vehículo, dibujar ruta si existe
@@ -225,43 +332,7 @@ const VehicleDetail = () => {
         }
     }, [vehicle]);
 
-    // 🚚 Obtener detalles del vehículo (sin cambios)
-    useEffect(() => {
-        const fetchVehicle = async () => {
-            try {
-                const response = await fetch(API_BASE_URL + `recolectores/${id}`);
-                const data = await response.json();
-                if (response.ok) setVehicle(data);
-                else setMessage('No se pudo obtener los detalles del recolector');
-            } catch {
-                setMessage('Error al conectar con la API');
-            }
-        };
-        fetchVehicle();
-    }, [id]);
-
-    // 📍 Obtener ubicación periódicamente (sin cambios)
-    useEffect(() => {
-        const fetchUbicacion = async () => {
-            try {
-                const response = await fetch(API_BASE_URL + `recolectores/${id}/ubicacion`);
-                const data = await response.json();
-                if (response.ok && data.latitud && data.longitud) {
-                    setUbicacion({
-                        latitud: parseFloat(data.latitud),
-                        longitud: parseFloat(data.longitud),
-                        fecha_ubicacion_actualizada: data.fecha_ubicacion_actualizada,
-                    });
-                }
-            } catch { }
-        };
-
-        fetchUbicacion();
-        const interval = setInterval(fetchUbicacion, 2000);
-        return () => clearInterval(interval);
-    }, [id]);
-
-    // ⚠️ Estados de carga / error (sin cambios)
+    // ⚠️ Estados de carga / error
     if (message) {
         return (
             <div className="flex justify-center items-center h-screen">
@@ -280,41 +351,54 @@ const VehicleDetail = () => {
         );
     }
 
-    const zonasTexto = Array.isArray(vehicle.zonas_asignadas)
-        ? vehicle.zonas_asignadas.map((z) => z.nombre || z).join(', ')
-        : vehicle.zonas_asignadas || '';
+    // Manejo seguro de relaciones y campos vacíos
+    const getZonasTexto = () => {
+        if (!vehicle?.zonas_asignadas) return '';
+        if (Array.isArray(vehicle.zonas_asignadas)) {
+            const nombres = vehicle.zonas_asignadas
+                .map((z) => (typeof z === 'object' && z !== null ? z.nombre : z))
+                .filter(Boolean);
+            return nombres.length > 0 ? nombres.join(', ') : '';
+        }
+        return typeof vehicle.zonas_asignadas === 'string' ? vehicle.zonas_asignadas : '';
+    };
 
-    // 🧭 Render principal (exactamente como estaba antes de los commits)
+    const isOperativo = vehicle?.estado_operativo === 'operativo';
+    const zonasTexto = getZonasTexto();
+
+    // 🧭 Render principal
     return (
         <div className="container mx-auto px-4 py-8 min-h-screen mt-16">
             <TituloConRegreso titulo="Detalles" to="/recolectores" />
 
-            <div className="w-full shadow-lg p-6">
+            <div className="w-full shadow-lg p-6 bg-white rounded">
                 {/* Datos del vehículo */}
                 <div className="flex flex-col items-center mb-4">
                     <div className="flex items-center mb-2">
                         <LocalShippingIcon
-                            className={vehicle.estado_operativo === 'operativo' ? 'text-green-500' : 'text-red-500'}
+                            className={isOperativo ? 'text-green-500' : 'text-red-500'}
                             style={{ fontSize: '2.5rem' }}
                         />
                         <span
-                            className={`ml-2 px-2 py-1 rounded ${vehicle.estado_operativo === 'operativo'
+                            className={`ml-2 px-2 py-1 rounded ${isOperativo
                                     ? 'bg-green-100 text-green-800'
                                     : 'bg-red-100 text-red-800'
                                 }`}
                         >
-                            {vehicle.estado_operativo === 'operativo' ? 'Operativo' : 'Inoperativo'}
+                            {isOperativo ? 'Operativo' : 'Inoperativo'}
                         </span>
                     </div>
-                    <div>
-                        <h1 className="text-2xl font-bold">{vehicle.nombre_recolector}</h1>
-                        <h2 className="text-xl text-gray-600">{zonasTexto}</h2>
+                    <div className="text-center">
+                        <h1 className="text-2xl font-bold">{vehicle?.nombre_recolector || 'Recolector'}</h1>
+                        {zonasTexto ? (
+                            <h2 className="text-xl text-gray-600">{zonasTexto}</h2>
+                        ) : null}
                     </div>
                 </div>
 
                 {/* Datos adicionales */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                    {vehicle.ubicacion_enlace && (
+                    {vehicle?.ubicacion_enlace && String(vehicle.ubicacion_enlace).trim() !== '' ? (
                         <div className="flex flex-col items-center p-4 bg-white rounded shadow">
                             <LocationOnIcon className="text-blue-500 mb-2" />
                             <a
@@ -326,7 +410,7 @@ const VehicleDetail = () => {
                                 Localizar Vehículo
                             </a>
                         </div>
-                    )}
+                    ) : null}
 
                     {ubicacion?.fecha_ubicacion_actualizada ? (
                         <div className="flex flex-col items-center p-4 bg-white rounded shadow">

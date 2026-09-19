@@ -136,8 +136,14 @@ router.get('/:id', async (req, res) => {
     if (!recolector) return res.status(404).json({ error: 'Recolector no encontrado' });
 
     if (recolector.fecha_ubicacion_actualizada) {
-      const fecha = new Date(recolector.fecha_ubicacion_actualizada);
-      recolector.fecha_ubicacion_actualizada = format(fecha, 'dd/MM/yyyy HH:mm:ss');
+      try {
+        const fecha = new Date(recolector.fecha_ubicacion_actualizada);
+        if (!isNaN(fecha.getTime())) {
+          recolector.fecha_ubicacion_actualizada = format(fecha, 'dd/MM/yyyy HH:mm:ss');
+        }
+      } catch (e) {
+        // mantener el valor si falla el formateo
+      }
     }
 
     const zonasAsignadas = await knex('asignaciones_zonas_recolectores as azr')
