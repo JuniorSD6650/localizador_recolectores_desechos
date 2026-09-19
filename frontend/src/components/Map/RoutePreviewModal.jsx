@@ -288,14 +288,18 @@ const RoutePreviewModal = ({
                 )}
 
                 {/* Mapa */}
-                <div className="flex-1 min-h-[420px] relative bg-gray-100">
+                <div className="flex-1 relative bg-gray-100" style={{ height: '480px', minHeight: '480px' }}>
                     {validRoutes.length === 0 && !vehicleLocation?.latitud ? (
                         <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-500 p-6 text-center">
                             <p className="font-medium">Esta zona o vehículo no tiene coordenadas de recorrido configuradas aún.</p>
                             <p className="text-xs text-gray-400 mt-1">El administrador puede configurar el trazado desde la edición de zonas.</p>
                         </div>
                     ) : (
-                        <div ref={mapContainerRef} className="w-full h-full min-h-[420px]" />
+                        <div
+                            ref={mapContainerRef}
+                            className="w-full h-full"
+                            style={{ width: '100%', height: '100%', minHeight: '480px', position: 'relative' }}
+                        />
                     )}
                 </div>
 

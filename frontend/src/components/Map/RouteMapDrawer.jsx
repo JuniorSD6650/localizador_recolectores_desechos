@@ -94,7 +94,7 @@ const RouteMapDrawer = ({
 
     const isNearStart = startEndDistMeters !== null && startEndDistMeters <= 200;
 
-    // Inicializar mapa Leaflet
+    // Inicializar mapa Leaflet con soporte de renderizado garantizado
     useEffect(() => {
         if (!mapContainerRef.current || mapInstanceRef.current) return;
 
@@ -110,6 +110,7 @@ const RouteMapDrawer = ({
         });
 
         const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
             attribution: '© OpenStreetMap'
         });
 
@@ -150,12 +151,12 @@ const RouteMapDrawer = ({
 
         mapInstanceRef.current = map;
 
-        // Invalidar tamaño y centrar al entrar
+        // Invalidar tamaño en múltiples fases para asegurar renderizado en modales
         const timer1 = setTimeout(() => {
             if (mapInstanceRef.current) {
                 mapInstanceRef.current.invalidateSize();
             }
-        }, 150);
+        }, 50);
 
         const timer2 = setTimeout(() => {
             if (mapInstanceRef.current) {
@@ -164,13 +165,23 @@ const RouteMapDrawer = ({
                     const bounds = L.latLngBounds(coords.map((c) => [c.lat, c.lng]));
                     mapInstanceRef.current.fitBounds(bounds, { padding: [40, 40], maxZoom: 16 });
                     hasInitialFittedRef.current = true;
+                } else if (coords.length === 1 && !hasInitialFittedRef.current) {
+                    mapInstanceRef.current.setView([coords[0].lat, coords[0].lng], 16);
+                    hasInitialFittedRef.current = true;
                 }
             }
-        }, 350);
+        }, 200);
+
+        const timer3 = setTimeout(() => {
+            if (mapInstanceRef.current) {
+                mapInstanceRef.current.invalidateSize();
+            }
+        }, 500);
 
         return () => {
             clearTimeout(timer1);
             clearTimeout(timer2);
+            clearTimeout(timer3);
             map.remove();
             mapInstanceRef.current = null;
         };
@@ -204,7 +215,7 @@ const RouteMapDrawer = ({
         }).addTo(map);
         polylineRef.current = polyline;
 
-        // Si es la primera vez que se renderizan las coordenadas cargadas, centrar la vista
+        // Centrado inicial automático sobre la ruta cargada
         if (!hasInitialFittedRef.current) {
             map.invalidateSize();
             if (coords.length > 1) {
@@ -229,8 +240,8 @@ const RouteMapDrawer = ({
                 bg = '#16a34a'; // Verde inicio
                 label = isCircuitClosed ? '1 (INICIO/FIN)' : '1 (INICIO)';
             } else if (isEnd) {
-                bg = isCircuitClosed ? '#16a34a' : '#dc2626'; // Verde si cierra circuito, Rojo si es fin abierto
-                label = isCircuitClosed ? `${idx + 1} (FIN)` : `${idx + 1} (FIN)`;
+                bg = isCircuitClosed ? '#16a34a' : '#dc2626'; // Verde si cierra circuito, Rojo si fin abierto
+                label = `${idx + 1} (FIN)`;
             }
 
             const iconHtml = `
@@ -252,7 +263,6 @@ const RouteMapDrawer = ({
                     display: inline-flex;
                     align-items: center;
                     justify-content: center;
-                    gap: 3px;
                 ">
                     <span>${label}</span>
                 </div>
@@ -272,7 +282,7 @@ const RouteMapDrawer = ({
                 title: `Nodo ${idx + 1} - Arrastra para mover`
             });
 
-            // Arrastre en vivo: actualizar trazado de la línea dinámicamente
+            // Arrastre en vivo: actualizar trazado de la polilínea fluidamente
             marker.on('drag', (e) => {
                 const currentLatLng = e.target.getLatLng();
                 if (polylineRef.current) {
@@ -288,7 +298,7 @@ const RouteMapDrawer = ({
                 let newLat = parseFloat(newPos.lat.toFixed(6));
                 let newLng = parseFloat(newPos.lng.toFixed(6));
 
-                // Snapping inteligente: si se arrastra el último punto cerca del primero (< 35 metros)
+                // Snapping inteligente si se arrastra el último punto cerca del primero (< 35 metros)
                 if (idx === coords.length - 1 && coords.length >= 3 && !isStart) {
                     const distToFirst = distanceBetweenMeters({ lat: newLat, lng: newLng }, coords[0]);
                     if (distToFirst <= 35) {
@@ -307,35 +317,53 @@ const RouteMapDrawer = ({
 
             // Popup para inspección y eliminación de nodo puntual
             const popupWrapper = document.createElement('div');
-            popupWrapper.className = 'text-xs p-1 space-y-1.5 min-w-[170px]';
+            popupWrapper.className = 'text-xs p-1 space-y-1';
+            popupWrapper.style.minWidth = '160px';
 
             const headerDiv = document.createElement('div');
-            headerDiv.className = 'flex items-center justify-between font-bold text-gray-800 border-b pb-1';
+            headerDiv.style.display = 'flex';
+            headerDiv.style.justifyContent = 'space-between';
+            headerDiv.style.alignItems = 'center';
+            headerDiv.style.fontWeight = 'bold';
+            headerDiv.style.borderBottom = '1px solid #e5e7eb';
+            headerDiv.style.paddingBottom = '4px';
             headerDiv.innerHTML = `
                 <span>Nodo ${idx + 1} ${isStart ? '(Inicio)' : isEnd ? '(Fin)' : ''}</span>
-                <span class="text-[9px] px-1.5 py-0.5 bg-blue-50 text-blue-700 rounded-full font-semibold">Nodo móvil</span>
+                <span style="font-size: 9px; padding: 2px 6px; background: #eff6ff; color: #1d4ed8; border-radius: 9999px;">Móvil</span>
             `;
             popupWrapper.appendChild(headerDiv);
 
             const coordsDiv = document.createElement('div');
-            coordsDiv.className = 'text-gray-500 text-[11px] leading-relaxed';
+            coordsDiv.style.fontSize = '11px';
+            coordsDiv.style.color = '#4b5563';
+            coordsDiv.style.margin = '4px 0';
             coordsDiv.innerHTML = `
-                Latitud: <b>${c.lat.toFixed(6)}</b><br/>
-                Longitud: <b>${c.lng.toFixed(6)}</b>
+                Lat: <b>${c.lat.toFixed(6)}</b><br/>
+                Lng: <b>${c.lng.toFixed(6)}</b>
             `;
             popupWrapper.appendChild(coordsDiv);
 
             const tipDiv = document.createElement('div');
-            tipDiv.className = 'text-[10px] text-gray-400 italic';
-            tipDiv.textContent = '💡 Mantén presionado y arrastra para reubicar este punto.';
+            tipDiv.style.fontSize = '10px';
+            tipDiv.style.color = '#9ca3af';
+            tipDiv.style.fontStyle = 'italic';
+            tipDiv.textContent = '💡 Arrastra para reubicar este punto.';
             popupWrapper.appendChild(tipDiv);
 
             // Botón para eliminar este nodo específico
             const deleteBtn = document.createElement('button');
             deleteBtn.type = 'button';
-            deleteBtn.className =
-                'w-full mt-1.5 px-2.5 py-1 text-[11px] font-semibold text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 rounded-md transition-colors cursor-pointer flex items-center justify-center gap-1';
-            deleteBtn.innerHTML = '🗑 <span>Eliminar este nodo</span>';
+            deleteBtn.style.width = '100%';
+            deleteBtn.style.marginTop = '6px';
+            deleteBtn.style.padding = '4px 8px';
+            deleteBtn.style.fontSize = '11px';
+            deleteBtn.style.fontWeight = '600';
+            deleteBtn.style.color = '#dc2626';
+            deleteBtn.style.backgroundColor = '#fef2f2';
+            deleteBtn.style.border = '1px solid #fecaca';
+            deleteBtn.style.borderRadius = '6px';
+            deleteBtn.style.cursor = 'pointer';
+            deleteBtn.innerHTML = '🗑 Eliminar este nodo';
             deleteBtn.onclick = (event) => {
                 event.stopPropagation();
                 setCoords((prev) => prev.filter((_, i) => i !== idx));
@@ -425,16 +453,16 @@ const RouteMapDrawer = ({
     return (
         <div className="space-y-3">
             {/* Barra superior de estado e información */}
-            <div className="flex flex-wrap items-center justify-between gap-2 bg-slate-50 p-3 rounded-xl border border-slate-200">
+            <div className="flex flex-wrap items-center justify-between gap-2 bg-gray-50 p-3 rounded-xl border border-gray-200">
                 <div>
                     <div className="flex items-center gap-2">
                         <span className="text-sm font-bold text-gray-800">Editor de Ruta y Nodos</span>
                         {isCircuitClosed ? (
-                            <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-100/80 px-2.5 py-0.5 rounded-full border border-emerald-300">
+                            <span className="inline-flex items-center gap-1 text-xs font-bold text-green-700 bg-green-100 px-2.5 py-0.5 rounded-full border border-green-300">
                                 <span>✓</span> Circuito Cerrado
                             </span>
                         ) : coords.length >= 3 ? (
-                            <span className="text-[11px] font-medium text-slate-500 bg-slate-200/70 px-2 py-0.5 rounded-full">
+                            <span className="text-xs font-medium text-gray-500 bg-gray-200 px-2 py-0.5 rounded-full">
                                 Trazado abierto
                             </span>
                         ) : null}
@@ -449,7 +477,7 @@ const RouteMapDrawer = ({
                         {coords.length} {coords.length === 1 ? 'nodo' : 'nodos'}
                     </span>
                     {coords.length > 1 && (
-                        <span className="text-xs bg-emerald-100 text-emerald-800 font-bold px-2.5 py-1 rounded-lg">
+                        <span className="text-xs bg-green-100 text-green-800 font-bold px-2.5 py-1 rounded-lg">
                             ~{distance} km
                         </span>
                     )}
@@ -468,7 +496,7 @@ const RouteMapDrawer = ({
                     <button
                         type="button"
                         onClick={handleCloseCircuit}
-                        className="px-3 py-1 bg-amber-600 hover:bg-amber-700 active:bg-amber-800 text-white font-bold rounded-lg transition-colors cursor-pointer whitespace-nowrap shadow-xs"
+                        className="px-3 py-1 bg-amber-600 hover:bg-amber-700 active:bg-amber-800 text-white font-bold rounded-lg transition-colors cursor-pointer whitespace-nowrap shadow-sm"
                     >
                         🔄 Cerrar Circuito Aquí
                     </button>
@@ -476,7 +504,7 @@ const RouteMapDrawer = ({
             )}
 
             {/* Barra de herramientas y controles */}
-            <div className="flex flex-wrap items-center justify-between gap-2.5">
+            <div className="flex flex-wrap items-center justify-between gap-2">
                 {/* Selector de color */}
                 <div className="flex items-center gap-2">
                     <label className="text-xs font-semibold text-gray-700">Color:</label>
@@ -511,7 +539,7 @@ const RouteMapDrawer = ({
                             <button
                                 type="button"
                                 onClick={handleCloseCircuit}
-                                className="px-2.5 py-1 text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-300 rounded-lg hover:bg-emerald-100 transition-colors cursor-pointer flex items-center gap-1"
+                                className="px-2.5 py-1 text-xs font-bold text-green-700 bg-green-50 border border-green-300 rounded-lg hover:bg-green-100 transition-colors cursor-pointer flex items-center gap-1"
                                 title="Unir automáticamente el punto final con el inicial"
                             >
                                 <span>🔄</span> Cerrar Circuito
@@ -524,7 +552,7 @@ const RouteMapDrawer = ({
                         type="button"
                         onClick={handleFitBounds}
                         disabled={coords.length === 0}
-                        className="px-2.5 py-1 text-xs font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 disabled:opacity-40 transition-colors cursor-pointer"
+                        className="px-2.5 py-1 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-40 transition-colors cursor-pointer"
                         title="Ajustar y centrar la vista sobre la ruta completa"
                     >
                         🎯 Centrar
@@ -535,7 +563,7 @@ const RouteMapDrawer = ({
                         type="button"
                         onClick={handleUndo}
                         disabled={coords.length === 0}
-                        className="px-2.5 py-1 text-xs font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 disabled:opacity-40 transition-colors cursor-pointer"
+                        className="px-2.5 py-1 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-40 transition-colors cursor-pointer"
                         title="Eliminar el último punto añadido"
                     >
                         ↩ Deshacer
@@ -566,7 +594,7 @@ const RouteMapDrawer = ({
                     <button
                         type="button"
                         onClick={() => setShowJsonInput(!showJsonInput)}
-                        className="px-2.5 py-1 text-xs font-medium text-slate-600 bg-slate-100 border border-slate-300 rounded-lg hover:bg-slate-200 transition-colors cursor-pointer"
+                        className="px-2.5 py-1 text-xs font-medium text-gray-600 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 transition-colors cursor-pointer"
                     >
                         {showJsonInput ? 'Ocultar JSON' : 'Pegar JSON'}
                     </button>
@@ -575,7 +603,7 @@ const RouteMapDrawer = ({
 
             {/* Entrada JSON opcional */}
             {showJsonInput && (
-                <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
+                <div className="p-3 bg-gray-50 rounded-xl border border-gray-200 space-y-2">
                     <label className="text-xs font-bold text-gray-700">Array de Coordenadas JSON:</label>
                     <textarea
                         rows={3}
@@ -596,11 +624,24 @@ const RouteMapDrawer = ({
                 </div>
             )}
 
-            {/* Contenedor del Mapa Leaflet amplio y responsivo */}
-            <div className="relative rounded-xl overflow-hidden border border-slate-300 shadow-inner">
+            {/* Contenedor del Mapa Leaflet amplio con altura explícita garantizada */}
+            <div
+                className="w-full rounded-xl overflow-hidden border border-gray-300 shadow-inner relative bg-gray-100"
+                style={{ height: '460px', minHeight: '460px' }}
+            >
                 <div
                     ref={mapContainerRef}
-                    className="w-full h-[430px] z-0"
+                    className="w-full h-full"
+                    style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        width: '100%',
+                        height: '100%',
+                        zIndex: 1
+                    }}
                 />
             </div>
         </div>
