@@ -87,49 +87,6 @@ const VehicleDetail = () => {
     const mapRef = useRef(null);
     const markerRef = useRef(null);
     const mapInstanceRef = useRef(null);
-    const routesLayerRef = useRef(null);
-
-    // 🛣️ Dibuja el trazo de la ruta en el mapa principal ÚNICAMENTE si existe
-    const drawRoutesIfAny = (map, zonasAsignadas) => {
-        if (!map) return;
-
-        if (!routesLayerRef.current) {
-            routesLayerRef.current = L.layerGroup().addTo(map);
-        } else {
-            routesLayerRef.current.clearLayers();
-        }
-
-        if (!zonasAsignadas) return;
-
-        const zonas = Array.isArray(zonasAsignadas) ? zonasAsignadas : [];
-
-        zonas.forEach((zona) => {
-            let coords = [];
-            if (Array.isArray(zona.coordenadas_ruta)) {
-                coords = zona.coordenadas_ruta;
-            } else if (typeof zona.coordenadas_ruta === 'string') {
-                try {
-                    coords = JSON.parse(zona.coordenadas_ruta || '[]');
-                } catch { }
-            }
-
-            if (Array.isArray(coords) && coords.length > 1) {
-                const latlngs = coords
-                    .filter((c) => c && typeof c.lat === 'number' && typeof c.lng === 'number')
-                    .map((c) => [c.lat, c.lng]);
-
-                if (latlngs.length > 1) {
-                    const color = zona.color_ruta || '#1976D2';
-
-                    L.polyline(latlngs, {
-                        color: color,
-                        weight: 5,
-                        opacity: 0.85,
-                    }).addTo(routesLayerRef.current);
-                }
-            }
-        });
-    };
 
     // 🚚 Obtener detalles del vehículo
     useEffect(() => {
@@ -271,10 +228,6 @@ const VehicleDetail = () => {
 
             mapInstanceRef.current = map;
 
-            if (vehicle?.zonas_asignadas) {
-                drawRoutesIfAny(map, vehicle.zonas_asignadas);
-            }
-
             setTimeout(() => {
                 if (mapInstanceRef.current) {
                     mapInstanceRef.current.invalidateSize();
@@ -289,7 +242,6 @@ const VehicleDetail = () => {
                 mapInstanceRef.current.remove();
                 mapInstanceRef.current = null;
                 markerRef.current = null;
-                routesLayerRef.current = null;
             }
         };
     }, [vehicle]);
@@ -324,13 +276,6 @@ const VehicleDetail = () => {
             map.panTo([lat, lng], { animate: true, duration: 0.5 });
         }
     }, [ubicacion]);
-
-    // 🛣️ Si se cargan o actualizan las zonas del vehículo, dibujar trazo si existe
-    useEffect(() => {
-        if (mapInstanceRef.current && vehicle?.zonas_asignadas) {
-            drawRoutesIfAny(mapInstanceRef.current, vehicle.zonas_asignadas);
-        }
-    }, [vehicle]);
 
     // Rutas válidas para el modal de visualización completa (Hooks siempre antes de returns condicionales)
     const validRoutes = useMemo(() => {
@@ -409,8 +354,8 @@ const VehicleDetail = () => {
                     </div>
                 </div>
 
-                {/* Datos adicionales y acción Ver Ruta */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
+                {/* Datos adicionales */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                     {vehicle?.ubicacion_enlace && String(vehicle.ubicacion_enlace).trim() !== '' ? (
                         <div className="flex flex-col items-center p-4 bg-white rounded shadow">
                             <LocationOnIcon className="text-blue-500 mb-2" />
@@ -418,23 +363,10 @@ const VehicleDetail = () => {
                                 href={vehicle.ubicacion_enlace}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="text-blue-500 hover:underline"
+                                className="text-blue-500 hover:underline font-medium"
                             >
                                 Localizar Vehículo
                             </a>
-                        </div>
-                    ) : null}
-
-                    {hasRoute ? (
-                        <div className="flex flex-col items-center p-4 bg-white rounded shadow">
-                            <MapIcon className="text-blue-500 mb-2" />
-                            <button
-                                type="button"
-                                onClick={() => setShowRouteModal(true)}
-                                className="text-blue-500 hover:underline font-medium cursor-pointer"
-                            >
-                                Ver Ruta Completa
-                            </button>
                         </div>
                     ) : null}
 
@@ -451,8 +383,8 @@ const VehicleDetail = () => {
                     ) : null}
                 </div>
 
-                {/* Encabezado del mapa con botón directo a Ver Ruta */}
-                <div className="flex items-center justify-between mb-2 px-1">
+                {/* Encabezado del mapa con UN SOLO botón para Ver Ruta Completa en otro mapa */}
+                <div className="flex items-center justify-between mb-3 px-1">
                     <div className="flex items-center gap-2">
                         <span className="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse inline-block" />
                         <span className="text-xs font-semibold text-gray-600 uppercase tracking-wider">
@@ -464,9 +396,9 @@ const VehicleDetail = () => {
                         <button
                             type="button"
                             onClick={() => setShowRouteModal(true)}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold transition shadow-xs cursor-pointer"
+                            className="inline-flex items-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white rounded-lg text-xs font-bold transition shadow-sm cursor-pointer"
                         >
-                            <MapIcon style={{ fontSize: '15px' }} />
+                            <MapIcon style={{ fontSize: '17px' }} />
                             <span>Ver Ruta Completa</span>
                         </button>
                     )}
