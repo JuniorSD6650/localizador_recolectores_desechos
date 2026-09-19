@@ -4,6 +4,8 @@ import { API_BASE_URL, calculateTimeAgo, parseDate } from '../../utils';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import UpdateIcon from '@mui/icons-material/Update';
+import GpsFixedIcon from '@mui/icons-material/GpsFixed';
+import GpsNotFixedIcon from '@mui/icons-material/GpsNotFixed';
 import TituloConRegreso from '../../components/TituloConRegreso/TituloConRegreso';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -81,10 +83,19 @@ const VehicleDetail = () => {
     const [ubicacion, setUbicacion] = useState(null);
     const [userZoom, setUserZoom] = useState(15);
 
+    // 🎯 Estado para activar/desactivar fijar vehículo
+    const [fijarVehiculo, setFijarVehiculo] = useState(true);
+    const fijarVehiculoRef = useRef(true);
+
     const mapRef = useRef(null);
     const markerRef = useRef(null);
     const mapInstanceRef = useRef(null);
     const routesLayerRef = useRef(null);
+
+    // Sincronizar el ref con el estado para que el listener de polling lo lea siempre actualizado
+    useEffect(() => {
+        fijarVehiculoRef.current = fijarVehiculo;
+    }, [fijarVehiculo]);
 
     // 🛣️ Dibuja el trazo de la ruta ÚNICAMENTE si la zona tiene coordenadas válidas
     const drawRoutesIfAny = (map, zonasAsignadas) => {
@@ -194,7 +205,6 @@ const VehicleDetail = () => {
 
     // 🔹 Inicializar mapa de Leaflet de forma segura una vez montado el contenedor en el DOM
     useEffect(() => {
-        // Evitar el error "Map container not found" validando que mapRef.current exista
         if (!mapRef.current || mapInstanceRef.current) return;
         if (mapRef.current._leaflet_id) return;
 
@@ -255,6 +265,12 @@ const VehicleDetail = () => {
                 setUserZoom(map.getZoom());
             });
 
+            // Si el usuario arrastra manualmente el mapa para explorar la ruta, desactivar fijar vehículo
+            map.on('dragstart', () => {
+                setFijarVehiculo(false);
+                fijarVehiculoRef.current = false;
+            });
+
             // Si hay coordenadas válidas, añadir el marcador del camión
             if (hasValidCoords) {
                 const marker = L.marker([lat, lng], {
@@ -292,9 +308,9 @@ const VehicleDetail = () => {
                 routesLayerRef.current = null;
             }
         };
-    }, [vehicle]); // Se dispara cuando vehicle está listo y el contenedor está en el DOM
+    }, [vehicle]);
 
-    // 🔹 Actualizar o crear marcador cuando cambie la ubicación en tiempo real
+    // 🔹 Actualizar marcador y solo seguir/centrar si fijarVehiculo está activo
     useEffect(() => {
         const map = mapInstanceRef.current;
         if (!map || !ubicacion?.latitud || !ubicacion?.longitud) return;
@@ -304,7 +320,7 @@ const VehicleDetail = () => {
         if (isNaN(lat) || isNaN(lng)) return;
 
         if (!markerRef.current) {
-            // Si el mapa ya existía sin marcador, crearlo ahora
+            // Si el mapa ya existía sin marcador, crearlo
             const marker = L.marker([lat, lng], {
                 icon: truckLeafletIcon,
             })
@@ -313,7 +329,10 @@ const VehicleDetail = () => {
                 .openPopup();
 
             markerRef.current = marker;
-            map.panTo([lat, lng], { animate: true, duration: 0.5 });
+
+            if (fijarVehiculoRef.current) {
+                map.panTo([lat, lng], { animate: true, duration: 0.5 });
+            }
         } else {
             markerRef.current
                 .setLatLng([lat, lng])
@@ -321,7 +340,10 @@ const VehicleDetail = () => {
                     `Ubicación actual del vehículo<br/>Lat: ${lat}<br/>Long: ${lng}`
                 );
 
-            map.panTo([lat, lng], { animate: true, duration: 0.5 });
+            // 🎯 Solo centrar la vista del mapa en el camión si fijarVehiculo está ACTIVADO
+            if (fijarVehiculoRef.current) {
+                map.panTo([lat, lng], { animate: true, duration: 0.5 });
+            }
         }
     }, [ubicacion]);
 
@@ -331,6 +353,23 @@ const VehicleDetail = () => {
             drawRoutesIfAny(mapInstanceRef.current, vehicle.zonas_asignadas);
         }
     }, [vehicle]);
+
+    // 🔘 Activar o desactivar fijar vehículo
+    const handleToggleFijarVehiculo = () => {
+        const nuevoEstado = !fijarVehiculo;
+        setFijarVehiculo(nuevoEstado);
+        fijarVehiculoRef.current = nuevoEstado;
+
+        // Si el usuario activa fijar vehículo, centrar de inmediato en el camión
+        if (nuevoEstado && mapInstanceRef.current && ubicacion?.latitud && ubicacion?.longitud) {
+            const lat = parseFloat(ubicacion.latitud);
+            const lng = parseFloat(ubicacion.longitud);
+            if (!isNaN(lat) && !isNaN(lng)) {
+                mapInstanceRef.current.setView([lat, lng], userZoom, { animate: true });
+                if (markerRef.current) markerRef.current.openPopup();
+            }
+        }
+    };
 
     // ⚠️ Estados de carga / error
     if (message) {
@@ -423,6 +462,68 @@ const VehicleDetail = () => {
                             </div>
                         </div>
                     ) : null}
+                </div>
+
+                {/* 🎯 Barra de Control: Fijar Vehículo vs Explorar Ruta Libremente */}
+                <div className="flex flex-wrap items-center justify-between gap-3 mb-3 p-3 bg-gray-50 rounded-xl border border-gray-200">
+                    <div className="flex items-center gap-3">
+                        <button
+                            type="button"
+                            onClick={handleToggleFijarVehiculo}
+                            className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm shadow-sm transition-all duration-200 cursor-pointer ${
+                                fijarVehiculo
+                                    ? 'bg-green-600 hover:bg-green-700 text-white ring-2 ring-green-300'
+                                    : 'bg-amber-500 hover:bg-amber-600 text-white ring-2 ring-amber-300'
+                            }`}
+                        >
+                            {fijarVehiculo ? (
+                                <>
+                                    <GpsFixedIcon style={{ fontSize: '20px' }} />
+                                    <span>Fijar Vehículo: ACTIVADO</span>
+                                    <span className="w-2.5 h-2.5 rounded-full bg-white animate-pulse inline-block ml-1" />
+                                </>
+                            ) : (
+                                <>
+                                    <GpsNotFixedIcon style={{ fontSize: '20px' }} />
+                                    <span>Fijar Vehículo: DESACTIVADO</span>
+                                </>
+                            )}
+                        </button>
+
+                        <div className="text-xs text-gray-600">
+                            {fijarVehiculo ? (
+                                <span className="font-semibold text-green-800">
+                                    🟢 El mapa sigue al camión automáticamente en tiempo real.
+                                </span>
+                            ) : (
+                                <span className="font-semibold text-amber-800">
+                                    🟡 Modo libre activo: Puedes moverte por el mapa para observar la ruta.
+                                </span>
+                            )}
+                        </div>
+                    </div>
+
+                    {!fijarVehiculo && (
+                        <button
+                            type="button"
+                            onClick={() => {
+                                setFijarVehiculo(true);
+                                fijarVehiculoRef.current = true;
+                                if (mapInstanceRef.current && ubicacion?.latitud && ubicacion?.longitud) {
+                                    const lat = parseFloat(ubicacion.latitud);
+                                    const lng = parseFloat(ubicacion.longitud);
+                                    if (!isNaN(lat) && !isNaN(lng)) {
+                                        mapInstanceRef.current.setView([lat, lng], userZoom, { animate: true });
+                                        if (markerRef.current) markerRef.current.openPopup();
+                                    }
+                                }
+                            }}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold transition shadow-xs cursor-pointer"
+                        >
+                            <GpsFixedIcon style={{ fontSize: '16px' }} />
+                            <span>Centrar en Camión</span>
+                        </button>
+                    )}
                 </div>
 
                 {/* 🗺️ Mapa */}
