@@ -1,8 +1,15 @@
 # Node.js 
 node_modules/
 
-# .env file for sensitive data like database credentials and secret keys
+# .env files for sensitive data like database credentials and secret keys
 .env
+.env.local
+.env.*.local
+frontend/.env
+frontend/.env.local
+frontend/.env.*.local
+!.env.example
+!frontend/.env.example
 
 # Log files
 *.log

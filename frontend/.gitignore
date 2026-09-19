@@ -23,6 +23,8 @@ dist-ssr
 *.sln
 *.sw?
 
-localhost-key.pem
-localhost.pem
-vite.config.js
+# Environment files
+.env
+.env.local
+.env.*.local
+!.env.example

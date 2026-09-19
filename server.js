@@ -7,23 +7,34 @@ const path = require('path');
 const cors = require('cors');
 const routes = require('./routes');
 const http = require('http');
+const { Server } = require('socket.io');
 
 const app = express();
 const server = http.createServer(app);
-const { Server } = require('socket.io');
-const io = new Server(server, {
-  cors: {
-    origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-  }
-});
+const allowedOrigins = [
+  process.env.CORS_ORIGIN || 'http://localhost:5173',
+  'http://localhost:5173',
+  'http://127.0.0.1:5173'
+];
 
-app.use(cors({
-  origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
+const corsOptions = {
+  origin: (origin, callback) => {
+    // Permitir solicitudes sin origin (como apps móviles, curl o postman) o si coincide con los permitidos
+    if (!origin || allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    return callback(null, true); // En desarrollo permitir peticiones locales
+  },
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization'],
-}));
+  credentials: true,
+};
+
+const io = new Server(server, {
+  cors: corsOptions
+});
+
+app.use(cors(corsOptions));
 
 app.use(express.json());
 
@@ -42,6 +53,7 @@ app.get('*', (req, res, next) => {
 
 const db = mysql.createConnection({
   host: process.env.DB_HOST || 'localhost',
+  port: process.env.DB_PORT || 3306,
   user: process.env.DB_USER || 'root',
   password: process.env.DB_PASSWORD || '',
   database: process.env.DB_NAME || 'recolector_db',

@@ -12,9 +12,11 @@ const center = {
 };
 
 const Mapa = () => {
+    const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || "AIzaSyD2nU5cvLIMyqzC7ZhwfdX1G1IplX1_Gkk";
+
     return (
         <div>
-            <LoadScript googleMapsApiKey="AIzaSyD2nU5cvLIMyqzC7ZhwfdX1G1IplX1_Gkk">
+            <LoadScript googleMapsApiKey={apiKey}>
                 <GoogleMap
                     mapContainerStyle={containerStyle}
                     center={center}

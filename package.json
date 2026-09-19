@@ -1,10 +1,14 @@
 {
   "name": "be_recolectores_desechos",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "migrate-seed": "node createDatabase.js && npx knex migrate:latest && npx knex seed:run"
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "dev:frontend": "pnpm --dir frontend dev",
+    "install:all": "pnpm install && pnpm --dir frontend install",
+    "migrate-seed": "node createDatabase.js && npx knex migrate:latest && npx knex seed:run",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "ISC",
