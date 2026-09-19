@@ -332,26 +332,7 @@ const VehicleDetail = () => {
         }
     }, [vehicle]);
 
-    // ⚠️ Estados de carga / error
-    if (message) {
-        return (
-            <div className="flex justify-center items-center h-screen">
-                <p className="text-red-500">{message}</p>
-            </div>
-        );
-    }
-
-    if (!vehicle) {
-        return (
-            <div className="flex justify-center items-center h-screen">
-                <div className="spinner-border text-primary" role="status">
-                    <span className="visually-hidden">Cargando...</span>
-                </div>
-            </div>
-        );
-    }
-
-    // Rutas válidas para el modal de visualización completa
+    // Rutas válidas para el modal de visualización completa (Hooks siempre antes de returns condicionales)
     const validRoutes = useMemo(() => {
         return Array.isArray(vehicle?.zonas_asignadas)
             ? vehicle.zonas_asignadas.filter((z) => {
@@ -378,6 +359,25 @@ const VehicleDetail = () => {
     }, [vehicle?.zonas_asignadas]);
 
     const isOperativo = vehicle?.estado_operativo === 'operativo';
+
+    // ⚠️ Estados de carga / error
+    if (message) {
+        return (
+            <div className="flex justify-center items-center h-screen">
+                <p className="text-red-500">{message}</p>
+            </div>
+        );
+    }
+
+    if (!vehicle) {
+        return (
+            <div className="flex justify-center items-center h-screen">
+                <div className="spinner-border text-primary" role="status">
+                    <span className="visually-hidden">Cargando...</span>
+                </div>
+            </div>
+        );
+    }
 
     // 🧭 Render principal
     return (
