@@ -405,11 +405,11 @@ const VehicleDetail = () => {
                 </div>
 
                 {/* 🗺️ Mapa de seguimiento en vivo (siempre fijando al vehículo) */}
-                <div className="w-full" style={{ height: '420px', position: 'relative' }}>
+                <div className="w-full" style={{ height: '420px', position: 'relative', zIndex: 1 }}>
                     <div
                         ref={mapRef}
                         className="w-full h-full rounded"
-                        style={{ position: 'absolute', inset: 0 }}
+                        style={{ position: 'absolute', inset: 0, zIndex: 1 }}
                     />
                 </div>
             </div>

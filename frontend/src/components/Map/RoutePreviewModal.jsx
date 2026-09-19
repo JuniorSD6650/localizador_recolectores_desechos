@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import PropTypes from 'prop-types';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -21,6 +22,16 @@ const RoutePreviewModal = ({
 
     const routesKey = JSON.stringify(routes);
     const vehicleKey = vehicleLocation ? `${vehicleLocation.latitud},${vehicleLocation.longitud}` : '';
+
+    // Bloquear scroll de fondo mientras el modal esté abierto
+    useEffect(() => {
+        if (!show) return;
+        const originalOverflow = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+        return () => {
+            document.body.style.overflow = originalOverflow;
+        };
+    }, [show]);
 
     useEffect(() => {
         if (!show || !mapContainerRef.current) return;
@@ -199,7 +210,8 @@ const RoutePreviewModal = ({
         }
 
         mapInstanceRef.current = map;
-        setTimeout(() => map.invalidateSize(), 200);
+        setTimeout(() => map.invalidateSize(), 100);
+        setTimeout(() => map.invalidateSize(), 300);
 
         return () => {
             if (mapInstanceRef.current) {
@@ -220,13 +232,15 @@ const RoutePreviewModal = ({
         return c.length > 0;
     });
 
-    return (
+    return createPortal(
         <div
-            className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4"
+            className="fixed inset-0 bg-black/70 flex items-center justify-center p-3 md:p-6"
+            style={{ zIndex: 999999 }}
             onClick={onClose}
         >
             <div
-                className="bg-white rounded-xl shadow-2xl w-full max-w-4xl overflow-hidden flex flex-col max-h-[90vh]"
+                className="bg-white rounded-xl shadow-2xl w-full max-w-4xl overflow-hidden flex flex-col max-h-[90vh] relative"
+                style={{ zIndex: 1000000 }}
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Header */}
@@ -306,7 +320,8 @@ const RoutePreviewModal = ({
                     </button>
                 </div>
             </div>
-        </div>
+        </div>,
+        document.body
     );
 };
 
