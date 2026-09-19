@@ -9,9 +9,11 @@ import {
 import TituloConRegreso from '../../components/TituloConRegreso/TituloConRegreso';
 import RegisterZonaModal from './RegisterZonaModal';
 import EditZonaModal from './EditZonaModal';
+import ZonaRouteModal from './ZonaRouteModal';
 import Pagination from '../../components/Pagination/Pagination';
 import RoutePreviewModal from '../../components/Map/RoutePreviewModal';
 import MapIcon from '@mui/icons-material/Map';
+import AddLocationAltIcon from '@mui/icons-material/AddLocationAlt';
 
 const AdminZonasPage = () => {
     const [zonas, setZonas] = useState([]);
@@ -22,6 +24,9 @@ const AdminZonasPage = () => {
 
     const [showRouteModal, setShowRouteModal] = useState(false);
     const [routeModalData, setRouteModalData] = useState({ routes: [], title: '', subtitle: '' });
+
+    const [showRouteEditorModal, setShowRouteEditorModal] = useState(false);
+    const [selectedRouteZona, setSelectedRouteZona] = useState(null);
 
     const [showImageModal, setShowImageModal] = useState(false);
     const [selectedImageUrl, setSelectedImageUrl] = useState('');
@@ -139,6 +144,11 @@ const AdminZonasPage = () => {
         setShowRouteModal(true);
     };
 
+    const handleOpenRouteEditor = (zona) => {
+        setSelectedRouteZona(zona);
+        setShowRouteEditorModal(true);
+    };
+
     return (
         <div className="p-6 bg-gray-100 min-h-screen">
             <TituloConRegreso title="Gestión de Zonas y Rutas" />
@@ -205,7 +215,18 @@ const AdminZonasPage = () => {
                         </thead>
                         <tbody className="divide-y divide-gray-200">
                             {zonas.map((zona) => {
-                                const hasRoute = Array.isArray(zona.coordenadas_ruta) && zona.coordenadas_ruta.length > 0;
+                                let coords = [];
+                                if (Array.isArray(zona.coordenadas_ruta)) {
+                                    coords = zona.coordenadas_ruta;
+                                } else if (typeof zona.coordenadas_ruta === 'string') {
+                                    try {
+                                        coords = JSON.parse(zona.coordenadas_ruta || '[]');
+                                    } catch {
+                                        coords = [];
+                                    }
+                                }
+                                const hasRoute = Array.isArray(coords) && coords.length > 0;
+
                                 return (
                                     <tr key={zona.id} className="hover:bg-gray-50 transition-colors">
                                         <td className="px-6 py-4 font-medium text-gray-900">
@@ -223,16 +244,24 @@ const AdminZonasPage = () => {
                                         <td className="px-6 py-4 text-center">
                                             {hasRoute ? (
                                                 <button
-                                                    onClick={() => handleViewRoute(zona)}
-                                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors"
+                                                    type="button"
+                                                    onClick={() => handleOpenRouteEditor(zona)}
+                                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-blue-700 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors cursor-pointer shadow-xs"
+                                                    title="Ver y editar el trazado de la ruta en el mapa"
                                                 >
-                                                    <MapIcon fontSize="small" />
-                                                    <span>Ver Ruta ({zona.coordenadas_ruta.length} pts)</span>
+                                                    <MapIcon style={{ fontSize: '16px' }} />
+                                                    <span>Ver / Editar ({coords.length} pts)</span>
                                                 </button>
                                             ) : (
-                                                <span className="text-xs text-gray-400 bg-gray-100 px-2.5 py-1 rounded-full">
-                                                    Sin ruta trazada
-                                                </span>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleOpenRouteEditor(zona)}
+                                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-300 rounded-lg hover:bg-emerald-100 transition-colors cursor-pointer shadow-xs"
+                                                    title="Trazar ruta de recolección para esta zona"
+                                                >
+                                                    <AddLocationAltIcon style={{ fontSize: '16px' }} />
+                                                    <span>Crear Ruta</span>
+                                                </button>
                                             )}
                                         </td>
                                         <td className="px-6 py-4 text-center">
@@ -249,15 +278,14 @@ const AdminZonasPage = () => {
                                         </td>
                                         <td className="px-6 py-4 text-center">
                                             <div className="flex items-center justify-center space-x-2">
-                                                {hasRoute && (
-                                                    <button
-                                                        className="bg-indigo-50 text-indigo-700 border border-indigo-200 px-3 py-1.5 text-xs font-medium rounded-md hover:bg-indigo-100"
-                                                        onClick={() => handleViewRoute(zona)}
-                                                        title="Ver recorrido en mapa"
-                                                    >
-                                                        Mapa
-                                                    </button>
-                                                )}
+                                                <button
+                                                    type="button"
+                                                    className="bg-indigo-50 text-indigo-700 border border-indigo-200 px-3 py-1.5 text-xs font-medium rounded-md hover:bg-indigo-100 cursor-pointer"
+                                                    onClick={() => handleOpenRouteEditor(zona)}
+                                                    title={hasRoute ? "Ver y editar ruta" : "Crear ruta"}
+                                                >
+                                                    {hasRoute ? "Ruta" : "+ Ruta"}
+                                                </button>
                                                 <button
                                                     className="bg-amber-500 text-white px-3 py-1.5 text-xs font-medium rounded-md hover:bg-amber-600"
                                                     onClick={() => {
@@ -308,6 +336,16 @@ const AdminZonasPage = () => {
                 title={routeModalData.title}
                 subtitle={routeModalData.subtitle}
                 routes={routeModalData.routes}
+            />
+
+            <ZonaRouteModal
+                show={showRouteEditorModal}
+                onClose={() => {
+                    setShowRouteEditorModal(false);
+                    setSelectedRouteZona(null);
+                }}
+                onUpdate={obtenerZonas}
+                zona={selectedRouteZona}
             />
 
             {showImageModal && (
