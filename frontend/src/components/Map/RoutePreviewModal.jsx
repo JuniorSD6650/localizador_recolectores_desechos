@@ -19,6 +19,9 @@ const RoutePreviewModal = ({
     const mapContainerRef = useRef(null);
     const mapInstanceRef = useRef(null);
 
+    const routesKey = JSON.stringify(routes);
+    const vehicleKey = vehicleLocation ? `${vehicleLocation.latitud},${vehicleLocation.longitud}` : '';
+
     useEffect(() => {
         if (!show || !mapContainerRef.current) return;
 
@@ -29,16 +32,23 @@ const RoutePreviewModal = ({
         }
 
         const defaultCenter = [-9.9306, -76.2422];
-        const map = L.map(mapContainerRef.current).setView(defaultCenter, 14);
+        const map = L.map(mapContainerRef.current, {
+            preferCanvas: true
+        }).setView(defaultCenter, 14);
 
         const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap'
+            attribution: '© OpenStreetMap',
+            maxZoom: 18,
+            keepBuffer: 2,
+            updateWhenIdle: true
         });
 
         const esriSat = L.tileLayer(
             'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
             {
                 maxZoom: 18,
+                keepBuffer: 2,
+                updateWhenIdle: true,
                 attribution: 'Tiles © Esri'
             }
         );
@@ -197,7 +207,7 @@ const RoutePreviewModal = ({
                 mapInstanceRef.current = null;
             }
         };
-    }, [show, routes, vehicleLocation]);
+    }, [show, routesKey, vehicleKey]);
 
     if (!show) return null;
 
